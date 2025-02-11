@@ -1,4 +1,5 @@
 {
+  "name": "orchestration-contract",
   "type": "module",
   "devDependencies": {
     "@agoric/async-flow": "^0.1.0",

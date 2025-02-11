@@ -1,4 +1,3 @@
-// @ts-check
 import { InvitationShape } from '@agoric/zoe/src/typeGuards.js';
 import { E } from '@endo/far';
 import { M } from '@endo/patterns';

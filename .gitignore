@@ -1,1 +1,4 @@
 node_modules
+contract/startAxelarGmp.js
+contract/startAxelarGmp-plan.json
+contract/startAxelarGmp-permit.json
