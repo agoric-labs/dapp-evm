@@ -7,7 +7,7 @@
  *   ./send-anywhere.contract.js for example usage.
  */
 /**
- * @import {Orchestrator, OrchestrationFlow, LocalAccountMethods} from '@agoric/orchestration';
+ * @import {Orchestrator, OrchestrationFlow, LocalAccountMethods} from '@agoric/orchestration/src/types.js';
  */
 
 /**
@@ -15,7 +15,7 @@
  * @param {Orchestrator} orch
  * @returns {Promise<LocalAccountMethods>}
  */
-export const makeLocalAccount = async (orch) => {
+export const makeLocalAccount = async orch => {
   const agoricChain = await orch.getChain('agoric');
   return agoricChain.makeAccount();
 };

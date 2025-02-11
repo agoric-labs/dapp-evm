@@ -1,25 +1,17 @@
-// @ts-check
 import { InvitationShape } from '@agoric/zoe/src/typeGuards.js';
-import {
-  withOrchestration,
-  registerChainsAndAssets,
-  AnyNatAmountShape,
-  prepareChainHubAdmin,
-} from '@agoric/orchestration';
 import { E } from '@endo/far';
 import { M } from '@endo/patterns';
-
+import { prepareChainHubAdmin } from '@agoric/orchestration/src/exos/chain-hub-admin.js';
+import { AnyNatAmountShape } from '@agoric/orchestration/src/typeGuards.js';
+import { withOrchestration } from '@agoric/orchestration/src/utils/start-helper.js';
+import { registerChainsAndAssets } from '@agoric/orchestration/src/utils/chain-hub-helper.js';
+import * as flows from './axelar.flows.js';
 import * as sharedFlows from './shared.flows.js';
-
-import * as originalFlows from './send-anywhere.flows.js';
-import * as axelarFlows from './axelar.flows.js';
-
-const flows = { ...originalFlows, ...axelarFlows };
 
 /**
  * @import {Vow} from '@agoric/vow';
  * @import {Zone} from '@agoric/zone';
- * @import {OrchestrationPowers, OrchestrationTools} from '@agoric/orchestration';
+ * @import {OrchestrationPowers, OrchestrationTools} from '@agoric/orchestration/src/utils/start-helper.js';
  * @import {CosmosChainInfo, Denom, DenomDetail} from '@agoric/orchestration';
  */
 
@@ -85,7 +77,7 @@ export const contract = async (
     {
       makeSendInvitation() {
         return zcf.makeInvitation(
-          orchFns.sendByAxelar,
+          orchFns.sendIt,
           'send',
           undefined,
           M.splitRecord({ give: SingleNatAmountRecord })

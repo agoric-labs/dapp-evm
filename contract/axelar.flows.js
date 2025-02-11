@@ -1,20 +1,28 @@
-// @ts-check
 import { NonNullish } from '@agoric/internal';
 import { makeError, q } from '@endo/errors';
-import { M, mustMatch } from '@endo/patterns';
 
 /**
  * @import {GuestInterface, GuestOf} from '@agoric/async-flow';
  * @import {Vow} from '@agoric/vow';
  * @import {LocalOrchestrationAccountKit} from '@agoric/orchestration/src/exos/local-orchestration-account.js';
  * @import {ZoeTools} from '@agoric/orchestration/src/utils/zoe-tools.js';
- * @import {Orchestrator, OrchestrationFlow, LocalAccountMethods} from '@agoric/orchestration';
+ * @import {Orchestrator, OrchestrationFlow, LocalAccountMethods} from '@agoric/orchestration/src/types.js';
  */
 
 const { entries } = Object;
 
-// in guest file (the orchestration functions)
-// the second argument is all the endowments provided
+const addresses = {
+  AXELAR_GMP:
+    'axelar1dv4u5k73pzqrxlzujxg3qp8kvc3pje7jtdvu72npnt5zhq05ejcsn5qme5',
+  AXELAR_GAS: 'axelar1zl3rxpp70lmte2xr6c4lgske2fyuj3hupcsvcd',
+  OSMOSIS_RECEIVER: 'osmo1yh3ra8eage5xtr9a3m5utg6mx0pmqreytudaqj',
+};
+
+const channels = {
+  AGORIC_XNET_TO_OSMOSIS: 'channel-6',
+  AGORIC_DEVNET_TO_OSMOSIS: 'channel-61',
+  OSMOSIS_TO_AXELAR: 'channel-4118',
+};
 
 /**
  * @satisfies {OrchestrationFlow}
@@ -24,7 +32,13 @@ const { entries } = Object;
  * @param {GuestInterface<ZoeTools>} ctx.zoeTools
  * @param {GuestOf<(msg: string) => Vow<void>>} ctx.log
  * @param {ZCFSeat} seat
- * @param {{ chainName: string; destAddr: string }} offerArgs
+ * @param {{
+ *   destAddr: string;
+ *   type: number;
+ *   destinationEVMChain: string;
+ *   gasAmount: number;
+ *   contractInvocationPayload: number[];
+ * }} offerArgs
  */
 export const sendIt = async (
   orch,
@@ -32,12 +46,19 @@ export const sendIt = async (
   seat,
   offerArgs
 ) => {
-  mustMatch(offerArgs, harden({ chainName: M.scalar(), destAddr: M.string() }));
-  const { chainName, destAddr } = offerArgs;
-  // NOTE the proposal shape ensures that the `give` is a single asset
+  const {
+    destAddr,
+    type,
+    destinationEVMChain,
+    gasAmount,
+    contractInvocationPayload,
+  } = offerArgs;
+
+  void log(`initiating sendIt`);
+
   const { give } = seat.getProposal();
   const [[_kw, amt]] = entries(give);
-  void log(`sending {${amt.value}} from ${chainName} to ${destAddr}`);
+
   const agoric = await orch.getChain('agoric');
   const assets = await agoric.getVBankAssetInfo();
   void log(`got info for denoms: ${assets.map((a) => a.denom).join(', ')}`);
@@ -46,11 +67,11 @@ export const sendIt = async (
     `${amt.brand} not registered in vbank`
   );
 
-  const chain = await orch.getChain(chainName);
-  const info = await chain.getChainInfo();
+  const osmosisChain = await orch.getChain('osmosis');
+  const info = await osmosisChain.getChainInfo();
   const { chainId } = info;
   assert(typeof chainId === 'string', 'bad chainId');
-  void log(`got info for chain: ${chainName} ${chainId}`);
+  void log(`got info for chain: ${chainId}`);
 
   /**
    * @type {any} XXX methods returning vows
@@ -61,14 +82,44 @@ export const sendIt = async (
 
   void log(`completed transfer to localAccount`);
 
+  const payload = type === 1 || type === 2 ? contractInvocationPayload : null;
+
+  void log(`payload received`);
+
+  const memoToAxelar = {
+    destination_chain: destinationEVMChain,
+    destination_address: destAddr,
+    payload,
+    type,
+  };
+
+  if (type === 1 || type === 2) {
+    memoToAxelar.fee = {
+      amount: gasAmount,
+      recipient: addresses.AXELAR_GAS,
+    };
+  }
+
+  const memo = {
+    forward: {
+      receiver: addresses.AXELAR_GMP,
+      port: 'transfer',
+      channel: channels.OSMOSIS_TO_AXELAR,
+      timeout: '10m',
+      retries: 2,
+      next: JSON.stringify(memoToAxelar),
+    },
+  };
+
   try {
     await sharedLocalAccount.transfer(
       {
-        value: destAddr,
+        value: addresses.OSMOSIS_RECEIVER,
         encoding: 'bech32',
         chainId,
       },
-      { denom, value: amt.value }
+      { denom, value: amt.value },
+      { memo: JSON.stringify(memo) }
     );
     void log(`completed transfer to ${destAddr}`);
   } catch (e) {
