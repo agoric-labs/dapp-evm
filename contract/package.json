@@ -1,5 +1,6 @@
 {
   "dependencies": {
+    "@agoric/deploy-script-support": "^0.10.4-u18a.0",
     "@agoric/orchestration": "^0.2.0-u18a.0",
     "@agoric/zoe": "^0.26.3-u18a.0",
     "@endo/far": "^1.1.10",

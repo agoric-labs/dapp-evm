@@ -51,6 +51,27 @@
     bech32 "^2.0.0"
     query-string "^9.1.1"
 
+"@agoric/deploy-script-support@^0.10.4-u18a.0":
+  version "0.10.4-u18a.0"
+  resolved "https://registry.yarnpkg.com/@agoric/deploy-script-support/-/deploy-script-support-0.10.4-u18a.0.tgz#2c31219cb17578fca723da7ff4943728ac86561a"
+  integrity sha512-+klAmsvaXl7ynURh8l5W5YdpgP7hRYgjIuzqil/jAsddH1PvDNnqX9mGp6+bt3otfxhM0V8SVvxm68PhTInkSw==
+  dependencies:
+    "@agoric/ertp" "^0.16.3-u18a.0"
+    "@agoric/import-manager" "^0.3.12-u18a.0"
+    "@agoric/internal" "^0.4.0-u18a.0"
+    "@agoric/notifier" "^0.7.0-u18a.0"
+    "@agoric/store" "^0.9.3-u18.1"
+    "@agoric/time" "^0.3.3-u18.1"
+    "@agoric/zoe" "^0.26.3-u18a.0"
+    "@endo/base64" "^1.0.9"
+    "@endo/bundle-source" "^3.5.0"
+    "@endo/errors" "^1.2.8"
+    "@endo/far" "^1.1.9"
+    "@endo/marshal" "^1.6.2"
+    "@endo/nat" "^5.0.13"
+    "@endo/promise-kit" "^1.1.8"
+    "@endo/zip" "^1.0.9"
+
 "@agoric/ertp@^0.16.3-u18a.0":
   version "0.16.3-u18a.0"
   resolved "https://registry.yarnpkg.com/@agoric/ertp/-/ertp-0.16.3-u18a.0.tgz#5d16303180318dbe18d042358acdfee016254541"
@@ -89,6 +110,11 @@
     "@endo/nat" "^5.0.13"
     "@endo/promise-kit" "^1.1.8"
     import-meta-resolve "^2.2.1"
+
+"@agoric/import-manager@^0.3.12-u18a.0":
+  version "0.3.12-u18a.0"
+  resolved "https://registry.yarnpkg.com/@agoric/import-manager/-/import-manager-0.3.12-u18a.0.tgz#6826473b046f326cc268136ce806ab507f47d36a"
+  integrity sha512-TFeWcibuF3cRjAGBthLP9yDozW4ROXp2ulb7jMmGaq7FGXNcg9YF/U9PgmraWHtZpr08+svV/LPufu0ahjnSWw==
 
 "@agoric/internal@^0.4.0-u18a.0":
   version "0.4.0-u18a.0"
