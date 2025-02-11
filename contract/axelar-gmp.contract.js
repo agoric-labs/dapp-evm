@@ -1,3 +1,4 @@
+// @ts-check
 import { InvitationShape } from '@agoric/zoe/src/typeGuards.js';
 import { E } from '@endo/far';
 import { M } from '@endo/patterns';
@@ -13,6 +14,7 @@ import * as sharedFlows from './shared.flows.js';
  * @import {Zone} from '@agoric/zone';
  * @import {OrchestrationPowers, OrchestrationTools} from '@agoric/orchestration/src/utils/start-helper.js';
  * @import {CosmosChainInfo, Denom, DenomDetail} from '@agoric/orchestration';
+ * @import {Marshaller} from '@agoric/internal/src/lib-chainStorage.js';
  */
 
 export const SingleNatAmountRecord = M.and(

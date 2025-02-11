@@ -1,3 +1,4 @@
+// @ts-check
 import { NonNullish } from '@agoric/internal';
 import { makeError, q } from '@endo/errors';
 
