@@ -19,13 +19,11 @@ export const defaultProposalBuilder = async (
   options
 ) =>
   harden({
-    sourceSpec: '@agoric/orchestration/src/proposals/start-axelar-gmp.js',
+    sourceSpec: './start-axelar-gmp.js',
     getManifestCall: [
       getManifest.name,
       {
-        installationRef: publishRef(
-          install('@agoric/orchestration/src/examples/axelar-gmp.contract.js')
-        ),
+        installationRef: publishRef(install('../axelar-gmp.contract.js')),
         options,
       },
     ],

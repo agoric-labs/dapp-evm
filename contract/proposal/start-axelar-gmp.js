@@ -62,7 +62,7 @@ export const startAxelarGmp = async (
       consume: { BLD, IST },
     },
   },
-  { options: { chainInfo, assetInfo } },
+  { options: { chainInfo, assetInfo } }
 ) => {
   trace(startAxelarGmp.name);
 
@@ -78,22 +78,22 @@ export const startAxelarGmp = async (
       timerService: chainTimerService,
       chainInfo,
       assetInfo,
-    }),
+    })
   );
 
   /** @param {() => Promise<Issuer>} p */
-  const safeFulfill = async p =>
+  const safeFulfill = async (p) =>
     E.when(
       p(),
-      i => i,
-      () => undefined,
+      (i) => i,
+      () => undefined
     );
 
   const atomIssuer = await safeFulfill(() =>
-    E(agoricNames).lookup('issuer', 'ATOM'),
+    E(agoricNames).lookup('issuer', 'ATOM')
   );
   const osmoIssuer = await safeFulfill(() =>
-    E(agoricNames).lookup('issuer', 'OSMO'),
+    E(agoricNames).lookup('issuer', 'OSMO')
   );
 
   const issuerKeywordRecord = harden({
