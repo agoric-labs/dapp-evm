@@ -1,6 +1,9 @@
 {
   "name": "orchestration-contract",
   "type": "module",
+  "scripts": {
+    "deploy": "bash deploy.sh startAxelarGmp-plan.json"
+  },
   "devDependencies": {
     "@agoric/async-flow": "^0.1.0",
     "@agoric/deploy-script-support": "^0.10.4-u17.1",
