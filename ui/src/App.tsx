@@ -213,7 +213,8 @@ function App() {
                 <button
                   className='send-button'
                   onClick={makeOffer}
-                  disabled={loading || !evmAddress || !amountToSend}>
+                  // disabled={loading || !evmAddress || !amountToSend}
+                >
                   {loading ? 'Processing...' : 'Send Tokens'}
                 </button>
               </div>
