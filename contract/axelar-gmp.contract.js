@@ -43,6 +43,13 @@ export const contract = async (
   { chainHub, orchestrateAll, vowTools, zoeTools }
 ) => {
   console.log('Inside Contract...');
+
+  console.log('Channel Info Agoric:');
+  console.log(privateArgs.chainInfo['agoric'].connections);
+
+  console.log('Channel Info Osmosis:');
+  console.log(privateArgs.chainInfo['osmosis'].connections);
+
   console.log('Calling registerChainsAndAssets...');
   registerChainsAndAssets(
     chainHub,

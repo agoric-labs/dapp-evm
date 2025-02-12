@@ -53,38 +53,50 @@ export const sendIt = async (
     gasAmount,
     contractInvocationPayload,
   } = offerArgs;
-
-  void log(`initiating sendIt`);
+  console.log('Inside sendIt');
+  console.log(
+    'Offer Args',
+    JSON.stringify({
+      destAddr,
+      type,
+      destinationEVMChain,
+      gasAmount,
+      contractInvocationPayload,
+    })
+  );
 
   const { give } = seat.getProposal();
   const [[_kw, amt]] = entries(give);
+  console.log('_kw, amt', _kw, amt);
 
   const agoric = await orch.getChain('agoric');
+  console.log('Agoric Chain ID:', (await agoric.getChainInfo()).chainId);
+
   const assets = await agoric.getVBankAssetInfo();
-  void log(`got info for denoms: ${assets.map((a) => a.denom).join(', ')}`);
+  console.log(`Denoms: ${assets.map((a) => a.denom).join(', ')}`);
+
   const { denom } = NonNullish(
     assets.find((a) => a.brand === amt.brand),
     `${amt.brand} not registered in vbank`
   );
 
   const osmosisChain = await orch.getChain('osmosis');
+  console.log('Osmosis Chain ID:', (await osmosisChain.getChainInfo()).chainId);
+
   const info = await osmosisChain.getChainInfo();
   const { chainId } = info;
   assert(typeof chainId === 'string', 'bad chainId');
-  void log(`got info for chain: ${chainId}`);
 
   /**
    * @type {any} XXX methods returning vows
    *   https://github.com/Agoric/agoric-sdk/issues/9822
    */
   const sharedLocalAccount = await sharedLocalAccountP;
-  await localTransfer(seat, sharedLocalAccount, give);
 
-  void log(`completed transfer to localAccount`);
+  await localTransfer(seat, sharedLocalAccount, give);
+  console.log('After local transfer');
 
   const payload = type === 1 || type === 2 ? contractInvocationPayload : null;
-
-  void log(`payload received`);
 
   const memoToAxelar = {
     destination_chain: destinationEVMChain,
@@ -121,16 +133,15 @@ export const sendIt = async (
       { denom, value: amt.value },
       { memo: JSON.stringify(memo) }
     );
-    void log(`completed transfer to ${destAddr}`);
+
+    console.log(`Completed transfer to ${destAddr}`);
   } catch (e) {
     await withdrawToSeat(sharedLocalAccount, seat, give);
     const errorMsg = `IBC Transfer failed ${q(e)}`;
-    void log(`ERROR: ${errorMsg}`);
     seat.exit(errorMsg);
     throw makeError(errorMsg);
   }
 
   seat.exit();
-  void log(`transfer complete, seat exited`);
 };
 harden(sendIt);
