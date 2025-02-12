@@ -42,8 +42,16 @@ export const contract = async (
   zone,
   { chainHub, orchestrateAll, vowTools, zoeTools }
 ) => {
-  const creatorFacet = prepareChainHubAdmin(zone, chainHub);
   console.log('Inside Contract...');
+  console.log('Calling registerChainsAndAssets...');
+  registerChainsAndAssets(
+    chainHub,
+    zcf.getTerms().brands,
+    privateArgs.chainInfo,
+    privateArgs.assetInfo
+  );
+
+  const creatorFacet = prepareChainHubAdmin(zone, chainHub);
   // UNTIL https://github.com/Agoric/agoric-sdk/issues/9066
   const logNode = E(privateArgs.storageNode).makeChildNode('log');
   /** @type {(msg: string) => Vow<void>} */
@@ -85,14 +93,6 @@ export const contract = async (
         );
       },
     }
-  );
-
-  console.log('Calling registerChainsAndAssets...');
-  registerChainsAndAssets(
-    chainHub,
-    zcf.getTerms().brands,
-    privateArgs.chainInfo,
-    privateArgs.assetInfo
   );
 
   return { publicFacet, creatorFacet };
