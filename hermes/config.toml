@@ -1,0 +1,70 @@
+[global]
+log_level = 'info'
+[mode.clients]
+enabled = true
+refresh = true
+misbehaviour = true
+
+[mode.connections]
+enabled = false
+
+[mode.channels]
+enabled = false
+
+[mode.packets]
+enabled = true
+clear_interval = 100
+clear_on_start = true
+tx_confirmation = false
+
+[rest]
+enabled = false
+host = '127.0.0.1'
+port = 3000
+
+
+[[chains]]
+id = 'osmo-test-5'
+type = 'CosmosSdk'
+rpc_addr = 'https://rpc.osmotest5.osmosis.zone:443'
+grpc_addr = 'https://grpc.osmotest5.osmosis.zone'
+event_source = { mode = 'push', url = 'ws://rpc.testnet.osmosis.zone:443/websocket', batch_delay = '500ms' }  # set the IP and the port of the chain
+rpc_timeout = '60s'
+trusted_node = false
+account_prefix = 'osmo'
+key_name = 'osmosisrelay'
+store_prefix = 'ibc'
+default_gas = 2000000
+max_gas = 2400000
+gas_price = { price = 0.01, denom = 'uosmo' }
+gas_multiplier = 1.1
+max_msg_num = 30
+max_tx_size = 2097152
+clock_drift = '5s'
+max_block_time = '30s'
+trusting_period = '1990s'
+trust_threshold = { numerator = '2', denominator = '3' }
+address_type = { derivation = 'cosmos' }
+memo_prefix=''
+
+
+[[chains]]
+id = 'agoriclocal'
+rpc_addr = 'http://localhost:26657'
+grpc_addr = 'http://localhost:9090'
+event_source = { mode = 'push', url = 'ws://localhost:26657/websocket', batch_delay = '500ms' }
+rpc_timeout = '15s'
+account_prefix = 'agoric'
+key_name = 'user1'
+address_type = { derivation = 'cosmos' }
+store_prefix = 'ibc'
+default_gas = 2000000
+max_gas = 10000000
+gas_price = { price = 0.00, denom = 'ubld' }
+gas_multiplier = 1.1
+max_msg_num = 25
+max_tx_size = 180000
+clock_drift = '15s'
+max_block_time = '15s'
+trusting_period = '14days'
+trust_threshold = { numerator = '1', denominator = '3' }
