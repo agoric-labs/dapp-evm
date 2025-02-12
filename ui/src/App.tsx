@@ -9,6 +9,8 @@ import {
   makeAgoricWalletConnection,
   suggestChain,
 } from '@agoric/web-components';
+import { checkBalance } from './Utils';
+import WalletStatus from './components/WalletStatus';
 
 type Wallet = Awaited<ReturnType<typeof makeAgoricWalletConnection>>;
 
@@ -30,9 +32,21 @@ interface AppState {
   wallet?: Wallet;
   contractInstance?: unknown;
   brands?: Record<string, unknown>;
+  balance: number;
+  evmAddress: string;
+  amountToSend: string;
+  loading: boolean;
+  error?: string;
 }
+const useAppStore = create<AppState>((set) => ({
+  contractInstance: null,
+  balance: 0,
+  evmAddress: '',
+  amountToSend: '',
+  loading: false,
+  error: undefined,
+}));
 
-const useAppStore = create<AppState>(() => ({ contractInstance: null }));
 const setup = async () => {
   watcher.watchLatest<Array<[string, unknown]>>(
     [Kind.Data, 'published.agoricNames.instance'],
@@ -105,9 +119,15 @@ function App() {
     setup();
   }, []);
 
-  const { wallet } = useAppStore(({ wallet }) => ({
-    wallet,
-  }));
+  const { wallet, balance, evmAddress, amountToSend, loading, error } =
+    useAppStore((state) => ({
+      wallet: state.wallet,
+      balance: state.balance,
+      evmAddress: state.evmAddress,
+      amountToSend: state.amountToSend,
+      loading: state.loading,
+      error: state.error,
+    }));
 
   const tryConnectWallet = () => {
     connectWallet().catch((err) => {
@@ -121,14 +141,87 @@ function App() {
     });
   };
 
+  useEffect(() => {
+    if (!wallet) return;
+
+    const updateBalance = async () => {
+      const newBalance = await checkBalance({
+        walletAddress: wallet.address,
+        rpcUrl: ENDPOINTS.RPC,
+        tokenDenom:
+          'ibc/BF12D4A433705DF7C9485CA8D2CCB4FEDB541F32B9323004DA7FC73D7B98FB7D',
+      });
+      useAppStore.setState({ balance: newBalance });
+    };
+
+    const interval = setInterval(updateBalance, 15000);
+    return () => clearInterval(interval);
+  }, [wallet]);
+
   return (
-    <>
-      <h1 className='big-h1'>Orchestration</h1>
-      <div className='card'>
-        <button onClick={makeOffer}>Make Offer</button>
-        {!wallet && <button onClick={tryConnectWallet}>Connect Wallet</button>}
-      </div>
-    </>
+    <div className='container'>
+      {error && <div className='error'>{error}</div>}
+
+      {!wallet ? (
+        <>
+          <h1 className='title'>Agoric to EVM Bridge</h1>
+          <button
+            className='connect-button'
+            onClick={connectWallet}
+            disabled={loading}>
+            {loading ? 'Connecting...' : 'Connect Wallet'}
+          </button>
+        </>
+      ) : (
+        <>
+          <div className='dashboard-container'>
+            <WalletStatus address={wallet?.address} />
+            <div className='dashboard'>
+              <div className='balance'>
+                <span className='label'>aUSDC Balance:</span>
+                <span className='value'>{balance.toLocaleString()}</span>
+              </div>
+
+              <div className='transfer-form'>
+                <div className='form-group'>
+                  <label className='input-label'>To (EVM Address):</label>
+                  <input
+                    className='input-field'
+                    value={evmAddress}
+                    onChange={(e) =>
+                      useAppStore.setState({ evmAddress: e.target.value })
+                    }
+                    placeholder='0x...'
+                  />
+                </div>
+
+                <div className='form-group'>
+                  <label className='input-label'>Amount:</label>
+                  <input
+                    className='input-field'
+                    type='number'
+                    value={amountToSend}
+                    onChange={(e) =>
+                      useAppStore.setState({ amountToSend: e.target.value })
+                    }
+                    placeholder='0.00'
+                    min='0'
+                    step='0.01'
+                  />
+                </div>
+
+                <button
+                  className='send-button'
+                  onClick={makeOffer}
+                  disabled={loading || !evmAddress || !amountToSend}>
+                  {loading ? 'Processing...' : 'Send Tokens'}
+                </button>
+              </div>
+            </div>
+          </div>
+        </>
+      )}
+    </div>
   );
 }
 
