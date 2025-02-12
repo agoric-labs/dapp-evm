@@ -19,9 +19,17 @@ const ENDPOINTS = {
 
 const watcher = makeAgoricChainStorageWatcher(ENDPOINTS.API, 'agoriclocal');
 
+interface OfferArgs {
+  destAddr: string;
+  type: number;
+  destinationEVMChain: string;
+  gasAmount?: number;
+  contractInvocationPayload?: number[];
+}
 interface AppState {
   wallet?: Wallet;
   contractInstance?: unknown;
+  brands?: Record<string, unknown>;
 }
 
 const useAppStore = create<AppState>(() => ({ contractInstance: null }));
@@ -35,6 +43,18 @@ const setup = async () => {
       });
     }
   );
+
+  const { fromEntries } = Object;
+
+  watcher.watchLatest<Array<[string, unknown]>>(
+    [Kind.Data, 'published.agoricNames.brand'],
+    (brands) => {
+      console.log('Got brands', brands);
+      useAppStore.setState({
+        brands: fromEntries(brands),
+      });
+    }
+  );
 };
 
 const connectWallet = async () => {
@@ -43,20 +63,31 @@ const connectWallet = async () => {
   useAppStore.setState({ wallet });
 };
 
-const makeOffer = () => {
-  const { wallet, contractInstance } = useAppStore.getState();
+const makeOffer = ({ giveValue = 1000000 }) => {
+  const { wallet, contractInstance, brands } = useAppStore.getState();
   if (!contractInstance) throw Error('No contract instance');
+
+  console.log('Brands', brands);
+  if (!(brands && brands.IST)) {
+    throw Error('brands not available');
+  }
+
+  const offerArgs: OfferArgs = {
+    type: 3,
+    destAddr: '',
+    destinationEVMChain: '',
+  };
+
+  const give = { IST: { brand: brands.IST, value: 1000000n } };
 
   wallet?.makeOffer(
     {
       source: 'contract',
       instance: contractInstance,
-      publicInvitationMaker: 'makeInvitation',
+      publicInvitationMaker: 'makeSendInvitation',
     },
-    {},
-    {
-      userAddress: wallet.address,
-    },
+    { give },
+    offerArgs,
     (update: { status: string; data?: unknown }) => {
       if (update.status === 'error') {
         alert(`Offer error: ${update.data}`);
