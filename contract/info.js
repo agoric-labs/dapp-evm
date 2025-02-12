@@ -1,13 +1,11 @@
 export const chainInfo = JSON.stringify({
   agoric: {
-    bech32Prefix: 'agoric',
     chainId: 'agoriclocal',
     stakingTokens: [
       {
         denom: 'ubld',
       },
     ],
-    icqEnabled: false,
     connections: {
       'osmo-test-5': {
         id: 'connection-0',
@@ -31,14 +29,12 @@ export const chainInfo = JSON.stringify({
   },
 
   osmosis: {
-    bech32Prefix: 'osmo',
     chainId: 'osmo-test-5',
     stakingTokens: [
       {
         denom: 'uosmo',
       },
     ],
-    icqEnabled: true,
     connections: {
       agoriclocal: {
         id: 'connection-3833',
@@ -68,13 +64,15 @@ export const assetInfo = JSON.stringify([
     {
       baseDenom: 'uist',
       baseName: 'agoric',
-      chainName: 'agoriclocal',
+      chainName: 'agoric',
     },
+  ],
+  [
     'uosmo',
     {
       baseDenom: 'uosmo',
       baseName: 'osmosis',
-      chainName: 'osmo-test-5',
+      chainName: 'osmosis',
     },
   ],
 ]);
