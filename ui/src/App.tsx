@@ -11,6 +11,7 @@ import {
 } from '@agoric/web-components';
 import { checkBalance } from './Utils';
 import WalletStatus from './components/WalletStatus';
+import { tokens } from './config';
 
 type Wallet = Awaited<ReturnType<typeof makeAgoricWalletConnection>>;
 
@@ -22,8 +23,8 @@ const ENDPOINTS = {
 const watcher = makeAgoricChainStorageWatcher(ENDPOINTS.API, 'agoriclocal');
 
 interface OfferArgs {
-  destAddr: string;
   type: number;
+  destAddr: string;
   destinationEVMChain: string;
   gasAmount?: number;
   contractInvocationPayload?: number[];
@@ -33,18 +34,22 @@ interface AppState {
   contractInstance?: unknown;
   brands?: Record<string, unknown>;
   balance: number;
+  destinationEVMChain: string;
   evmAddress: string;
-  amountToSend: string;
+  amountToSend: number;
   loading: boolean;
   error?: string;
+  type: number;
 }
 const useAppStore = create<AppState>((set) => ({
   contractInstance: null,
   balance: 0,
   evmAddress: '',
-  amountToSend: '',
+  destinationEVMChain: '',
+  amountToSend: 0,
   loading: false,
   error: undefined,
+  type: 0,
 }));
 
 const setup = async () => {
@@ -78,7 +83,15 @@ const connectWallet = async () => {
 };
 
 const makeOffer = ({ giveValue = 1000000 }) => {
-  const { wallet, contractInstance, brands } = useAppStore.getState();
+  const {
+    wallet,
+    contractInstance,
+    brands,
+    destinationEVMChain,
+    evmAddress,
+    amountToSend,
+    type,
+  } = useAppStore.getState();
   if (!contractInstance) throw Error('No contract instance');
 
   console.log('Brands', brands);
@@ -86,13 +99,20 @@ const makeOffer = ({ giveValue = 1000000 }) => {
     throw Error('brands not available');
   }
 
-  const offerArgs: OfferArgs = {
-    type: 3,
-    destAddr: '',
-    destinationEVMChain: '',
-  };
+  let offerArgs: OfferArgs;
+  let give;
 
-  const give = { IST: { brand: brands.IST, value: 1000000n } };
+  if (type === 3) {
+    offerArgs = {
+      type,
+      destAddr: evmAddress,
+      destinationEVMChain,
+    };
+
+    give = { IST: { brand: brands.IST, value: amountToSend * 1000000 } };
+  } else {
+    throw new Error('Invalid type: expected a value of 1, 2, or 3.');
+  }
 
   wallet?.makeOffer(
     {
@@ -129,18 +149,6 @@ function App() {
       error: state.error,
     }));
 
-  const tryConnectWallet = () => {
-    connectWallet().catch((err) => {
-      switch (err.message) {
-        case 'KEPLR_CONNECTION_ERROR_NO_SMART_WALLET':
-          alert('No smart wallet at that address');
-          break;
-        default:
-          alert(err.message);
-      }
-    });
-  };
-
   useEffect(() => {
     if (!wallet) return;
 
@@ -148,8 +156,7 @@ function App() {
       const newBalance = await checkBalance({
         walletAddress: wallet.address,
         rpcUrl: ENDPOINTS.RPC,
-        tokenDenom:
-          'ibc/BF12D4A433705DF7C9485CA8D2CCB4FEDB541F32B9323004DA7FC73D7B98FB7D',
+        tokenDenom: tokens.aUSDCAgoricDevnet,
       });
       useAppStore.setState({ balance: newBalance });
     };
@@ -213,8 +220,7 @@ function App() {
                 <button
                   className='send-button'
                   onClick={makeOffer}
-                  // disabled={loading || !evmAddress || !amountToSend}
-                >
+                  disabled={loading || !evmAddress || !amountToSend}>
                   {loading ? 'Processing...' : 'Send Tokens'}
                 </button>
               </div>
