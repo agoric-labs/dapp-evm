@@ -45,6 +45,7 @@ export interface AppState {
   type: number;
   gasAmount?: number;
   contractInvocationPayload?: number[];
+  transactionUrl: string | null;
 }
 const useAppStore = create<AppState>((set) => ({
   contractInstance: null,
@@ -55,6 +56,7 @@ const useAppStore = create<AppState>((set) => ({
   loading: false,
   error: undefined,
   type: 3,
+  transactionUrl: null,
 }));
 
 const setup = async () => {
@@ -92,7 +94,7 @@ function App() {
     setup();
   }, []);
 
-  const { wallet, loading, error, type } = useAppStore((state) => ({
+  const { wallet, loading, type } = useAppStore((state) => ({
     wallet: state.wallet,
     balance: state.balance,
     destinationEVMChain: state.destinationEVMChain,

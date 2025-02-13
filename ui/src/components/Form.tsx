@@ -4,11 +4,15 @@ import { AppState, OfferArgs } from '../App';
 import WalletStatus from './WalletStatus';
 import { EVM_CHAINS } from '../config';
 import {
+  AxelarQueryParams,
+  getAxelarTxURL,
   getGasEstimate,
   getPayload,
   isValidEthereumAddress,
   showError,
+  showSuccess,
   simulateContractCall,
+  wait,
 } from '../Utils';
 import { toast } from 'react-toastify';
 interface Props {
@@ -28,15 +32,17 @@ export const TokenForm = (props: Props) => {
     contractInstance,
     brands,
     type,
+    transactionUrl,
   } = useAppStore.getState();
 
   const makeOffer = async () => {
-    // if (!contractInstance) throw Error('No contract instance');
+    const toastId = toast.info('Submitting transaction...', {
+      isLoading: true,
+    });
 
-    // console.log('Brands', brands);
-    // if (!(brands && brands.IST)) {
-    //   throw Error('brands not available');
-    // }
+    useAppStore.setState({
+      transactionUrl: null,
+    });
 
     let offerArgs: OfferArgs;
     // const give = { IST: { brand: brands.IST, value: amountToSend * 1000000 } };
@@ -49,6 +55,12 @@ export const TokenForm = (props: Props) => {
       showError({ content: 'Invalid Ethereum Address', duration: 3000 });
       return;
     }
+    // if (!contractInstance) throw Error('No contract instance');
+
+    // console.log('Brands', brands);
+    // if (!(brands && brands.IST)) {
+    //   throw Error('brands not available');
+    // }
 
     if (type === 3) {
       offerArgs = {
@@ -77,29 +89,92 @@ export const TokenForm = (props: Props) => {
       throw new Error('Invalid type: expected a value of 1, 2, or 3.');
     }
 
-    await simulateContractCall(offerArgs);
+    try {
+      const transactionTime = Math.floor(Date.now() / 1000);
+      await simulateContractCall(offerArgs);
 
-    // wallet?.makeOffer(
-    //   {
-    //     source: 'contract',
-    //     instance: contractInstance,
-    //     publicInvitationMaker: 'makeSendInvitation',
-    //   },
-    //   { give },
-    //   offerArgs,
-    //   (update: { status: string; data?: unknown }) => {
-    //     if (update.status === 'error') {
-    //       alert(`Offer error: ${update.data}`);
-    //     } else if (update.status === 'accepted') {
-    //       alert('Offer accepted');
-    //     } else if (update.status === 'refunded') {
-    //       alert('Offer rejected');
-    //     }
-    //   }
-    // );
+      // wallet?.makeOffer(
+      //   {
+      //     source: 'contract',
+      //     instance: contractInstance,
+      //     publicInvitationMaker: 'makeSendInvitation',
+      //   },
+      //   { give },
+      //   offerArgs,
+      //   (update: { status: string; data?: unknown }) => {
+      //     if (update.status === 'error') {
+      //       alert(`Offer error: ${update.data}`);
+      //     } else if (update.status === 'accepted') {
+      //       alert('Offer accepted');
+      //     } else if (update.status === 'refunded') {
+      //       alert('Offer rejected');
+      //     }
+      //   }
+      // );
+
+      let params: AxelarQueryParams;
+      if (type === 3) {
+        params = {
+          tokenTransfer: {
+            query: true,
+            params: {
+              address: evmAddress,
+              transfersType: 'transfers',
+              fromTime: transactionTime,
+              toTime: Math.floor(Date.now() / 1000),
+            },
+          },
+        } as AxelarQueryParams;
+      } else {
+        params = {
+          gmp: {
+            query: true,
+            params: {
+              sourceChain: 'osmosis',
+              address: '0x041FCDBDc2a3b87e765Eca96c3572A3AB8d2d173', // Axelar Proxy Contract
+            },
+          },
+        } as AxelarQueryParams;
+      }
+
+      // TODO: handle failure cases too
+      // TODO: check for valid URL
+      const txURL = await getAxelarTxURL(params);
+      if (txURL) {
+        toast.dismiss(toastId);
+        showSuccess({
+          content: 'Transaction Submitted Successfully',
+          duration: 4000,
+        });
+        useAppStore.setState({
+          transactionUrl: txURL,
+        });
+      } else {
+        toast.dismiss(toastId);
+      }
+    } catch (error) {
+      console.error(error);
+      showError({ content: error.message, duration: 3000 });
+    } finally {
+      toast.dismiss(toastId);
+    }
   };
 
   const buttonText = type === 3 ? 'Send Tokens' : 'Invoke Contract';
+  let disableButton = true;
+  if (type === 3) {
+    disableButton = !evmAddress || !amountToSend || !destinationEVMChain;
+  } else {
+    disableButton = !evmAddress || !destinationEVMChain;
+  }
+
+  const viewTransaction = () => {
+    if (transactionUrl) {
+      window.open(transactionUrl as string, '_blank');
+    } else {
+      throw new Error('Transaction url is not defined');
+    }
+  };
 
   return (
     <div className='dashboard-container'>
@@ -166,13 +241,17 @@ export const TokenForm = (props: Props) => {
           <button
             className='send-button'
             onClick={makeOffer}
-            disabled={
-              loading || !evmAddress || !amountToSend || !destinationEVMChain
-            }>
+            disabled={loading || disableButton}>
             {loading ? 'Processing...' : buttonText}
           </button>
         </div>
       </div>
+
+      {transactionUrl && (
+        <button className='view-transaction-button' onClick={viewTransaction}>
+          View Transaction
+        </button>
+      )}
     </div>
   );
 };

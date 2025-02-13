@@ -290,3 +290,104 @@ export const showWarning = ({ content, duration }) => {
     autoClose: duration,
   });
 };
+
+export interface GMPQueryParams {
+  address: string;
+  sourceChain: string;
+}
+
+export interface TokenTransferQueryParams {
+  address: string;
+  transfersType: string;
+  fromTime: number;
+  toTime?: number;
+}
+
+interface QueryParams<T> {
+  query: boolean;
+  params: T;
+}
+export interface AxelarQueryParams {
+  gmp: QueryParams<GMPQueryParams>;
+  tokenTransfer: QueryParams<TokenTransferQueryParams>;
+}
+
+export const wait = async (seconds) => {
+  return new Promise((resolve) => setTimeout(resolve, seconds * 1000));
+};
+
+export const getAxelarTxURL = async (params: AxelarQueryParams) => {
+  const isGmpQuery = params?.gmp?.query;
+  const url = isGmpQuery
+    ? 'https://testnet.api.axelarscan.io/gmp/searchGMP'
+    : 'https://testnet.api.axelarscan.io/token/searchTransfers';
+
+  const queryParams = isGmpQuery
+    ? params.gmp.params
+    : params.tokenTransfer.params;
+
+  console.log(`Fetching from URL: ${url}`);
+  console.log(`Query Params: ${JSON.stringify(queryParams)}`);
+
+  const body = JSON.stringify(queryParams);
+  const headers = {
+    accept: '*/*',
+    'content-type': 'application/json',
+  };
+
+  const startTime = Date.now();
+  let data: any = [];
+
+  while (Date.now() - startTime < 180000) {
+    // 3 minutes loop
+    const response = await fetch(url, {
+      method: 'POST',
+      headers,
+      body,
+    });
+
+    if (!response.ok) {
+      throw new Error(
+        `Axelar API Error: ${response.status} ${response.statusText}`
+      );
+    }
+
+    const result = await response.json();
+    data = result.data;
+    console.log('Received Data:', data);
+
+    if (Array.isArray(data) && data.length > 0) {
+      break;
+    }
+
+    console.log('Data is empty, retrying...');
+    await new Promise((resolve) => setTimeout(resolve, 30 * 1000)); // 30 seconds delay between retries
+  }
+
+  if (!Array.isArray(data) || data.length === 0) {
+    throw new Error(
+      'Invalid response: Data is not an array or is empty after 3 minutes'
+    );
+  }
+
+  // Sort the array by height in descending order (to get the transfer with the highest block height first)
+  // We sort by height because the highest block number represents the most recent transfer.
+  data.sort((a, b) =>
+    isGmpQuery
+      ? Number(b.call.blockNumber) - Number(a.call.blockNumber)
+      : Number(b.send.height) - Number(a.send.height)
+  );
+
+  const transactionUrl = isGmpQuery
+    ? 'https://testnet.axelarscan.io/gmp/' + data[0]?.call?._id
+    : 'https://testnet.axelarscan.io/transfer/' + data[0]?.send?.txhash;
+
+  if (!transactionUrl) {
+    throw new Error(
+      'Invalid response: Missing txhash in the highest height item'
+    );
+  }
+
+  console.log('Transaction URL:', transactionUrl);
+  return transactionUrl;
+};
