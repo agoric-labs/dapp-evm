@@ -12,6 +12,8 @@ import {
 import { checkBalance } from './Utils';
 import { EVM_CHAINS, tokens } from './config';
 import { TokenForm } from './components/Form';
+import 'react-toastify/dist/ReactToastify.css';
+import { ToastContainer } from 'react-toastify';
 
 type Wallet = Awaited<ReturnType<typeof makeAgoricWalletConnection>>;
 
@@ -119,7 +121,18 @@ function App() {
 
   return (
     <div className='container'>
-      {error && <div className='error'>{error}</div>}
+      <ToastContainer
+        aria-label
+        position='bottom-right'
+        hideProgressBar={false}
+        newestOnTop={false}
+        closeButton={false}
+        closeOnClick
+        autoClose={5000}
+        rtl={false}
+        pauseOnFocusLoss
+        pauseOnHover
+        theme='colored'></ToastContainer>
 
       {!wallet ? (
         <>

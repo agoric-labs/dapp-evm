@@ -96,15 +96,6 @@ button {
   cursor: not-allowed;
 }
 
-.error {
-  color: #e53e3e;
-  background: #fff5f5;
-  padding: 1rem;
-  margin-bottom: 1rem;
-  border-radius: 4px;
-  border: 1px solid #fc8181;
-}
-
 .select-field {
   width: 97%;
   padding: 0.75rem;

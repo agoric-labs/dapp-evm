@@ -3,8 +3,14 @@ import { StoreApi, UseBoundStore } from 'zustand';
 import { AppState, OfferArgs } from '../App';
 import WalletStatus from './WalletStatus';
 import { EVM_CHAINS } from '../config';
-import { getGasEstimate, getPayload, simulateContractCall } from '../Utils';
-
+import {
+  getGasEstimate,
+  getPayload,
+  isValidEthereumAddress,
+  showError,
+  simulateContractCall,
+} from '../Utils';
+import { toast } from 'react-toastify';
 interface Props {
   useAppStore: UseBoundStore<StoreApi<AppState>>;
 }
@@ -38,6 +44,11 @@ export const TokenForm = (props: Props) => {
       type,
       chain: destinationEVMChain,
     });
+
+    if (!isValidEthereumAddress(evmAddress)) {
+      showError({ content: 'Invalid Ethereum Address', duration: 3000 });
+      return;
+    }
 
     if (type === 3) {
       offerArgs = {

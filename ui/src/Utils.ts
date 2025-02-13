@@ -17,6 +17,7 @@ import { AxelarQueryAPI, Environment } from '@axelar-network/axelarjs-sdk';
 import { OfferArgs } from './App';
 import { DirectSecp256k1HdWallet } from '@cosmjs/proto-signing';
 import { stringToPath } from '@cosmjs/crypto';
+import { toast } from 'react-toastify';
 
 interface BalanceCheckParams {
   walletAddress: string;
@@ -267,4 +268,25 @@ export const simulateContractCall = async (offerArgs: OfferArgs) => {
 
   assertIsDeliverTxSuccess(response);
   console.log('Transaction sent successfully. Response:', response);
+};
+
+export const showSuccess = ({ content, duration }) => {
+  toast.success(content, {
+    position: 'top-right',
+    autoClose: duration,
+  });
+};
+
+export const showError = ({ content, duration }) => {
+  toast.error(content, {
+    position: 'top-right',
+    // autoClose: duration,
+  });
+};
+
+export const showWarning = ({ content, duration }) => {
+  toast.warn(content, {
+    position: 'top-right',
+    autoClose: duration,
+  });
 };
