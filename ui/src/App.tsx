@@ -10,8 +10,8 @@ import {
   suggestChain,
 } from '@agoric/web-components';
 import { checkBalance } from './Utils';
-import WalletStatus from './components/WalletStatus';
-import { EVM_CHAINS, tokens } from './config';
+import { tokens } from './config';
+import { TokenForm } from './components/Form';
 
 type Wallet = Awaited<ReturnType<typeof makeAgoricWalletConnection>>;
 
@@ -22,14 +22,14 @@ const ENDPOINTS = {
 
 const watcher = makeAgoricChainStorageWatcher(ENDPOINTS.API, 'agoriclocal');
 
-interface OfferArgs {
+export interface OfferArgs {
   type: number;
   destAddr: string;
   destinationEVMChain: string;
   gasAmount?: number;
   contractInvocationPayload?: number[];
 }
-interface AppState {
+export interface AppState {
   wallet?: Wallet;
   contractInstance?: unknown;
   brands?: Record<string, unknown>;
@@ -40,6 +40,8 @@ interface AppState {
   loading: boolean;
   error?: string;
   type: number;
+  gasAmount?: number;
+  contractInvocationPayload?: number[];
 }
 const useAppStore = create<AppState>((set) => ({
   contractInstance: null,
@@ -49,7 +51,7 @@ const useAppStore = create<AppState>((set) => ({
   amountToSend: 0,
   loading: false,
   error: undefined,
-  type: 0,
+  type: 3,
 }));
 
 const setup = async () => {
@@ -82,72 +84,12 @@ const connectWallet = async () => {
   useAppStore.setState({ wallet });
 };
 
-const makeOffer = ({ giveValue = 1000000 }) => {
-  const {
-    wallet,
-    contractInstance,
-    brands,
-    destinationEVMChain,
-    evmAddress,
-    amountToSend,
-    type,
-  } = useAppStore.getState();
-  if (!contractInstance) throw Error('No contract instance');
-
-  console.log('Brands', brands);
-  if (!(brands && brands.IST)) {
-    throw Error('brands not available');
-  }
-
-  let offerArgs: OfferArgs;
-  let give;
-
-  if (type === 3) {
-    offerArgs = {
-      type,
-      destAddr: evmAddress,
-      destinationEVMChain: EVM_CHAINS[destinationEVMChain],
-    };
-
-    give = { IST: { brand: brands.IST, value: amountToSend * 1000000 } };
-  } else {
-    throw new Error('Invalid type: expected a value of 1, 2, or 3.');
-  }
-
-  wallet?.makeOffer(
-    {
-      source: 'contract',
-      instance: contractInstance,
-      publicInvitationMaker: 'makeSendInvitation',
-    },
-    { give },
-    offerArgs,
-    (update: { status: string; data?: unknown }) => {
-      if (update.status === 'error') {
-        alert(`Offer error: ${update.data}`);
-      } else if (update.status === 'accepted') {
-        alert('Offer accepted');
-      } else if (update.status === 'refunded') {
-        alert('Offer rejected');
-      }
-    }
-  );
-};
-
 function App() {
   useEffect(() => {
     setup();
   }, []);
 
-  const {
-    wallet,
-    balance,
-    destinationEVMChain,
-    evmAddress,
-    amountToSend,
-    loading,
-    error,
-  } = useAppStore((state) => ({
+  const { wallet, loading, error, type } = useAppStore((state) => ({
     wallet: state.wallet,
     balance: state.balance,
     destinationEVMChain: state.destinationEVMChain,
@@ -155,6 +97,7 @@ function App() {
     amountToSend: state.amountToSend,
     loading: state.loading,
     error: state.error,
+    type: state.type,
   }));
 
   useEffect(() => {
@@ -189,75 +132,20 @@ function App() {
         </>
       ) : (
         <>
-          <div className='dashboard-container'>
-            <WalletStatus address={wallet?.address} />
-            <div className='dashboard'>
-              <div className='balance'>
-                <span className='label'>aUSDC Balance:</span>
-                <span className='value'>{balance.toLocaleString()}</span>
-              </div>
-
-              <div className='transfer-form'>
-                <div className='form-group'>
-                  <label className='input-label'>Select EVM Chain:</label>
-                  <select
-                    className='select-field'
-                    value={destinationEVMChain}
-                    onChange={(e) =>
-                      useAppStore.setState({
-                        destinationEVMChain: e.target.value,
-                      })
-                    }>
-                    <option value='' disabled>
-                      Select a chain
-                    </option>
-                    <option value='Avalanche'>Avalanche</option>
-                    <option value='Ethereum'>Ethereum</option>
-                    <option value='Base'>Base</option>
-                  </select>
-                </div>
-
-                <div className='form-group'>
-                  <label className='input-label'>To (EVM Address):</label>
-                  <input
-                    className='input-field'
-                    value={evmAddress}
-                    onChange={(e) =>
-                      useAppStore.setState({ evmAddress: e.target.value })
-                    }
-                    placeholder='0x...'
-                  />
-                </div>
-
-                <div className='form-group'>
-                  <label className='input-label'>Amount:</label>
-                  <input
-                    className='input-field'
-                    type='number'
-                    value={amountToSend}
-                    onChange={(e) =>
-                      useAppStore.setState({ amountToSend: e.target.value })
-                    }
-                    placeholder='0.00'
-                    min='0'
-                    step='0.01'
-                  />
-                </div>
-
-                <button
-                  className='send-button'
-                  onClick={makeOffer}
-                  disabled={
-                    loading ||
-                    !evmAddress ||
-                    !amountToSend ||
-                    !destinationEVMChain
-                  }>
-                  {loading ? 'Processing...' : 'Send Tokens'}
-                </button>
-              </div>
-            </div>
+          <div className='tabs'>
+            <button
+              className={`tab-button ${type === 3 ? 'active' : ''}`}
+              onClick={() => useAppStore.setState({ type: 3 })}>
+              Token Transfer
+            </button>
+            <button
+              className={`tab-button ${type === 1 ? 'active' : ''}`}
+              onClick={() => useAppStore.setState({ type: 1 })}>
+              Contract Invocation
+            </button>
           </div>
+
+          <TokenForm useAppStore={useAppStore} />
         </>
       )}
     </div>
