@@ -38,13 +38,13 @@ export const tokens = {
 };
 
 export const evmAddresses = {
-  base: {
+  Base: {
     1: '0xE964445cfCf1013e296CC9f3297C7ed453a4f3b9',
     2: '0xE964445cfCf1013e296CC9f3297C7ed453a4f3b9',
     3: '0x20E68F6c276AC6E297aC46c84Ab260928276691D', // Wallet address
     4: '0xeca2c14717F9E96445EA5BeAE3f686D0750F34b3', // Counter Contract
   },
-  fuji: {
+  Avalanche: {
     1: '0x041FCDBDc2a3b87e765Eca96c3572A3AB8d2d173',
     2: '0x041FCDBDc2a3b87e765Eca96c3572A3AB8d2d173',
     3: '0x20E68F6c276AC6E297aC46c84Ab260928276691D', // Wallet address
@@ -52,8 +52,12 @@ export const evmAddresses = {
   },
 };
 
-export const CHAIN = {
-  base: 'base-sepolia',
-  fuji: 'Avalanche',
+export const COSMOS_CHAINS = {
   osmosis: 'osmosis-7',
+};
+
+export const EVM_CHAINS = {
+  Avalanche: 'Avalanche',
+  Base: 'base-sepolia',
+  Ethereum: 'ethereum-sepolia',
 };

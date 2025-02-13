@@ -10,7 +10,10 @@ import {
   suggestChain,
 } from '@agoric/web-components';
 import { checkBalance } from './Utils';
-import WalletStatus from './components/WalletStatus';
+import { EVM_CHAINS, tokens } from './config';
+import { TokenForm } from './components/Form';
+import 'react-toastify/dist/ReactToastify.css';
+import { ToastContainer } from 'react-toastify';
 
 type Wallet = Awaited<ReturnType<typeof makeAgoricWalletConnection>>;
 
@@ -21,30 +24,39 @@ const ENDPOINTS = {
 
 const watcher = makeAgoricChainStorageWatcher(ENDPOINTS.API, 'agoriclocal');
 
-interface OfferArgs {
-  destAddr: string;
+export interface OfferArgs {
   type: number;
-  destinationEVMChain: string;
+  destinationEVMChain: (typeof EVM_CHAINS)[keyof typeof EVM_CHAINS];
+  contractInvocationPayload: number[] | null;
+  destAddr: string;
+  amountToSend: number;
   gasAmount?: number;
-  contractInvocationPayload?: number[];
 }
-interface AppState {
+export interface AppState {
   wallet?: Wallet;
   contractInstance?: unknown;
   brands?: Record<string, unknown>;
   balance: number;
+  destinationEVMChain: keyof typeof EVM_CHAINS;
   evmAddress: string;
-  amountToSend: string;
+  amountToSend: number;
   loading: boolean;
   error?: string;
+  type: number;
+  gasAmount?: number;
+  contractInvocationPayload?: number[];
+  transactionUrl: string | null;
 }
 const useAppStore = create<AppState>((set) => ({
   contractInstance: null,
   balance: 0,
   evmAddress: '',
-  amountToSend: '',
+  destinationEVMChain: 'Avalanche',
+  amountToSend: 0,
   loading: false,
   error: undefined,
+  type: 3,
+  transactionUrl: null,
 }));
 
 const setup = async () => {
@@ -77,69 +89,21 @@ const connectWallet = async () => {
   useAppStore.setState({ wallet });
 };
 
-const makeOffer = ({ giveValue = 1000000 }) => {
-  const { wallet, contractInstance, brands } = useAppStore.getState();
-  if (!contractInstance) throw Error('No contract instance');
-
-  console.log('Brands', brands);
-  if (!(brands && brands.IST)) {
-    throw Error('brands not available');
-  }
-
-  const offerArgs: OfferArgs = {
-    type: 3,
-    destAddr: '',
-    destinationEVMChain: '',
-  };
-
-  const give = { IST: { brand: brands.IST, value: 1000000n } };
-
-  wallet?.makeOffer(
-    {
-      source: 'contract',
-      instance: contractInstance,
-      publicInvitationMaker: 'makeSendInvitation',
-    },
-    { give },
-    offerArgs,
-    (update: { status: string; data?: unknown }) => {
-      if (update.status === 'error') {
-        alert(`Offer error: ${update.data}`);
-      } else if (update.status === 'accepted') {
-        alert('Offer accepted');
-      } else if (update.status === 'refunded') {
-        alert('Offer rejected');
-      }
-    }
-  );
-};
-
 function App() {
   useEffect(() => {
     setup();
   }, []);
 
-  const { wallet, balance, evmAddress, amountToSend, loading, error } =
-    useAppStore((state) => ({
-      wallet: state.wallet,
-      balance: state.balance,
-      evmAddress: state.evmAddress,
-      amountToSend: state.amountToSend,
-      loading: state.loading,
-      error: state.error,
-    }));
-
-  const tryConnectWallet = () => {
-    connectWallet().catch((err) => {
-      switch (err.message) {
-        case 'KEPLR_CONNECTION_ERROR_NO_SMART_WALLET':
-          alert('No smart wallet at that address');
-          break;
-        default:
-          alert(err.message);
-      }
-    });
-  };
+  const { wallet, loading, type } = useAppStore((state) => ({
+    wallet: state.wallet,
+    balance: state.balance,
+    destinationEVMChain: state.destinationEVMChain,
+    evmAddress: state.evmAddress,
+    amountToSend: state.amountToSend,
+    loading: state.loading,
+    error: state.error,
+    type: state.type,
+  }));
 
   useEffect(() => {
     if (!wallet) return;
@@ -148,8 +112,7 @@ function App() {
       const newBalance = await checkBalance({
         walletAddress: wallet.address,
         rpcUrl: ENDPOINTS.RPC,
-        tokenDenom:
-          'ibc/BF12D4A433705DF7C9485CA8D2CCB4FEDB541F32B9323004DA7FC73D7B98FB7D',
+        tokenDenom: tokens.aUSDCAgoricDevnet,
       });
       useAppStore.setState({ balance: newBalance });
     };
@@ -160,7 +123,18 @@ function App() {
 
   return (
     <div className='container'>
-      {error && <div className='error'>{error}</div>}
+      <ToastContainer
+        aria-label
+        position='bottom-right'
+        hideProgressBar={false}
+        newestOnTop={false}
+        closeButton={false}
+        closeOnClick
+        autoClose={5000}
+        rtl={false}
+        pauseOnFocusLoss
+        pauseOnHover
+        theme='colored'></ToastContainer>
 
       {!wallet ? (
         <>
@@ -174,52 +148,38 @@ function App() {
         </>
       ) : (
         <>
-          <div className='dashboard-container'>
-            <WalletStatus address={wallet?.address} />
-            <div className='dashboard'>
-              <div className='balance'>
-                <span className='label'>aUSDC Balance:</span>
-                <span className='value'>{balance.toLocaleString()}</span>
-              </div>
-
-              <div className='transfer-form'>
-                <div className='form-group'>
-                  <label className='input-label'>To (EVM Address):</label>
-                  <input
-                    className='input-field'
-                    value={evmAddress}
-                    onChange={(e) =>
-                      useAppStore.setState({ evmAddress: e.target.value })
-                    }
-                    placeholder='0x...'
-                  />
-                </div>
-
-                <div className='form-group'>
-                  <label className='input-label'>Amount:</label>
-                  <input
-                    className='input-field'
-                    type='number'
-                    value={amountToSend}
-                    onChange={(e) =>
-                      useAppStore.setState({ amountToSend: e.target.value })
-                    }
-                    placeholder='0.00'
-                    min='0'
-                    step='0.01'
-                  />
-                </div>
-
-                <button
-                  className='send-button'
-                  onClick={makeOffer}
-                  // disabled={loading || !evmAddress || !amountToSend}
-                >
-                  {loading ? 'Processing...' : 'Send Tokens'}
-                </button>
-              </div>
-            </div>
+          <div className='tabs'>
+            <button
+              className={`tab-button ${type === 3 ? 'active' : ''}`}
+              onClick={() =>
+                useAppStore.setState({
+                  type: 3,
+                  evmAddress: '',
+                  destinationEVMChain: 'Avalanche',
+                  amountToSend: 0,
+                  loading: false,
+                  error: undefined,
+                })
+              }>
+              Token Transfer
+            </button>
+            <button
+              className={`tab-button ${type === 1 ? 'active' : ''}`}
+              onClick={() =>
+                useAppStore.setState({
+                  type: 1,
+                  evmAddress: '',
+                  destinationEVMChain: 'Avalanche',
+                  amountToSend: 0,
+                  loading: false,
+                  error: undefined,
+                })
+              }>
+              Contract Invocation
+            </button>
           </div>
+
+          <TokenForm useAppStore={useAppStore} />
         </>
       )}
     </div>
