@@ -57,3 +57,9 @@ export const CHAIN = {
   fuji: 'Avalanche',
   osmosis: 'osmosis-7',
 };
+
+export const EVM_CHAINS = {
+  Avalanche: 'Avalanche',
+  Base: 'base-sepolia',
+  Ethereum: 'ethereum-sepolia',
+};

@@ -11,7 +11,7 @@ import {
 } from '@agoric/web-components';
 import { checkBalance } from './Utils';
 import WalletStatus from './components/WalletStatus';
-import { tokens } from './config';
+import { EVM_CHAINS, tokens } from './config';
 
 type Wallet = Awaited<ReturnType<typeof makeAgoricWalletConnection>>;
 
@@ -106,7 +106,7 @@ const makeOffer = ({ giveValue = 1000000 }) => {
     offerArgs = {
       type,
       destAddr: evmAddress,
-      destinationEVMChain,
+      destinationEVMChain: EVM_CHAINS[destinationEVMChain],
     };
 
     give = { IST: { brand: brands.IST, value: amountToSend * 1000000 } };
@@ -139,15 +139,23 @@ function App() {
     setup();
   }, []);
 
-  const { wallet, balance, evmAddress, amountToSend, loading, error } =
-    useAppStore((state) => ({
-      wallet: state.wallet,
-      balance: state.balance,
-      evmAddress: state.evmAddress,
-      amountToSend: state.amountToSend,
-      loading: state.loading,
-      error: state.error,
-    }));
+  const {
+    wallet,
+    balance,
+    destinationEVMChain,
+    evmAddress,
+    amountToSend,
+    loading,
+    error,
+  } = useAppStore((state) => ({
+    wallet: state.wallet,
+    balance: state.balance,
+    destinationEVMChain: state.destinationEVMChain,
+    evmAddress: state.evmAddress,
+    amountToSend: state.amountToSend,
+    loading: state.loading,
+    error: state.error,
+  }));
 
   useEffect(() => {
     if (!wallet) return;
@@ -191,6 +199,25 @@ function App() {
 
               <div className='transfer-form'>
                 <div className='form-group'>
+                  <label className='input-label'>Select EVM Chain:</label>
+                  <select
+                    className='select-field'
+                    value={destinationEVMChain}
+                    onChange={(e) =>
+                      useAppStore.setState({
+                        destinationEVMChain: e.target.value,
+                      })
+                    }>
+                    <option value='' disabled>
+                      Select a chain
+                    </option>
+                    <option value='Avalanche'>Avalanche</option>
+                    <option value='Ethereum'>Ethereum</option>
+                    <option value='Base'>Base</option>
+                  </select>
+                </div>
+
+                <div className='form-group'>
                   <label className='input-label'>To (EVM Address):</label>
                   <input
                     className='input-field'
@@ -220,7 +247,12 @@ function App() {
                 <button
                   className='send-button'
                   onClick={makeOffer}
-                  disabled={loading || !evmAddress || !amountToSend}>
+                  disabled={
+                    loading ||
+                    !evmAddress ||
+                    !amountToSend ||
+                    !destinationEVMChain
+                  }>
                   {loading ? 'Processing...' : 'Send Tokens'}
                 </button>
               </div>
