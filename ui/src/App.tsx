@@ -10,7 +10,7 @@ import {
   suggestChain,
 } from '@agoric/web-components';
 import { checkBalance } from './Utils';
-import { tokens } from './config';
+import { EVM_CHAINS, tokens } from './config';
 import { TokenForm } from './components/Form';
 
 type Wallet = Awaited<ReturnType<typeof makeAgoricWalletConnection>>;
@@ -24,17 +24,17 @@ const watcher = makeAgoricChainStorageWatcher(ENDPOINTS.API, 'agoriclocal');
 
 export interface OfferArgs {
   type: number;
-  destAddr: string;
-  destinationEVMChain: string;
+  destinationEVMChain: (typeof EVM_CHAINS)[keyof typeof EVM_CHAINS];
+  contractInvocationPayload: number[] | null;
+  destAddr?: string;
   gasAmount?: number;
-  contractInvocationPayload?: number[];
 }
 export interface AppState {
   wallet?: Wallet;
   contractInstance?: unknown;
   brands?: Record<string, unknown>;
   balance: number;
-  destinationEVMChain: string;
+  destinationEVMChain: keyof typeof EVM_CHAINS;
   evmAddress: string;
   amountToSend: number;
   loading: boolean;
@@ -47,7 +47,7 @@ const useAppStore = create<AppState>((set) => ({
   contractInstance: null,
   balance: 0,
   evmAddress: '',
-  destinationEVMChain: '',
+  destinationEVMChain: 'Avalanche',
   amountToSend: 0,
   loading: false,
   error: undefined,

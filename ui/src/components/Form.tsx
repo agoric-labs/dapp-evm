@@ -3,6 +3,7 @@ import { StoreApi, UseBoundStore } from 'zustand';
 import { AppState, OfferArgs } from '../App';
 import WalletStatus from './WalletStatus';
 import { EVM_CHAINS } from '../config';
+import { getGasEstimate, getPayload } from '../Utils';
 
 interface Props {
   useAppStore: UseBoundStore<StoreApi<AppState>>;
@@ -23,7 +24,7 @@ export const TokenForm = (props: Props) => {
     type,
   } = useAppStore.getState();
 
-  const makeOffer = () => {
+  const makeOffer = async () => {
     if (!contractInstance) throw Error('No contract instance');
 
     console.log('Brands', brands);
@@ -32,16 +33,32 @@ export const TokenForm = (props: Props) => {
     }
 
     let offerArgs: OfferArgs;
-    let give;
+    const give = { IST: { brand: brands.IST, value: amountToSend * 1000000 } };
+    const contractPayload = getPayload({
+      type,
+      chain: destinationEVMChain,
+    });
 
     if (type === 3) {
       offerArgs = {
         type,
         destAddr: evmAddress,
         destinationEVMChain: EVM_CHAINS[destinationEVMChain],
+        contractInvocationPayload: contractPayload,
       };
+    } else if (type === 1 || type === 2) {
+      const gasAmount = await getGasEstimate({
+        destinationChain: EVM_CHAINS[destinationEVMChain],
+        gasLimit: 70000 + 200000 + 400000,
+        gasMuliplier: 'auto',
+      });
 
-      give = { IST: { brand: brands.IST, value: amountToSend * 1000000 } };
+      offerArgs = {
+        type,
+        destinationEVMChain: EVM_CHAINS[destinationEVMChain],
+        contractInvocationPayload: contractPayload,
+        gasAmount,
+      };
     } else {
       throw new Error('Invalid type: expected a value of 1, 2, or 3.');
     }

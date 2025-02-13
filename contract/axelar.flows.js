@@ -107,7 +107,7 @@ export const sendIt = async (
 
   if (type === 1 || type === 2) {
     memoToAxelar.fee = {
-      amount: gasAmount,
+      amount: String(gasAmount),
       recipient: addresses.AXELAR_GAS,
     };
   }

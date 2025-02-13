@@ -1,5 +1,5 @@
 import { StargateClient } from '@cosmjs/stargate';
-import { CHAIN, evmAddresses } from './config';
+import { COSMOS_CHAINS, EVM_CHAINS, evmAddresses } from './config';
 import { ethers } from 'ethers';
 import { AxelarQueryAPI, Environment } from '@axelar-network/axelarjs-sdk';
 
@@ -52,7 +52,7 @@ export const wait = async (seconds) => {
 const getType1Payload = ({ chain }) => {
   const LOGIC_CALL_MSG_ID = 0;
   const targetContractAddress = evmAddresses[chain]['4'];
-  const nonce = 7;
+  const nonce = 7; // TODO: update nonce logic
   const deadline = Math.floor(Date.now() / 1000) + 3600;
   const functionSelector = ethers.utils.id('setCount(uint256)').slice(0, 10);
 
@@ -77,7 +77,13 @@ const getType1Payload = ({ chain }) => {
   return Array.from(ethers.utils.arrayify(payload));
 };
 
-export const getPayload = ({ type, chain }) => {
+interface PayloadParams {
+  type: number;
+  chain: keyof typeof EVM_CHAINS;
+}
+
+export const getPayload = (params: PayloadParams) => {
+  const { type, chain } = params;
   const abiCoder = new ethers.utils.AbiCoder();
 
   switch (type) {
@@ -111,7 +117,7 @@ export const getGasEstimate = async ({
   const multiplier = gasMuliplier || 'auto';
   const api = new AxelarQueryAPI({ environment: Environment.TESTNET });
   const gasAmount = await api.estimateGasFee(
-    CHAIN.osmosis,
+    COSMOS_CHAINS.osmosis,
     destinationChain,
     gasLimit,
     multiplier,
