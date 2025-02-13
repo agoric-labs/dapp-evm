@@ -3,7 +3,7 @@ import { StoreApi, UseBoundStore } from 'zustand';
 import { AppState, OfferArgs } from '../App';
 import WalletStatus from './WalletStatus';
 import { EVM_CHAINS } from '../config';
-import { getGasEstimate, getPayload } from '../Utils';
+import { getGasEstimate, getPayload, simulateContractCall } from '../Utils';
 
 interface Props {
   useAppStore: UseBoundStore<StoreApi<AppState>>;
@@ -25,15 +25,15 @@ export const TokenForm = (props: Props) => {
   } = useAppStore.getState();
 
   const makeOffer = async () => {
-    if (!contractInstance) throw Error('No contract instance');
+    // if (!contractInstance) throw Error('No contract instance');
 
-    console.log('Brands', brands);
-    if (!(brands && brands.IST)) {
-      throw Error('brands not available');
-    }
+    // console.log('Brands', brands);
+    // if (!(brands && brands.IST)) {
+    //   throw Error('brands not available');
+    // }
 
     let offerArgs: OfferArgs;
-    const give = { IST: { brand: brands.IST, value: amountToSend * 1000000 } };
+    // const give = { IST: { brand: brands.IST, value: amountToSend * 1000000 } };
     const contractPayload = getPayload({
       type,
       chain: destinationEVMChain,
@@ -42,9 +42,10 @@ export const TokenForm = (props: Props) => {
     if (type === 3) {
       offerArgs = {
         type,
-        destAddr: evmAddress,
+        destAddr: evmAddress, // Wallet Address
         destinationEVMChain: EVM_CHAINS[destinationEVMChain],
         contractInvocationPayload: contractPayload,
+        amountToSend: amountToSend * 1000000,
       };
     } else if (type === 1 || type === 2) {
       const gasAmount = await getGasEstimate({
@@ -55,32 +56,36 @@ export const TokenForm = (props: Props) => {
 
       offerArgs = {
         type,
+        destAddr: evmAddress, // Contract Address
         destinationEVMChain: EVM_CHAINS[destinationEVMChain],
         contractInvocationPayload: contractPayload,
         gasAmount,
+        amountToSend: gasAmount,
       };
     } else {
       throw new Error('Invalid type: expected a value of 1, 2, or 3.');
     }
 
-    wallet?.makeOffer(
-      {
-        source: 'contract',
-        instance: contractInstance,
-        publicInvitationMaker: 'makeSendInvitation',
-      },
-      { give },
-      offerArgs,
-      (update: { status: string; data?: unknown }) => {
-        if (update.status === 'error') {
-          alert(`Offer error: ${update.data}`);
-        } else if (update.status === 'accepted') {
-          alert('Offer accepted');
-        } else if (update.status === 'refunded') {
-          alert('Offer rejected');
-        }
-      }
-    );
+    await simulateContractCall(offerArgs);
+
+    // wallet?.makeOffer(
+    //   {
+    //     source: 'contract',
+    //     instance: contractInstance,
+    //     publicInvitationMaker: 'makeSendInvitation',
+    //   },
+    //   { give },
+    //   offerArgs,
+    //   (update: { status: string; data?: unknown }) => {
+    //     if (update.status === 'error') {
+    //       alert(`Offer error: ${update.data}`);
+    //     } else if (update.status === 'accepted') {
+    //       alert('Offer accepted');
+    //     } else if (update.status === 'refunded') {
+    //       alert('Offer rejected');
+    //     }
+    //   }
+    // );
   };
 
   const buttonText = type === 3 ? 'Send Tokens' : 'Invoke Contract';

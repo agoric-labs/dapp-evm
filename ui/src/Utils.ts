@@ -1,13 +1,48 @@
-import { StargateClient } from '@cosmjs/stargate';
-import { COSMOS_CHAINS, EVM_CHAINS, evmAddresses } from './config';
+import {
+  assertIsDeliverTxSuccess,
+  SigningStargateClient,
+  StargateClient,
+} from '@cosmjs/stargate';
+import {
+  addresses,
+  channels,
+  COSMOS_CHAINS,
+  EVM_CHAINS,
+  evmAddresses,
+  tokens,
+  urls,
+} from './config';
 import { ethers } from 'ethers';
 import { AxelarQueryAPI, Environment } from '@axelar-network/axelarjs-sdk';
+import { OfferArgs } from './App';
+import { DirectSecp256k1HdWallet } from '@cosmjs/proto-signing';
+import { stringToPath } from '@cosmjs/crypto';
 
 interface BalanceCheckParams {
   walletAddress: string;
   rpcUrl: string;
   tokenDenom: string;
 }
+
+export const getSigner = async () => {
+  const mnemonic = import.meta.env.VITE_MNEMONIC;
+
+  if (!mnemonic) {
+    console.error('Mnemonic not found in environment variables.');
+    process.exit(1);
+  }
+  const Agoric = {
+    Bech32MainPrefix: 'agoric',
+    CoinType: 564,
+  };
+  const hdPath = (coinType = 118, account = 0) =>
+    stringToPath(`m/44'/${coinType}'/${account}'/0/0`);
+
+  return DirectSecp256k1HdWallet.fromMnemonic(mnemonic, {
+    prefix: Agoric.Bech32MainPrefix,
+    hdPaths: [hdPath(Agoric.CoinType, 0), hdPath(Agoric.CoinType, 1)],
+  });
+};
 
 export const checkBalance = async ({
   walletAddress,
@@ -43,10 +78,6 @@ export const isValidEthereumAddress = (address) => {
     return false;
   }
   return true;
-};
-
-export const wait = async (seconds) => {
-  return new Promise((resolve) => setTimeout(resolve, seconds * 1000));
 };
 
 const getType1Payload = ({ chain }) => {
@@ -130,4 +161,110 @@ export const getGasEstimate = async ({
   console.log(`Estimated gas fee aUSDC: ${usdcAtomic} ATOMIC value`);
 
   return usdcAtomic;
+};
+
+interface AxelarFeeObject {
+  amount: string;
+  recipient: string;
+}
+interface AxelarMemo {
+  destination_chain: string;
+  destination_address: string;
+  payload: number[] | null;
+  type: number;
+  fee?: AxelarFeeObject;
+}
+
+// Off-chain implementation for cross-chain EVM transactions.
+// This is intended for development purposes only and will not be used in production.
+export const simulateContractCall = async (offerArgs: OfferArgs) => {
+  const {
+    destAddr,
+    type,
+    destinationEVMChain,
+    gasAmount,
+    contractInvocationPayload,
+    amountToSend,
+  } = offerArgs;
+
+  console.log({
+    destAddr,
+    type,
+    destinationEVMChain,
+    gasAmount,
+    contractInvocationPayload,
+  });
+
+  const payload = type === 1 || type === 2 ? contractInvocationPayload : null;
+
+  const memoToAxelar: AxelarMemo = {
+    destination_chain: destinationEVMChain,
+    destination_address: destAddr,
+    payload,
+    type,
+  };
+
+  if (type === 1 || type === 2) {
+    memoToAxelar.fee = {
+      amount: String(gasAmount),
+      recipient: addresses.AXELAR_GAS,
+    };
+  }
+
+  const memo = {
+    forward: {
+      receiver: addresses.AXELAR_GMP,
+      port: 'transfer',
+      channel: channels.OSMOSIS_TO_AXELAR,
+      timeout: '10m',
+      retries: 2,
+      next: JSON.stringify(memoToAxelar),
+    },
+  };
+
+  const signer = await getSigner();
+  const accounts = await signer.getAccounts();
+  const senderAddress = accounts[0].address;
+  console.log('Sender Address:', senderAddress);
+
+  const ibcMessage = [
+    {
+      typeUrl: '/ibc.applications.transfer.v1.MsgTransfer',
+      value: {
+        sender: senderAddress,
+        receiver: addresses.OSMOSIS,
+        token: {
+          denom: tokens.aUSDCAgoricDevnet,
+          amount: String(amountToSend),
+        },
+        timeoutTimestamp: (Math.floor(Date.now() / 1000) + 600) * 1e9,
+        sourceChannel: channels.AGORIC_DEVNET_TO_OSMOSIS,
+        sourcePort: 'transfer',
+        memo: JSON.stringify(memo),
+      },
+    },
+  ];
+
+  console.log('Connecting with Signer...');
+  // TODO: sign transaction via Keplr
+  const signingClient = await SigningStargateClient.connectWithSigner(
+    urls.RPC_AGORIC_DEVNET,
+    signer
+  );
+
+  console.log('Sign and Broadcast transaction...');
+
+  const fee = {
+    gas: '1000000',
+    amount: [{ denom: tokens.nativeTokenAgoric, amount: '1000000' }],
+  };
+
+  const response = await signingClient.signAndBroadcast(
+    senderAddress,
+    ibcMessage,
+    fee
+  );
+
+  assertIsDeliverTxSuccess(response);
+  console.log('Transaction sent successfully. Response:', response);
 };

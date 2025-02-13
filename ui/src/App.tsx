@@ -26,7 +26,8 @@ export interface OfferArgs {
   type: number;
   destinationEVMChain: (typeof EVM_CHAINS)[keyof typeof EVM_CHAINS];
   contractInvocationPayload: number[] | null;
-  destAddr?: string;
+  destAddr: string;
+  amountToSend: number;
   gasAmount?: number;
 }
 export interface AppState {
