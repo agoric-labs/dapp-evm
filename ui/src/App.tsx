@@ -136,12 +136,30 @@ function App() {
           <div className='tabs'>
             <button
               className={`tab-button ${type === 3 ? 'active' : ''}`}
-              onClick={() => useAppStore.setState({ type: 3 })}>
+              onClick={() =>
+                useAppStore.setState({
+                  type: 3,
+                  evmAddress: '',
+                  destinationEVMChain: 'Avalanche',
+                  amountToSend: 0,
+                  loading: false,
+                  error: undefined,
+                })
+              }>
               Token Transfer
             </button>
             <button
               className={`tab-button ${type === 1 ? 'active' : ''}`}
-              onClick={() => useAppStore.setState({ type: 1 })}>
+              onClick={() =>
+                useAppStore.setState({
+                  type: 1,
+                  evmAddress: '',
+                  destinationEVMChain: 'Avalanche',
+                  amountToSend: 0,
+                  loading: false,
+                  error: undefined,
+                })
+              }>
               Contract Invocation
             </button>
           </div>
