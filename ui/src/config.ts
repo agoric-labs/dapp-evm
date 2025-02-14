@@ -39,17 +39,18 @@ export const tokens = {
 
 export const evmAddresses = {
   Base: {
-    1: '0xE964445cfCf1013e296CC9f3297C7ed453a4f3b9',
-    2: '0xE964445cfCf1013e296CC9f3297C7ed453a4f3b9',
-    3: '0x20E68F6c276AC6E297aC46c84Ab260928276691D', // Wallet address
-    4: '0xeca2c14717F9E96445EA5BeAE3f686D0750F34b3', // Counter Contract
+    1: '0x20E68F6c276AC6E297aC46c84Ab260928276691D', // Wallet address
+    2: '0xeca2c14717F9E96445EA5BeAE3f686D0750F34b3', // Counter Contract
   },
   Avalanche: {
-    1: '0x041FCDBDc2a3b87e765Eca96c3572A3AB8d2d173',
-    2: '0x041FCDBDc2a3b87e765Eca96c3572A3AB8d2d173',
-    3: '0x20E68F6c276AC6E297aC46c84Ab260928276691D', // Wallet address
-    4: '0x6F3747783b6e6b5ff027c2a119FEA344Ab895060', // Counter Contract
+    1: '0x20E68F6c276AC6E297aC46c84Ab260928276691D', // Wallet address
+    2: '0x6F3747783b6e6b5ff027c2a119FEA344Ab895060', // Counter Contract
   },
+};
+
+export const AGORIC_PROXY_CONTRACT = {
+  Base: '0xE964445cfCf1013e296CC9f3297C7ed453a4f3b9',
+  Avalanche: '0x041FCDBDc2a3b87e765Eca96c3572A3AB8d2d173',
 };
 
 export const COSMOS_CHAINS = {

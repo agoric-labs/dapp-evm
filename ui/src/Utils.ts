@@ -83,7 +83,7 @@ export const isValidEthereumAddress = (address) => {
 
 const getType1Payload = ({ chain }) => {
   const LOGIC_CALL_MSG_ID = 0;
-  const targetContractAddress = evmAddresses[chain]['4'];
+  const targetContractAddress = evmAddresses[chain]['2']; // TODO: Hardcoded for now
   const nonce = 7; // TODO: update nonce logic
   const deadline = Math.floor(Date.now() / 1000) + 3600;
   const functionSelector = ethers.utils.id('setCount(uint256)').slice(0, 10);
