@@ -61,3 +61,5 @@ export const EVM_CHAINS = {
   Base: 'base-sepolia',
   Ethereum: 'ethereum-sepolia',
 };
+
+export const ONE_DAY_IN_SECONDS = 24 * 60 * 60; // 24 hours in seconds

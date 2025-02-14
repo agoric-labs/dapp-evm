@@ -2,7 +2,7 @@ import React from 'react';
 import { StoreApi, UseBoundStore } from 'zustand';
 import { AppState, OfferArgs } from '../App';
 import WalletStatus from './WalletStatus';
-import { EVM_CHAINS } from '../config';
+import { EVM_CHAINS, ONE_DAY_IN_SECONDS } from '../config';
 import {
   AxelarQueryParams,
   getAxelarTxURL,
@@ -79,7 +79,7 @@ export const TokenForm = (props: Props) => {
 
       offerArgs = {
         type,
-        destAddr: evmAddress, // Contract Address
+        destAddr: '0x041FCDBDc2a3b87e765Eca96c3572A3AB8d2d173', // Contract Address
         destinationEVMChain: EVM_CHAINS[destinationEVMChain],
         contractInvocationPayload: contractPayload,
         gasAmount,
@@ -90,7 +90,8 @@ export const TokenForm = (props: Props) => {
     }
 
     try {
-      const transactionTime = Math.floor(Date.now() / 1000);
+      const transactionTimeInSeconds = Math.floor(Date.now() / 1000);
+
       await simulateContractCall(offerArgs);
 
       // wallet?.makeOffer(
@@ -113,28 +114,28 @@ export const TokenForm = (props: Props) => {
       // );
 
       let params: AxelarQueryParams;
+
       if (type === 3) {
         params = {
-          tokenTransfer: {
-            query: true,
-            params: {
-              address: evmAddress,
-              transfersType: 'transfers',
-              fromTime: transactionTime,
-              toTime: Math.floor(Date.now() / 1000),
-            },
+          transfersType: 'transfers',
+          searchParams: {
+            address: evmAddress,
+            fromTime: transactionTimeInSeconds,
+            sourceChain: 'osmosis',
+            destinationChain: destinationEVMChain,
+            asset: 'aUSDC',
           },
-        } as AxelarQueryParams;
+        };
       } else {
         params = {
-          gmp: {
-            query: true,
-            params: {
-              sourceChain: 'osmosis',
-              address: '0x041FCDBDc2a3b87e765Eca96c3572A3AB8d2d173', // Axelar Proxy Contract
-            },
+          transfersType: 'gmp',
+          searchParams: {
+            address: '0x041FCDBDc2a3b87e765Eca96c3572A3AB8d2d173', // Axelar Proxy Contract
+            fromTime: transactionTimeInSeconds,
+            sourceChain: 'osmosis',
+            destinationChain: destinationEVMChain,
           },
-        } as AxelarQueryParams;
+        };
       }
 
       // TODO: handle failure cases too
