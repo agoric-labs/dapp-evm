@@ -291,25 +291,11 @@ export const showWarning = ({ content, duration }) => {
   });
 };
 
-export interface GMPQueryParams {
-  address: string;
-  sourceChain: string;
-}
-
-export interface TokenTransferQueryParams {
-  address: string;
-  transfersType: string;
-  fromTime: number;
-  toTime?: number;
-}
-
-interface QueryParams<T> {
-  query: boolean;
-  params: T;
-}
 export interface AxelarQueryParams {
-  gmp: QueryParams<GMPQueryParams>;
-  tokenTransfer: QueryParams<TokenTransferQueryParams>;
+  address: string;
+  transfersType: 'gmp' | 'transfers';
+  fromTime: number;
+  toTime: number;
 }
 
 export const wait = async (seconds) => {
@@ -317,19 +303,15 @@ export const wait = async (seconds) => {
 };
 
 export const getAxelarTxURL = async (params: AxelarQueryParams) => {
-  const isGmpQuery = params?.gmp?.query;
+  const isGmpQuery = params.transfersType === 'gmp' ? true : false;
   const url = isGmpQuery
     ? 'https://testnet.api.axelarscan.io/gmp/searchGMP'
     : 'https://testnet.api.axelarscan.io/token/searchTransfers';
 
-  const queryParams = isGmpQuery
-    ? params.gmp.params
-    : params.tokenTransfer.params;
-
   console.log(`Fetching from URL: ${url}`);
-  console.log(`Query Params: ${JSON.stringify(queryParams)}`);
+  console.log(`Query Params: ${JSON.stringify(params)}`);
 
-  const body = JSON.stringify(queryParams);
+  const body = JSON.stringify(params);
   const headers = {
     accept: '*/*',
     'content-type': 'application/json',

@@ -2,7 +2,7 @@ import React from 'react';
 import { StoreApi, UseBoundStore } from 'zustand';
 import { AppState, OfferArgs } from '../App';
 import WalletStatus from './WalletStatus';
-import { EVM_CHAINS } from '../config';
+import { EVM_CHAINS, ONE_DAY_IN_SECONDS } from '../config';
 import {
   AxelarQueryParams,
   getAxelarTxURL,
@@ -115,26 +115,20 @@ export const TokenForm = (props: Props) => {
       let params: AxelarQueryParams;
       if (type === 3) {
         params = {
-          tokenTransfer: {
-            query: true,
-            params: {
-              address: evmAddress,
-              transfersType: 'transfers',
-              fromTime: transactionTime,
-              toTime: Math.floor(Date.now() / 1000),
-            },
-          },
-        } as AxelarQueryParams;
+          address: evmAddress,
+          transfersType: 'transfers',
+          // fromTime: transactionTime,
+          fromTime: Math.floor(Date.now() / 1000) - ONE_DAY_IN_SECONDS,
+          toTime: Math.floor(Date.now() / 1000),
+        };
       } else {
         params = {
-          gmp: {
-            query: true,
-            params: {
-              sourceChain: 'osmosis',
-              address: '0x041FCDBDc2a3b87e765Eca96c3572A3AB8d2d173', // Axelar Proxy Contract
-            },
-          },
-        } as AxelarQueryParams;
+          address: '0x041FCDBDc2a3b87e765Eca96c3572A3AB8d2d173', // Axelar Proxy Contract
+          transfersType: 'gmp',
+          // fromTime: transactionTime,
+          fromTime: Math.floor(Date.now() / 1000) - ONE_DAY_IN_SECONDS,
+          toTime: Math.floor(Date.now() / 1000),
+        };
       }
 
       // TODO: handle failure cases too
