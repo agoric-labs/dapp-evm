@@ -292,37 +292,46 @@ export const showWarning = ({ content, duration }) => {
 };
 
 export interface AxelarQueryParams {
-  address: string;
   transfersType: 'gmp' | 'transfers';
-  fromTime: number;
-  toTime?: number;
-  size?: number;
+  searchParams: {
+    address: string;
+    sourceChain: string;
+    destinationChain: string;
+    fromTime: number;
+    toTime?: number;
+    asset?: string;
+    senderAddress?: string;
+    size?: number;
+  };
 }
 
 export const wait = async (seconds) => {
   return new Promise((resolve) => setTimeout(resolve, seconds * 1000));
 };
 
-export const getAxelarTxURL = async (params: AxelarQueryParams) => {
-  const isGmpQuery = params.transfersType === 'gmp' ? true : false;
+export const getAxelarTxURL = async ({
+  transfersType,
+  searchParams,
+}: AxelarQueryParams) => {
+  const isGmpQuery = transfersType === 'gmp' ? true : false;
   const url = isGmpQuery
     ? 'https://testnet.api.axelarscan.io/gmp/searchGMP'
     : 'https://testnet.api.axelarscan.io/token/searchTransfers';
 
   console.log(`Fetching from URL: ${url}`);
-  console.log(`Query Params: ${JSON.stringify(params)}`);
+  console.log(`Query Params: ${JSON.stringify(searchParams)}`);
 
-  const body = JSON.stringify(params);
+  const body = JSON.stringify(searchParams);
   const headers = {
     accept: '*/*',
     'content-type': 'application/json',
   };
 
   const startTime = Date.now();
-  const pollingDurationInMs = 3 * 60 * 1000; // 3 minutes
+  const pollingDurationMs = 3 * 60 * 1000; // 3 minutes
   let data: any = [];
 
-  while (Date.now() - startTime < pollingDurationInMs) {
+  while (Date.now() - startTime < pollingDurationMs) {
     const response = await fetch(url, {
       method: 'POST',
       headers,

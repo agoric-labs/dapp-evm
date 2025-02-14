@@ -79,7 +79,7 @@ export const TokenForm = (props: Props) => {
 
       offerArgs = {
         type,
-        destAddr: evmAddress, // Contract Address
+        destAddr: '0x041FCDBDc2a3b87e765Eca96c3572A3AB8d2d173', // Contract Address
         destinationEVMChain: EVM_CHAINS[destinationEVMChain],
         contractInvocationPayload: contractPayload,
         gasAmount,
@@ -118,14 +118,23 @@ export const TokenForm = (props: Props) => {
       if (type === 3) {
         params = {
           transfersType: 'transfers',
-          address: evmAddress,
-          fromTime: transactionTimeInSeconds,
+          searchParams: {
+            address: evmAddress,
+            fromTime: transactionTimeInSeconds,
+            sourceChain: 'osmosis',
+            destinationChain: destinationEVMChain,
+            asset: 'aUSDC',
+          },
         };
       } else {
         params = {
           transfersType: 'gmp',
-          address: '0x041FCDBDc2a3b87e765Eca96c3572A3AB8d2d173', // Axelar Proxy Contract
-          fromTime: transactionTimeInSeconds,
+          searchParams: {
+            address: '0x041FCDBDc2a3b87e765Eca96c3572A3AB8d2d173', // Axelar Proxy Contract
+            fromTime: transactionTimeInSeconds,
+            sourceChain: 'osmosis',
+            destinationChain: destinationEVMChain,
+          },
         };
       }
 
