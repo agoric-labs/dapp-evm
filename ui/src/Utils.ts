@@ -309,6 +309,8 @@ export const wait = async (seconds) => {
   return new Promise((resolve) => setTimeout(resolve, seconds * 1000));
 };
 
+// Helpful for experimenting with different parameters:
+// Visit https://docs.axelarscan.io/axelarscan
 export const getAxelarTxURL = async ({
   transfersType,
   searchParams,
