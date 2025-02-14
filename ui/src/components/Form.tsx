@@ -90,7 +90,8 @@ export const TokenForm = (props: Props) => {
     }
 
     try {
-      const transactionTime = Math.floor(Date.now() / 1000);
+      const transactionTimeInSeconds = Math.floor(Date.now() / 1000);
+
       await simulateContractCall(offerArgs);
 
       // wallet?.makeOffer(
@@ -113,21 +114,18 @@ export const TokenForm = (props: Props) => {
       // );
 
       let params: AxelarQueryParams;
+
       if (type === 3) {
         params = {
-          address: evmAddress,
           transfersType: 'transfers',
-          // fromTime: transactionTime,
-          fromTime: Math.floor(Date.now() / 1000) - ONE_DAY_IN_SECONDS,
-          toTime: Math.floor(Date.now() / 1000),
+          address: evmAddress,
+          fromTime: transactionTimeInSeconds,
         };
       } else {
         params = {
-          address: '0x041FCDBDc2a3b87e765Eca96c3572A3AB8d2d173', // Axelar Proxy Contract
           transfersType: 'gmp',
-          // fromTime: transactionTime,
-          fromTime: Math.floor(Date.now() / 1000) - ONE_DAY_IN_SECONDS,
-          toTime: Math.floor(Date.now() / 1000),
+          address: '0x041FCDBDc2a3b87e765Eca96c3572A3AB8d2d173', // Axelar Proxy Contract
+          fromTime: transactionTimeInSeconds,
         };
       }
 

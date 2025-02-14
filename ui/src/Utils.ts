@@ -295,7 +295,8 @@ export interface AxelarQueryParams {
   address: string;
   transfersType: 'gmp' | 'transfers';
   fromTime: number;
-  toTime: number;
+  toTime?: number;
+  size?: number;
 }
 
 export const wait = async (seconds) => {
@@ -318,10 +319,10 @@ export const getAxelarTxURL = async (params: AxelarQueryParams) => {
   };
 
   const startTime = Date.now();
+  const pollingDurationInMs = 3 * 60 * 1000; // 3 minutes
   let data: any = [];
 
-  while (Date.now() - startTime < 180000) {
-    // 3 minutes loop
+  while (Date.now() - startTime < pollingDurationInMs) {
     const response = await fetch(url, {
       method: 'POST',
       headers,
@@ -343,7 +344,7 @@ export const getAxelarTxURL = async (params: AxelarQueryParams) => {
     }
 
     console.log('Data is empty, retrying...');
-    await new Promise((resolve) => setTimeout(resolve, 30 * 1000)); // 30 seconds delay between retries
+    await wait(10); // 10 seconds delay between retries
   }
 
   if (!Array.isArray(data) || data.length === 0) {
