@@ -19,6 +19,8 @@ import { DirectSecp256k1HdWallet } from '@cosmjs/proto-signing';
 import { stringToPath } from '@cosmjs/crypto';
 import { toast } from 'react-toastify';
 
+const { assert } = console;
+
 interface BalanceCheckParams {
   walletAddress: string;
   rpcUrl: string;
@@ -28,10 +30,8 @@ interface BalanceCheckParams {
 export const getSigner = async () => {
   const mnemonic = import.meta.env.VITE_MNEMONIC;
 
-  if (!mnemonic) {
-    console.error('Mnemonic not found in environment variables.');
-    process.exit(1);
-  }
+  assert(!mnemonic, 'Mnemonic not found in environment variables');
+
   const Agoric = {
     Bech32MainPrefix: 'agoric',
     CoinType: 564,
@@ -55,10 +55,7 @@ export const checkBalance = async ({
     const balances = await client.getAllBalances(walletAddress);
 
     console.log(`Balance for ${walletAddress}:`);
-    if (balances.length === 0) {
-      console.log('Account does not exist.');
-      return 0;
-    }
+    assert(balances.length === 0, 'Account does not exist.');
 
     for (let balance of balances) {
       if (tokenDenom == balance.denom) {
@@ -372,15 +369,12 @@ export const getAxelarTxURL = async ({
       : Number(b.send.height) - Number(a.send.height)
   );
 
-  const transactionUrl = isGmpQuery
-    ? 'https://testnet.axelarscan.io/gmp/' + data[0]?.call?._id
-    : 'https://testnet.axelarscan.io/transfer/' + data[0]?.send?.txhash;
+  const urlSuffix = isGmpQuery ? data[0]?.call?._id : data[0]?.send?.txhash;
+  assert(!urlSuffix, 'URL suffix is not defined');
 
-  if (!transactionUrl) {
-    throw new Error(
-      'Invalid response: Missing txhash in the highest height item'
-    );
-  }
+  const transactionUrl = isGmpQuery
+    ? 'https://testnet.axelarscan.io/gmp/' + urlSuffix
+    : 'https://testnet.axelarscan.io/transfer/' + urlSuffix;
 
   console.log('Transaction URL:', transactionUrl);
   return transactionUrl;
