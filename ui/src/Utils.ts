@@ -19,8 +19,6 @@ import { DirectSecp256k1HdWallet } from '@cosmjs/proto-signing';
 import { stringToPath } from '@cosmjs/crypto';
 import { toast } from 'react-toastify';
 
-const { assert } = console;
-
 interface BalanceCheckParams {
   walletAddress: string;
   rpcUrl: string;
@@ -30,7 +28,9 @@ interface BalanceCheckParams {
 export const getSigner = async () => {
   const mnemonic = import.meta.env.VITE_MNEMONIC;
 
-  assert(!mnemonic, 'Mnemonic not found in environment variables');
+  if (!mnemonic) {
+    throw new Error('Mnemonic not found in environment variables.');
+  }
 
   const Agoric = {
     Bech32MainPrefix: 'agoric',
@@ -54,8 +54,12 @@ export const checkBalance = async ({
     const client = await StargateClient.connect(rpcUrl);
     const balances = await client.getAllBalances(walletAddress);
 
-    console.log(`Balance for ${walletAddress}:`);
-    assert(balances.length === 0, 'Account does not exist.');
+    console.log(`Balance for ${walletAddress}: ${JSON.stringify(balances)}`);
+
+    if (balances.length === 0) {
+      console.log('Balances array is empty');
+      return 0;
+    }
 
     for (let balance of balances) {
       if (tokenDenom == balance.denom) {
@@ -370,7 +374,10 @@ export const getAxelarTxURL = async ({
   );
 
   const urlSuffix = isGmpQuery ? data[0]?.call?._id : data[0]?.send?.txhash;
-  assert(!urlSuffix, 'URL suffix is not defined');
+
+  if (!urlSuffix) {
+    throw new Error('URL suffix is not defined');
+  }
 
   const transactionUrl = isGmpQuery
     ? 'https://testnet.axelarscan.io/gmp/' + urlSuffix
