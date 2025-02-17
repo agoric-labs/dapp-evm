@@ -4,7 +4,8 @@
   "type": "module",
   "scripts": {
     "deploy:contract": "cd contract && yarn deploy",
-    "start:ui": "cd ui && yarn dev"
+    "start:ui": "cd ui && yarn dev",
+    "start:relayer": "cd hermes && bash run-relayer.sh"
   },
   "private": true,
   "useWorkspaces": true,
