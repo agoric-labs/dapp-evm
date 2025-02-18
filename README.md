@@ -19,10 +19,10 @@ The Hermes relayer will facilitate IBC transfers between these chains. To procee
 
 #### Running the Relayer
 
-Once Hermes is installed, navigate to the `hermes` folder at the root of your project and execute the following script:
+Once Hermes is installed, start the relayer:
 
 ```bash
-bash run-relayer.sh
+yarn start:relayer
 ```
 
 This will start the relayer, establishing a connection between the Agoric local chain and the Osmosis testnet.
@@ -78,7 +78,15 @@ Then, update these values in `contract/info.js`. This file stores the chain and 
 
 ### 3. Deploy the Contract
 
-To deploy `contract/axelar-gmp.contract.js` on the Agoric Local Chain, run the following command from the root of your project:
+Before we deploy `contract/axelar-gmp.contract.js`, we must register `aUSDC` with `vBankAsset`. To do this run:
+
+```bash
+yarn register:ausdc
+```
+
+To verify if registration was successful, go to [VStorage](https://toliaqat.github.io/vstorage/?path=published.agoricNames.brand&endpoint=http%3A%2F%2Flocalhost%3A26657&height=null) and check if `AUSDC` is present under `published.agoricNames.brand` and `published.agoricNames.vbankAsset`.
+
+Next, to deploy `contract/axelar-gmp.contract.js` on the Agoric Local Chain, run the following command from the root of your project:
 
 ```bash
 yarn deploy:contract

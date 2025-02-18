@@ -3,7 +3,7 @@
   "version": "1.0.0",
   "type": "module",
   "scripts": {
-    "deploy:contract": "cd contract && yarn deploy",
+    "deploy:contract": "bash deploy.sh startAxelarGmp-plan.json",
     "start:ui": "cd ui && yarn dev",
     "start:relayer": "cd hermes && bash run-relayer.sh",
     "register:ausdc": " bash deploy.sh eval-register-interchain-bank-assets-plan.json"
