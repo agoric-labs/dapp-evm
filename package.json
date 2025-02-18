@@ -7,8 +7,8 @@
     "deploy:contract": "bash deploy.sh startAxelarGmp-plan.json",
     "start:ui": "cd ui && yarn dev",
     "start:relayer": "cd hermes && bash run-relayer.sh",
-    "register:ausdc": "bash deploy.sh plan-ausdc/eval-register-interchain-bank-assets-plan.json",
-    "register:wavax": "bash deploy.sh plan-wavax/eval-register-interchain-bank-assets-plan.json"
+    "register:ausdc": "cd plan-ausdc && bash deploy.sh eval-register-interchain-bank-assets-plan.json",
+    "register:wavax": "cd plan-wavax && bash deploy.sh eval-register-interchain-bank-assets-plan.json"
   },
   "private": true,
   "useWorkspaces": true,
