@@ -2,7 +2,7 @@ import React from 'react';
 import { StoreApi, UseBoundStore } from 'zustand';
 import { AppState, OfferArgs } from '../App';
 import WalletStatus from './WalletStatus';
-import { AGORIC_PROXY_CONTRACT, EVM_CHAINS, evmAddresses } from '../config';
+import { AGORIC_PROXY_CONTRACT, EVM_CHAINS } from '../config';
 import {
   AxelarQueryParams,
   getAxelarTxURL,
@@ -11,7 +11,6 @@ import {
   isValidEthereumAddress,
   showError,
   showSuccess,
-  simulateContractCall,
 } from '../Utils';
 import { toast } from 'react-toastify';
 interface Props {
@@ -140,9 +139,9 @@ export const TokenForm = (props: Props) => {
 
     try {
       const transactionTime = Math.floor(Date.now() / 1000);
+
       // await simulateContractCall(offerArgs);
 
-      console.log('Making offer', wallet);
       wallet?.makeOffer(
         {
           source: 'contract',
@@ -153,11 +152,13 @@ export const TokenForm = (props: Props) => {
         offerArgs,
         (update: { status: string; data?: unknown }) => {
           if (update.status === 'error') {
+            toast.dismiss(toastId);
             alert(`Offer error: ${update.data}`);
           } else if (update.status === 'accepted') {
             alert('Offer accepted');
           } else if (update.status === 'refunded') {
             alert('Offer rejected');
+            toast.dismiss(toastId);
           }
         }
       );

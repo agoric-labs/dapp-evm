@@ -54,50 +54,8 @@ export const chainInfo = JSON.stringify({
           version: 'ics20-1',
         },
       },
-      // 'axelar-testnet-lisbon-3': {
-      //   state: 3,
-      //   id: 'connection-1153',
-      //   client_id: '07-tendermint-4418',
-      //   counterparty: {
-      //     client_id: '07-tendermint-664',
-      //     connection_id: 'connection-521',
-      //   },
-      //   transferChannel: {
-      //     channelId: 'channel-4118',
-      //     portId: 'transfer',
-      //     counterPartyChannelId: 'channel-338',
-      //     counterPartyPortId: 'transfer',
-      //     ordering: 0,
-      //     state: 3,
-      //     version: 'ics20-1',
-      //   },
-      // },
     },
   },
-
-  // axelar: {
-  //   chainId: 'axelar-testnet-lisbon-3',
-  //   connections: {
-  //     'osmo-test-5': {
-  //       state: 3,
-  //       id: 'connection-521',
-  //       client_id: '07-tendermint-664',
-  //       counterparty: {
-  //         client_id: '07-tendermint-4418',
-  //         connection_id: 'connection-1153',
-  //       },
-  //       transferChannel: {
-  //         channelId: 'channel-338',
-  //         portId: 'transfer',
-  //         counterPartyChannelId: 'channel-4118',
-  //         counterPartyPortId: 'transfer',
-  //         ordering: 0,
-  //         state: 3,
-  //         version: 'ics20-1',
-  //       },
-  //     },
-  //   },
-  // },
 });
 
 /**
