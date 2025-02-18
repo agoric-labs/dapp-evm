@@ -8,17 +8,17 @@ export const chainInfo = JSON.stringify({
     ],
     connections: {
       'osmo-test-5': {
-        id: 'connection-0',
-        client_id: '07-tendermint-0',
+        id: 'connection-1',
+        client_id: '07-tendermint-1',
         counterparty: {
-          client_id: '07-tendermint-4424',
-          connection_id: 'connection-3865',
+          client_id: '07-tendermint-4428',
+          connection_id: 'connection-3869',
         },
         state: 3,
         transferChannel: {
-          channelId: 'channel-0',
+          channelId: 'channel-1',
           portId: 'transfer',
-          counterPartyChannelId: 'channel-10147',
+          counterPartyChannelId: 'channel-10151',
           counterPartyPortId: 'transfer',
           ordering: 0,
           state: 3,
@@ -37,17 +37,17 @@ export const chainInfo = JSON.stringify({
     ],
     connections: {
       agoriclocal: {
-        id: 'connection-3865',
-        client_id: '07-tendermint-4424',
+        id: 'connection-3869',
+        client_id: '07-tendermint-4428',
         counterparty: {
-          client_id: '07-tendermint-0',
-          connection_id: 'connection-0',
+          client_id: '07-tendermint-1',
+          connection_id: 'connection-1',
         },
         state: 3,
         transferChannel: {
-          channelId: 'channel-10147',
+          channelId: 'channel-10151',
           portId: 'transfer',
-          counterPartyChannelId: 'channel-0',
+          counterPartyChannelId: 'channel-1',
           counterPartyPortId: 'transfer',
           ordering: 0,
           state: 3,
@@ -83,6 +83,15 @@ export const assetInfo = JSON.stringify([
       baseName: 'osmosis',
       chainName: 'agoric',
       brandKey: 'AUSDC',
+    },
+  ],
+  [
+    'ibc/1B53A5A004CFB26111D79E0A4ED46518E276B92E12EA754906855A4E99364372',
+    {
+      baseDenom: 'wavax-wei',
+      baseName: 'osmosis',
+      chainName: 'agoric',
+      brandKey: 'WAVAX',
     },
   ],
 ]);

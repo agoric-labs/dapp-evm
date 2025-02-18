@@ -10,12 +10,12 @@
   },
   "brand": {
     "produce": {
-      "AUSDC": true
+      "WAVAX": true
     }
   },
   "issuer": {
     "produce": {
-      "AUSDC": true
+      "WAVAX": true
     }
   },
   "installation": {

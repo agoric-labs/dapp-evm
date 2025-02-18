@@ -39,7 +39,7 @@ const prepareOfferArguments = async (
     case 2: // Contract interaction transactions
       const gasAmount = await getGasEstimate({
         destinationChain: EVM_CHAINS[chain],
-        gasLimit: 70000 + 200000 + 400000,
+        gasLimit: 8000000000000000,
         gasMuliplier: 'auto',
       });
 
