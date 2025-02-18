@@ -1,0 +1,12 @@
+{
+  "name": "eval-register-interchain-bank-assets",
+  "script": "eval-register-interchain-bank-assets.js",
+  "permit": "eval-register-interchain-bank-assets-permit.json",
+  "bundles": [
+    {
+      "entrypoint": "@agoric/builders/scripts/testing/register-interchain-bank-assets.js",
+      "bundleID": "b1-82f0e07e77e4d0b839797fe44bef300926559940aac51a4d2d765a390e8d6fddf6d72bee39e2e4c08da45c3e085108ee1f10be560b01c67e9e736467166b0f9b",
+      "fileName": "/Users/rabisiddique/.agoric/cache/b1-82f0e07e77e4d0b839797fe44bef300926559940aac51a4d2d765a390e8d6fddf6d72bee39e2e4c08da45c3e085108ee1f10be560b01c67e9e736467166b0f9b.json"
+    }
+  ]
+}

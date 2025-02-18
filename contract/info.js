@@ -85,4 +85,13 @@ export const assetInfo = JSON.stringify([
       brandKey: 'AUSDC',
     },
   ],
+  [
+    'ibc/3C870A71004EAD01A29709B779FECBB9F150559B1276825584E149596BD450DE',
+    {
+      baseDenom: 'wavax-wei',
+      baseName: 'osmosis',
+      chainName: 'agoric',
+      brandKey: 'WAVAX',
+    },
+  ],
 ]);
