@@ -39,7 +39,7 @@ const prepareOfferArguments = async (
     case 2: // Contract interaction transactions
       const gasAmount = await getGasEstimate({
         destinationChain: EVM_CHAINS[chain],
-        gasLimit: 70000 + 200000 + 400000,
+        gasLimit: 8000000000000000,
         gasMuliplier: 'auto',
       });
 
@@ -117,14 +117,25 @@ export const TokenForm = (props: Props) => {
       throw Error('brands not available');
     }
 
-    const give = {
-      AUSDC: {
-        brand: brands.AUSDC,
-        value: BigInt(amountToSend * 1000000),
-      },
-    };
+    let give;
 
-    if (!isValidEthereumAddress(evmAddress)) {
+    if (type === 3) {
+      give = {
+        AUSDC: {
+          brand: brands.AUSDC,
+          value: BigInt(amountToSend * 1000000),
+        },
+      };
+    } else {
+      give = {
+        WAVAX: {
+          brand: brands.WAVAX,
+          value: BigInt(amountToSend * 1000000),
+        },
+      };
+    }
+
+    if (type === 3 && !isValidEthereumAddress(evmAddress)) {
       showError({ content: 'Invalid Ethereum Address', duration: 3000 });
       return;
     }
@@ -191,12 +202,12 @@ export const TokenForm = (props: Props) => {
     }
   };
 
-  const buttonText = type === 3 ? 'Send Tokens' : 'Invoke Contract';
+  const buttonText = type === 3 ? 'Send Tokens' : 'Invoke AAVE';
   let disableButton = true;
   if (type === 3) {
     disableButton = !evmAddress || !amountToSend || !destinationEVMChain;
   } else {
-    disableButton = !evmAddress || !destinationEVMChain;
+    disableButton = !destinationEVMChain;
   }
 
   const viewTransaction = () => {
@@ -239,17 +250,18 @@ export const TokenForm = (props: Props) => {
           <div className='form-group'>
             {type === 3 ? (
               <label className='input-label'>To (EVM Address):</label>
-            ) : (
-              <label className='input-label'>EVM Contract Address:</label>
-            )}
-            <input
-              className='input-field'
-              value={evmAddress}
-              onChange={(e) =>
-                useAppStore.setState({ evmAddress: e.target.value })
-              }
-              placeholder='0x...'
-            />
+            ) : // <label className='input-label'>EVM Contract Address:</label>
+            null}
+            {type === 3 ? (
+              <input
+                className='input-field'
+                value={evmAddress}
+                onChange={(e) =>
+                  useAppStore.setState({ evmAddress: e.target.value })
+                }
+                placeholder='0x...'
+              />
+            ) : null}
           </div>
 
           {type === 3 ? (

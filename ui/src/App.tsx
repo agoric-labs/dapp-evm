@@ -167,7 +167,7 @@ function App() {
               className={`tab-button ${type === 1 ? 'active' : ''}`}
               onClick={() =>
                 useAppStore.setState({
-                  type: 1,
+                  type: 2,
                   evmAddress: '',
                   destinationEVMChain: 'Avalanche',
                   amountToSend: 0,
