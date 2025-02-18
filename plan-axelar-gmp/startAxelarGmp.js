@@ -44,14 +44,14 @@ const getManifestCall = harden([
             "osmo-test-5": {
               client_id: "07-tendermint-0",
               counterparty: {
-                client_id: "07-tendermint-4424",
-                connection_id: "connection-3865",
+                client_id: "07-tendermint-4430",
+                connection_id: "connection-3871",
               },
               id: "connection-0",
               state: 3,
               transferChannel: {
                 channelId: "channel-0",
-                counterPartyChannelId: "channel-10147",
+                counterPartyChannelId: "channel-10158",
                 counterPartyPortId: "transfer",
                 ordering: 0,
                 portId: "transfer",
@@ -70,15 +70,15 @@ const getManifestCall = harden([
           chainId: "osmo-test-5",
           connections: {
             agoriclocal: {
-              client_id: "07-tendermint-4424",
+              client_id: "07-tendermint-4430",
               counterparty: {
                 client_id: "07-tendermint-0",
                 connection_id: "connection-0",
               },
-              id: "connection-3865",
+              id: "connection-3871",
               state: 3,
               transferChannel: {
-                channelId: "channel-10147",
+                channelId: "channel-10158",
                 counterPartyChannelId: "channel-0",
                 counterPartyPortId: "transfer",
                 ordering: 0,
