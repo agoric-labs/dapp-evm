@@ -1,0 +1,37 @@
+{
+  "consume": {
+    "agoricNames": true,
+    "board": true,
+    "chainStorage": true,
+    "chainTimerService": true,
+    "cosmosInterchainService": true,
+    "localchain": true,
+    "startUpgradable": true,
+    "agoricNamesAdmin": "makeCoreProposalBehavior",
+    "vatAdminSvc": "makeCoreProposalBehavior",
+    "zoe": "makeCoreProposalBehavior"
+  },
+  "installation": {
+    "consume": {
+      "axelarGmp": true
+    },
+    "produce": "makeCoreProposalBehavior"
+  },
+  "instance": {
+    "produce": {
+      "axelarGmp": true
+    }
+  },
+  "issuer": {
+    "consume": {
+      "BLD": true,
+      "IST": true
+    }
+  },
+  "evaluateBundleCap": "makeCoreProposalBehavior",
+  "modules": {
+    "utils": {
+      "runModuleBehaviors": "makeCoreProposalBehavior"
+    }
+  }
+}

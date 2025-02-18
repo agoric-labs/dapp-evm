@@ -1,9 +1,5 @@
 node_modules
-startAxelarGmp.js
-startAxelarGmp-plan.json
-startAxelarGmp-permit.json
+# startAxelarGmp.js
+# startAxelarGmp-plan.json
+# startAxelarGmp-permit.json
 .env
-
-start-gmp-axelar.js
-start-gmp-axelar-plan.json
-start-gmp-axelar-permit.json
