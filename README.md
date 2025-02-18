@@ -86,7 +86,13 @@ yarn register:ausdc
 
 To verify if registration was successful, go to [VStorage](https://toliaqat.github.io/vstorage/?path=published.agoricNames.brand&endpoint=http%3A%2F%2Flocalhost%3A26657&height=null) and check if `AUSDC` is present under `published.agoricNames.brand` and `published.agoricNames.vbankAsset`.
 
-Next, to deploy `contract/axelar-gmp.contract.js` on the Agoric Local Chain, run the following command from the root of your project:
+Next, to deploy `contract/axelar-gmp.contract.js` on the Agoric Local Chain, make sure to generate the bundles using:
+
+```bash
+ agoric run contract/proposal/init-axelar-gmp.js
+```
+
+And then run the following command from the root of your project:
 
 ```bash
 yarn deploy:contract

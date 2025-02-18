@@ -134,8 +134,7 @@ export const sendIt = async (
         chainId,
       },
       {
-        denom:
-          'ibc/94EB1E9A676004E74ECF47F8E4BF183F4017CE0630A4D1AC7C7D9EB9CD6A3D53',
+        denom,
         value: amt.value,
       },
       { memo: JSON.stringify(memo) }

@@ -3,6 +3,7 @@
   "version": "1.0.0",
   "type": "module",
   "scripts": {
+    "make:bundles": "agoric run contract/proposal/init-axelar-gmp.js",
     "deploy:contract": "bash deploy.sh startAxelarGmp-plan.json",
     "start:ui": "cd ui && yarn dev",
     "start:relayer": "cd hermes && bash run-relayer.sh",
