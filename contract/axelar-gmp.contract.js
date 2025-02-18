@@ -42,7 +42,7 @@ export const contract = async (
   zone,
   { chainHub, orchestrateAll, vowTools, zoeTools }
 ) => {
-  console.log('Inside Contract...');
+  console.log('Inside Contract');
 
   console.log('Channel Info Agoric:');
   console.log(privateArgs.chainInfo['agoric'].connections);
@@ -50,7 +50,7 @@ export const contract = async (
   console.log('Channel Info Osmosis:');
   console.log(privateArgs.chainInfo['osmosis'].connections);
 
-  console.log('Calling registerChainsAndAssets...');
+  console.log('Registering Chain and Assets....');
   registerChainsAndAssets(
     chainHub,
     zcf.getTerms().brands,
@@ -59,6 +59,7 @@ export const contract = async (
   );
 
   const creatorFacet = prepareChainHubAdmin(zone, chainHub);
+
   // UNTIL https://github.com/Agoric/agoric-sdk/issues/9066
   const logNode = E(privateArgs.storageNode).makeChildNode('log');
   /** @type {(msg: string) => Vow<void>} */

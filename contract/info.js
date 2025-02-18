@@ -11,14 +11,14 @@ export const chainInfo = JSON.stringify({
         id: 'connection-0',
         client_id: '07-tendermint-0',
         counterparty: {
-          client_id: '07-tendermint-4393',
-          connection_id: 'connection-3835',
+          client_id: '07-tendermint-4424',
+          connection_id: 'connection-3865',
         },
         state: 3,
         transferChannel: {
           channelId: 'channel-0',
           portId: 'transfer',
-          counterPartyChannelId: 'channel-10104',
+          counterPartyChannelId: 'channel-10147',
           counterPartyPortId: 'transfer',
           ordering: 0,
           state: 3,
@@ -37,15 +37,15 @@ export const chainInfo = JSON.stringify({
     ],
     connections: {
       agoriclocal: {
-        id: 'connection-3835',
-        client_id: '07-tendermint-4393',
+        id: 'connection-3865',
+        client_id: '07-tendermint-4424',
         counterparty: {
           client_id: '07-tendermint-0',
           connection_id: 'connection-0',
         },
         state: 3,
         transferChannel: {
-          channelId: 'channel-10104',
+          channelId: 'channel-10147',
           portId: 'transfer',
           counterPartyChannelId: 'channel-0',
           counterPartyPortId: 'transfer',
@@ -58,6 +58,15 @@ export const chainInfo = JSON.stringify({
   },
 });
 
+/**
+ * @typedef {object} DenomDetail
+ * @property {string} baseName - name of issuing chain; e.g. cosmoshub
+ * @property {Denom} baseDenom - e.g. uatom
+ * @property {string} chainName - name of holding chain; e.g. agoric
+ * @property {Brand<'nat'>} [brand] - vbank brand, if registered
+ * @see {ChainHub} `registerAsset` method
+ */
+
 export const assetInfo = JSON.stringify([
   [
     'uist',
@@ -68,11 +77,12 @@ export const assetInfo = JSON.stringify([
     },
   ],
   [
-    'uosmo',
+    'ibc/94EB1E9A676004E74ECF47F8E4BF183F4017CE0630A4D1AC7C7D9EB9CD6A3D53',
     {
-      baseDenom: 'uosmo',
+      baseDenom: 'uausdc',
       baseName: 'osmosis',
-      chainName: 'osmosis',
+      chainName: 'agoric',
+      brandKey: 'AUSDC',
     },
   ],
 ]);

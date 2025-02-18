@@ -24,29 +24,22 @@ port = 3000
 
 
 [[chains]]
+
 id = 'osmo-test-5'
 type = 'CosmosSdk'
-rpc_addr = 'https://rpc.osmotest5.osmosis.zone:443'
-grpc_addr = 'https://grpc.osmotest5.osmosis.zone'
-event_source = { mode = 'push', url = 'ws://rpc.testnet.osmosis.zone:443/websocket', batch_delay = '500ms' }  # set the IP and the port of the chain
-rpc_timeout = '60s'
-trusted_node = false
+rpc_addr = "https://rpc.osmotest5.osmosis.zone/"
+grpc_addr = "https://grpc.osmotest5.osmosis.zone/"
+rpc_timeout = '15s'
 account_prefix = 'osmo'
 key_name = 'osmosisrelay'
 store_prefix = 'ibc'
-default_gas = 2000000
-max_gas = 2400000
-gas_price = { price = 0.01, denom = 'uosmo' }
-gas_multiplier = 1.1
-max_msg_num = 30
-max_tx_size = 2097152
-clock_drift = '5s'
-max_block_time = '30s'
-trusting_period = '1990s'
-trust_threshold = { numerator = '2', denominator = '3' }
-address_type = { derivation = 'cosmos' }
-memo_prefix=''
-
+gas_price = { price = 0.15, denom = 'uosmo' }
+max_gas = 4000000
+event_source = { mode = 'pull', interval = '1s' }
+gas_multiplier = 1.2
+clock_drift = "5s"
+max_block_time = "10s"
+client_refresh_rate = '1/3'
 
 [[chains]]
 id = 'agoriclocal'

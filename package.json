@@ -3,9 +3,11 @@
   "version": "1.0.0",
   "type": "module",
   "scripts": {
-    "deploy:contract": "cd contract && yarn deploy",
+    "make:bundles": "agoric run contract/proposal/init-axelar-gmp.js",
+    "deploy:contract": "bash deploy.sh startAxelarGmp-plan.json",
     "start:ui": "cd ui && yarn dev",
-    "start:relayer": "cd hermes && bash run-relayer.sh"
+    "start:relayer": "cd hermes && bash run-relayer.sh",
+    "register:ausdc": " bash deploy.sh eval-register-interchain-bank-assets-plan.json"
   },
   "private": true,
   "useWorkspaces": true,

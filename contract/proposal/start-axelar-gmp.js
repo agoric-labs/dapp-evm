@@ -69,6 +69,7 @@ export const startAxelarGmp = async (
   const marshaller = await E(board).getReadonlyMarshaller();
 
   trace('Setting privateArgs');
+
   const privateArgs = await deeplyFulfilledObject(
     harden({
       agoricNames,
@@ -90,14 +91,14 @@ export const startAxelarGmp = async (
       () => undefined
     );
 
-  const atomIssuer = await safeFulfill(() =>
-    E(agoricNames).lookup('issuer', 'ATOM')
+  const ausdcIssuer = await safeFulfill(() =>
+    E(agoricNames).lookup('issuer', 'AUSDC')
   );
 
   const issuerKeywordRecord = harden({
     BLD: await BLD,
     IST: await IST,
-    ...(atomIssuer && { ATOM: atomIssuer }),
+    ...(ausdcIssuer && { AUSDC: ausdcIssuer }),
   });
   trace('issuerKeywordRecord', issuerKeywordRecord);
 

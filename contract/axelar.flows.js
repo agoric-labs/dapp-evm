@@ -124,13 +124,19 @@ export const sendIt = async (
   };
 
   try {
+    console.log(`Initiating IBC Transfer...`);
+    console.log(`DENOM of token:${denom}`);
+
     await sharedLocalAccount.transfer(
       {
         value: addresses.OSMOSIS_RECEIVER,
         encoding: 'bech32',
         chainId,
       },
-      { denom, value: amt.value },
+      {
+        denom,
+        value: amt.value,
+      },
       { memo: JSON.stringify(memo) }
     );
 
