@@ -5,7 +5,8 @@
   "scripts": {
     "deploy:contract": "cd contract && yarn deploy",
     "start:ui": "cd ui && yarn dev",
-    "start:relayer": "cd hermes && bash run-relayer.sh"
+    "start:relayer": "cd hermes && bash run-relayer.sh",
+    "register:ausdc": " bash deploy.sh eval-register-interchain-bank-assets-plan.json"
   },
   "private": true,
   "useWorkspaces": true,

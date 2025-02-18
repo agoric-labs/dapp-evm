@@ -98,12 +98,14 @@ export const sendIt = async (
 
   const payload = type === 1 || type === 2 ? contractInvocationPayload : null;
 
+  console.log('rabi.........................................');
   const memoToAxelar = {
     destination_chain: destinationEVMChain,
     destination_address: destAddr,
     payload,
     type,
   };
+  console.log('rabi.........................................');
 
   if (type === 1 || type === 2) {
     memoToAxelar.fee = {
@@ -111,6 +113,8 @@ export const sendIt = async (
       recipient: addresses.AXELAR_GAS,
     };
   }
+
+  console.log('rabi.........................................');
 
   const memo = {
     forward: {
@@ -123,14 +127,22 @@ export const sendIt = async (
     },
   };
 
+  console.log('rabi iii.............................................');
+
   try {
+    console.log(`DENOM to be sent over IBC: ${JSON.stringify(denom)}`);
+
     await sharedLocalAccount.transfer(
       {
         value: addresses.OSMOSIS_RECEIVER,
         encoding: 'bech32',
         chainId,
       },
-      { denom, value: amt.value },
+      {
+        denom:
+          'ibc/94EB1E9A676004E74ECF47F8E4BF183F4017CE0630A4D1AC7C7D9EB9CD6A3D53',
+        value: amt.value,
+      },
       { memo: JSON.stringify(memo) }
     );
 

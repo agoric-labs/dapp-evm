@@ -113,23 +113,23 @@ export const TokenForm = (props: Props) => {
       transactionUrl: null,
     });
 
-    // const give = { IST: { brand: brands.IST, value: amountToSend * 1000000 } };
-    const contractPayload = getPayload({
-      type,
-      chain: destinationEVMChain,
-    });
-    const AGORIC_PROXY_CONTRACT = evmAddresses[destinationEVMChain]['1'];
+    console.log('Brands', brands);
+    if (!(brands && brands.AUSDC)) {
+      throw Error('brands not available');
+    }
+
+    const give = {
+      AUSDC: {
+        brand: brands.AUSDC,
+        value: BigInt(amountToSend * 1000000),
+      },
+    };
 
     if (!isValidEthereumAddress(evmAddress)) {
       showError({ content: 'Invalid Ethereum Address', duration: 3000 });
       return;
     }
-    // if (!contractInstance) throw Error('No contract instance');
-
-    // console.log('Brands', brands);
-    // if (!(brands && brands.IST)) {
-    //   throw Error('brands not available');
-    // }
+    if (!contractInstance) throw Error('No contract instance');
 
     const offerArgs = await prepareOfferArguments(
       type,
@@ -140,25 +140,27 @@ export const TokenForm = (props: Props) => {
 
     try {
       const transactionTime = Math.floor(Date.now() / 1000);
-      await simulateContractCall(offerArgs);
-      // wallet?.makeOffer(
-      //   {
-      //     source: 'contract',
-      //     instance: contractInstance,
-      //     publicInvitationMaker: 'makeSendInvitation',
-      //   },
-      //   { give },
-      //   offerArgs,
-      //   (update: { status: string; data?: unknown }) => {
-      //     if (update.status === 'error') {
-      //       alert(`Offer error: ${update.data}`);
-      //     } else if (update.status === 'accepted') {
-      //       alert('Offer accepted');
-      //     } else if (update.status === 'refunded') {
-      //       alert('Offer rejected');
-      //     }
-      //   }
-      // );
+      // await simulateContractCall(offerArgs);
+
+      console.log('Making offer', wallet);
+      wallet?.makeOffer(
+        {
+          source: 'contract',
+          instance: contractInstance,
+          publicInvitationMaker: 'makeSendInvitation',
+        },
+        { give },
+        offerArgs,
+        (update: { status: string; data?: unknown }) => {
+          if (update.status === 'error') {
+            alert(`Offer error: ${update.data}`);
+          } else if (update.status === 'accepted') {
+            alert('Offer accepted');
+          } else if (update.status === 'refunded') {
+            alert('Offer rejected');
+          }
+        }
+      );
 
       const queryParams = createQueryParameters(
         type,
