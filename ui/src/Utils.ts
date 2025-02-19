@@ -113,10 +113,11 @@ const getType1Payload = ({ chain }) => {
 interface PayloadParams {
   type: number;
   chain: keyof typeof EVM_CHAINS;
+  address: string;
 }
 
 export const getPayload = (params: PayloadParams) => {
-  const { type, chain } = params;
+  const { type, chain, address } = params;
   const abiCoder = new ethers.utils.AbiCoder();
 
   switch (type) {
@@ -124,12 +125,7 @@ export const getPayload = (params: PayloadParams) => {
       return getType1Payload({ chain });
     case 2:
       return Array.from(
-        ethers.utils.arrayify(
-          abiCoder.encode(
-            ['address'],
-            ['0x20E68F6c276AC6E297aC46c84Ab260928276691D']
-          )
-        )
+        ethers.utils.arrayify(abiCoder.encode(['address'], [address]))
       );
     case 3:
       return null;

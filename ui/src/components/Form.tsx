@@ -23,7 +23,7 @@ const prepareOfferArguments = async (
   address: string,
   amount: number
 ): Promise<OfferArgs> => {
-  const contractPayload = getPayload({ type, chain });
+  const contractPayload = getPayload({ type, chain, address });
 
   switch (type) {
     case 3:
@@ -51,7 +51,7 @@ const prepareOfferArguments = async (
         destinationEVMChain: EVM_CHAINS[chain],
         contractInvocationPayload: contractPayload,
         gasAmount,
-        amountToSend: gasAmount,
+        amountToSend: amount * 1_000_000_000_000_000_000,
       };
 
     default:
@@ -249,19 +249,7 @@ export const TokenForm = (props: Props) => {
           </div>
 
           <div className='form-group'>
-            {type === 3 ? (
-              <>
-                <label className='input-label'>To (EVM Address):</label>
-                <input
-                  className='input-field'
-                  value={evmAddress}
-                  onChange={(e) =>
-                    useAppStore.setState({ evmAddress: e.target.value })
-                  }
-                  placeholder='0x...'
-                />
-              </>
-            ) : (
+            {type === 3 ? null : (
               <>
                 <label className='input-label'>EVM Contract:</label>
                 <select
@@ -289,22 +277,32 @@ export const TokenForm = (props: Props) => {
             )}
           </div>
 
-          {type === 3 ? (
-            <div className='form-group'>
-              <label className='input-label'>Amount:</label>
-              <input
-                className='input-field'
-                type='number'
-                value={amountToSend}
-                onChange={(e) =>
-                  useAppStore.setState({ amountToSend: e.target.value })
-                }
-                placeholder='0.00'
-                min='0'
-                step='0.01'
-              />
-            </div>
-          ) : null}
+          <div className='form-group'>
+            <label className='input-label'>To (EVM Address):</label>
+            <input
+              className='input-field'
+              value={evmAddress}
+              onChange={(e) =>
+                useAppStore.setState({ evmAddress: e.target.value })
+              }
+              placeholder='0x...'
+            />
+          </div>
+
+          <div className='form-group'>
+            <label className='input-label'>Amount:</label>
+            <input
+              className='input-field'
+              type='number'
+              value={amountToSend}
+              onChange={(e) =>
+                useAppStore.setState({ amountToSend: e.target.value })
+              }
+              placeholder='0.00'
+              min='0'
+              step='0.01'
+            />
+          </div>
 
           <button
             className='send-button'
