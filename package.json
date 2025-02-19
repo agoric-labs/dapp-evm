@@ -14,7 +14,8 @@
   "useWorkspaces": true,
   "workspaces": [
     "contract",
-    "ui"
+    "ui",
+    "evm"
   ],
   "keywords": [],
   "author": "",
