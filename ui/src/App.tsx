@@ -106,22 +106,6 @@ function App() {
     type: state.type,
   }));
 
-  useEffect(() => {
-    if (!wallet) return;
-
-    const updateBalance = async () => {
-      const newBalance = await checkBalance({
-        walletAddress: wallet.address,
-        rpcUrl: ENDPOINTS.RPC,
-        tokenDenom: tokens.aUSDCAgoricDevnet,
-      });
-      useAppStore.setState({ balance: newBalance });
-    };
-
-    const interval = setInterval(updateBalance, 15000);
-    return () => clearInterval(interval);
-  }, [wallet]);
-
   return (
     <div className='container'>
       <ToastContainer

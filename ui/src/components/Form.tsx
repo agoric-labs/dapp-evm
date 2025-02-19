@@ -268,11 +268,6 @@ export const TokenForm = (props: Props) => {
     <div className='dashboard-container'>
       <WalletStatus address={wallet?.address} />
       <div className='dashboard'>
-        <div className='balance'>
-          <span className='label'>aUSDC Balance:</span>
-          <span className='value'>{balance.toLocaleString()}</span>
-        </div>
-
         <div className='transfer-form'>
           <div className='form-group'>
             <label className='input-label'>Select EVM Chain:</label>
