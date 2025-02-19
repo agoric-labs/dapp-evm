@@ -39,21 +39,21 @@ const prepareOfferArguments = async (
 
     case 1:
     case 2: // Contract interaction transactions
-      const gasAmount = await getGasEstimate({
-        destinationChain: EVM_CHAINS[chain],
-        gasLimit: 8000000000000000,
-        gasMuliplier: 'auto',
-      });
+      // const gasAmount = await getGasEstimate({
+      //   destinationChain: EVM_CHAINS[chain],
+      //   gasLimit: 8000000000000000,
+      //   gasMuliplier: 'auto',
+      // });
       // TODO: This needs refinement
       // It should be "destAddr: AGORIC_PROXY_CONTRACT[chain]"
       // address should be part of contractInvocationPayload
       return {
         type,
-        destAddr: address || AGORIC_PROXY_CONTRACT[chain],
+        destAddr: AGORIC_PROXY_CONTRACT[chain],
         destinationEVMChain: EVM_CHAINS[chain],
         contractInvocationPayload: contractPayload,
-        gasAmount,
-        amountToSend: amount * 1_000_000_000_000_000_000,
+        gasAmount: 0.008 * 10 ** 18,
+        amountToSend: amount * 10 ** 18,
       };
 
     default:
@@ -135,7 +135,7 @@ export const TokenForm = (props: Props) => {
       give = {
         WAVAX: {
           brand: brands.WAVAX,
-          value: BigInt(0.003012 * 1000_000_000_000_000_000),
+          value: BigInt(amountToSend * 1000_000_000_000_000_000),
         },
       };
     }

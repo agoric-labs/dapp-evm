@@ -50,7 +50,7 @@ export const evmAddresses = {
 
 export const AGORIC_PROXY_CONTRACT = {
   Base: '0xE964445cfCf1013e296CC9f3297C7ed453a4f3b9',
-  Avalanche: '0x479d5B0115dCf2259C4e613E6D5C4fc14A5Dce95',
+  Avalanche: '0xA248B81d42639e12a9B120AE42AdB44512273f15',
 };
 
 export const COSMOS_CHAINS = {
