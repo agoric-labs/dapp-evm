@@ -10,7 +10,7 @@ docker run -d -p 26657:26657 -p 1317:1317 -p 9090:9090 ghcr.io/agoric/agoric-3-p
 
 ### 2. Setup Hermes Relayer
 
-We will set up a Hermes relayer between two chains:
+We will set up Hermes relayer between:
 
 - Agoric Local Chain (`agoriclocal`)
 - Osmosis Testnet (`osmo-test-5`)
@@ -24,8 +24,6 @@ Once Hermes is installed, start the relayer:
 ```bash
 yarn start:relayer
 ```
-
-This will start the relayer, establishing a connection between the Agoric local chain and the Osmosis testnet.
 
 #### Verifying the Connection
 
@@ -76,23 +74,57 @@ Copy the following values from the success message for both Agoric Local Chain (
 
 Then, update these values in `contract/info.js`. This file stores the chain and channel details required for the contract proposal, ensuring the connection is properly registered with ChainHub.
 
-### 3. Deploy the Contract
+### 3. Register Tokens: AUSDC and WAVAX
 
-Before we deploy `contract/axelar-gmp.contract.js`, we must register `aUSDC` with `vBankAsset`. To do this run:
+Navigate to [Agoric SDK](https://github.com/Agoric/agoric-sdk) directory and run:
+
+```bash
+agoric run multichain-testing/src/register-interchain-bank-assets.builder.js --assets='[{"denom":"ibc/<IBC-DENOM-FOR-TOKEN>","issuerName":"<NAME>","decimalPlaces":6}]'
+```
+
+Replace:
+
+- `<IBC-DENOM-FOR-TOKEN>` → Use the correct IBC denomination of `AUSDC` and `WAVAX` on the local chain. You can use `getDenom.js` to check the IBC denomination on the local chain for reference.
+- `<NAME>` → Set the proper issuer name.
+- `decimalPlaces` → Make sure it's correct for each token.
+
+Run this command once for `AUSDC` and again for `WAVAX`.
+
+#### 1. Copy the Generated Files
+
+This command will create some bundle files. Copy them to this project’s root folder.
+
+#### 2. Register AUSDC
+
+After copying the files, run:
 
 ```bash
 yarn register:ausdc
 ```
 
-To verify if registration was successful, go to [VStorage](https://toliaqat.github.io/vstorage/?path=published.agoricNames.brand&endpoint=http%3A%2F%2Flocalhost%3A26657&height=null) and check if `AUSDC` is present under `published.agoricNames.brand` and `published.agoricNames.vbankAsset`.
+#### 3. Register WAVAX
 
-Next, to deploy `contract/axelar-gmp.contract.js` on the Agoric Local Chain, make sure to generate the bundles using:
+After generating and copying the files for WAVAX, run:
 
 ```bash
- agoric run contract/proposal/init-axelar-gmp.js
+yarn register:wavax
 ```
 
-And then run the following command from the root of your project:
+#### 4. Verification
+
+To verify if registration was successful, go to [VStorage](https://toliaqat.github.io/vstorage/?path=published.agoricNames.brand&endpoint=http%3A%2F%2Flocalhost%3A26657&height=null) and check if `AUSDC` and `WAVAX` is present under `published.agoricNames.brand` and `published.agoricNames.vbankAsset`.
+
+You can also inspect local chain logs if something went wrong.
+
+### 4. Deploy Axelar GMP Contract
+
+Next, to deploy `contract/axelar-gmp.contract.js` on the Agoric Local Chain, make sure to generate the bundles:
+
+```bash
+agoric run contract/proposal/init-axelar-gmp.js
+```
+
+And then run the following command from the project root directory:
 
 ```bash
 yarn deploy:contract
@@ -102,14 +134,9 @@ yarn deploy:contract
 
 The contract deployment script is `contract/deploy.sh`. If you're making changes to the contract and redeploying to see the updates, you may sometimes encounter an issue where the script deploys an older version of the contract instead of the latest changes.
 
-If the expected changes don’t appear after deployment, try running the command again:
+If the expected changes don’t appear after deployment, try running `yarn deploy:contract` again.
 
-```bash
-yarn deploy:contract
-
-```
-
-### 4. Start the UI
+### 5. Start the UI
 
 To launch the contract UI, run:
 
@@ -117,12 +144,13 @@ To launch the contract UI, run:
 yarn start:ui
 ```
 
-Once the UI is up, connect your wallet. You’ll see two input fields—one for an EVM address and another for the amount. You don’t need to enter these values for now; simply click `Send Tokens` to submit an offer of 1 IST to the contract offer handler. This is a temporary setup.
+Once the UI is live, connect your wallet and use it to send tokens and invoke EVM contracts.
 
-If the transaction is successful, you can verify it on the **Osmosis testnet block explorer** for the wallet `osmo1yh3ra8eage5xtr9a3m5utg6mx0pmqreytudaqj`, where the funds are sent:
+If the transactions are successful, you can verify them on the respective block explorers:
 
-🔗 [Osmosis Testnet Explorer](https://www.mintscan.io/osmosis-testnet/address/osmo1yh3ra8eage5xtr9a3m5utg6mx0pmqreytudaqj)
+🔹 **Osmosis Testnet Explorer** – Check the transaction for the recipient wallet:  
+**`osmo1yh3ra8eage5xtr9a3m5utg6mx0pmqreytudaqj`**  
+🔗 [View on Mintscan](https://www.mintscan.io/osmosis-testnet/address/osmo1yh3ra8eage5xtr9a3m5utg6mx0pmqreytudaqj)
 
-Similarly, you can check the transaction on **Axelar Scan** for the GMP wallet `axelar1dv4u5k73pzqrxlzujxg3qp8kvc3pje7jtdvu72npnt5zhq05ejcsn5qme5`:
-
-🔗 [Axelar Testnet Explorer](https://testnet.axelarscan.io/account/axelar1dv4u5k73pzqrxlzujxg3qp8kvc3pje7jtdvu72npnt5zhq05ejcsn5qme5)
+🔹 **Axelar Scan** – Verify the transaction for the GMP wallet:  
+**`axelar1dv4u5k73pzqrxlzujxg3qp8kvc3pje7jtdvu72npnt5zhq05ejcsn5qme5`**
