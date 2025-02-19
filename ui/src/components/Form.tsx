@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { StoreApi, UseBoundStore } from 'zustand';
 import { AppState, OfferArgs } from '../App';
 import WalletStatus from './WalletStatus';
@@ -13,6 +13,8 @@ import {
   showSuccess,
 } from '../Utils';
 import { toast } from 'react-toastify';
+import { useAccount, useConnect } from 'wagmi';
+import metamaskLogo from '/metamask.svg';
 interface Props {
   useAppStore: UseBoundStore<StoreApi<AppState>>;
 }
@@ -23,7 +25,7 @@ const prepareOfferArguments = async (
   address: string,
   amount: number
 ): Promise<OfferArgs> => {
-  const contractPayload = getPayload({ type, chain });
+  const contractPayload = getPayload({ type, chain, address });
 
   switch (type) {
     case 3:
@@ -42,14 +44,16 @@ const prepareOfferArguments = async (
         gasLimit: 8000000000000000,
         gasMuliplier: 'auto',
       });
-
+      // TODO: This needs refinement
+      // It should be "destAddr: AGORIC_PROXY_CONTRACT[chain]"
+      // address should be part of contractInvocationPayload
       return {
         type,
-        destAddr: AGORIC_PROXY_CONTRACT[chain],
+        destAddr: address || AGORIC_PROXY_CONTRACT[chain],
         destinationEVMChain: EVM_CHAINS[chain],
         contractInvocationPayload: contractPayload,
         gasAmount,
-        amountToSend: gasAmount,
+        amountToSend: amount * 1_000_000_000_000_000_000,
       };
 
     default:
@@ -88,6 +92,9 @@ const createQueryParameters = (
 };
 
 export const TokenForm = (props: Props) => {
+  const [gasInfo, setGasInfo] = useState('');
+  const { connect, connectors } = useConnect();
+  const { address, isConnected } = useAccount();
   const { useAppStore } = props;
 
   const {
@@ -201,7 +208,7 @@ export const TokenForm = (props: Props) => {
     }
   };
 
-  const buttonText = type === 3 ? 'Send Tokens' : 'Invoke AAVE';
+  const buttonText = type === 3 ? 'Send Tokens' : 'Invoke Contract';
   let disableButton = true;
   if (type === 3) {
     disableButton = !evmAddress || !amountToSend || !destinationEVMChain;
@@ -216,6 +223,46 @@ export const TokenForm = (props: Props) => {
       throw new Error('Transaction url is not defined');
     }
   };
+
+  const handleAmountToSend = (e) => {
+    if (type === 3) {
+      useAppStore.setState({
+        amountToSend: Number(e.target.value),
+      });
+    } else {
+      useAppStore.setState({
+        amountToSend: Number(e.target.value),
+      });
+    }
+  };
+
+  useEffect(() => {
+    // TODO: Compute gas amount and then deduct it from amount to send
+    if (type !== 3 && amountToSend !== 0) {
+      const value = amountToSend * 1_000_000_000_000_000_000;
+      const gas = 8000000000000000; // Temporarily hard-coded
+
+      if (gas > value) {
+        setGasInfo('Your amount after gas deduction is very low');
+      } else {
+        setGasInfo(
+          `Net amount after gas fee: ${
+            (value - gas) / 1_000_000_000_000_000_000
+          }`
+        );
+      }
+    }
+  });
+
+  const handleConnect = () => {
+    if (!isConnected) {
+      connect({ connector: connectors[0] });
+    } else {
+      useAppStore.setState({ evmAddress: address });
+    }
+  };
+
+  const metaMaskButtonText = isConnected ? 'Fill With' : 'Connect';
 
   return (
     <div className='dashboard-container'>
@@ -247,11 +294,37 @@ export const TokenForm = (props: Props) => {
           </div>
 
           <div className='form-group'>
-            {type === 3 ? (
-              <label className='input-label'>To (EVM Address):</label>
-            ) : // <label className='input-label'>EVM Contract Address:</label>
-            null}
-            {type === 3 ? (
+            {type === 3 ? null : (
+              <>
+                <label className='input-label'>EVM Contract:</label>
+                <select
+                  className='select-field'
+                  value={destinationEVMChain}
+                  onChange={(e) =>
+                    useAppStore.setState({
+                      evmAddress: e.target.value,
+                    })
+                  }>
+                  <option value='' disabled>
+                    Select contract
+                  </option>
+                  <option value='0x479d5B0115dCf2259C4e613E6D5C4fc14A5Dce95'>
+                    Aave
+                  </option>
+                  <option value='0x479d5B0115dCf2259C4e613E6D5C4fc14A5Dce95'>
+                    Compound
+                  </option>
+                  <option value='0x479d5B0115dCf2259C4e613E6D5C4fc14A5Dce95'>
+                    Morpho
+                  </option>
+                </select>
+              </>
+            )}
+          </div>
+
+          <div className='form-group'>
+            <label className='input-label'>To (EVM Address):</label>
+            <div className='form-group-evm-address'>
               <input
                 className='input-field'
                 value={evmAddress}
@@ -260,25 +333,30 @@ export const TokenForm = (props: Props) => {
                 }
                 placeholder='0x...'
               />
-            ) : null}
+              <button onClick={handleConnect} className='metamask-button'>
+                <span>{metaMaskButtonText}</span>
+                <img
+                  src={metamaskLogo}
+                  className='metamask-logo'
+                  alt='Metamask logo'
+                />
+              </button>
+            </div>
           </div>
 
-          {type === 3 ? (
-            <div className='form-group'>
-              <label className='input-label'>Amount:</label>
-              <input
-                className='input-field'
-                type='number'
-                value={amountToSend}
-                onChange={(e) =>
-                  useAppStore.setState({ amountToSend: e.target.value })
-                }
-                placeholder='0.00'
-                min='0'
-                step='0.01'
-              />
-            </div>
-          ) : null}
+          <div className='form-group'>
+            <label className='input-label'>Amount:</label>
+            <input
+              className='input-field'
+              type='number'
+              value={amountToSend}
+              onChange={handleAmountToSend}
+              placeholder='0.00'
+              min='0'
+              step='0.01'
+            />
+            {gasInfo !== '' && <p className='gas-message'>{gasInfo}</p>}
+          </div>
 
           <button
             className='send-button'

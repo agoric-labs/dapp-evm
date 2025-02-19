@@ -9,6 +9,7 @@
   text-align: center;
   color: #f7f7f7;
   margin-bottom: 2rem;
+  font-size: 2rem;
 }
 
 .dashboard-container {
@@ -84,6 +85,7 @@ button {
   margin-top: 2.5rem;
 }
 
+.metamask-button,
 .view-transaction-button,
 .connect-button,
 .send-button {
@@ -91,7 +93,7 @@ button {
   color: #f7f7f7;
 }
 
-.connect-button:hover,
+.metamask-button:hover .connect-button:hover,
 .send-button:hover {
   background: #4248fe;
 }
@@ -136,4 +138,58 @@ button {
 .tab-button.active {
   background: #666cff;
   color: white;
+}
+
+.logo-container {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+}
+
+.logo {
+  height: 8.5em;
+  padding: 1rem;
+  will-change: filter;
+  transition: filter 300ms;
+}
+.logo:hover {
+  filter: drop-shadow(0 0 2em #646cffaa);
+}
+.logo.react:hover {
+  filter: drop-shadow(0 0 2em #61dafbaa);
+}
+.logo.agoric:hover {
+  filter: drop-shadow(0 0 2em #fa4a49aa);
+}
+
+.gas-message {
+  font-size: 0.8rem;
+}
+
+.metamask-button {
+  width: 8rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 0.75rem;
+  margin: 0;
+}
+
+.metamask-logo {
+  width: 18px;
+  height: 18px;
+}
+
+.form-group-evm-address {
+  display: flex;
+  gap: 8px;
+}
+
+.form-group-evm-address > input {
+  font-size: 0.75rem;
 }
