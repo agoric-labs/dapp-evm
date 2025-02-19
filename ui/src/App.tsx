@@ -9,8 +9,7 @@ import {
   makeAgoricWalletConnection,
   suggestChain,
 } from '@agoric/web-components';
-import { checkBalance } from './Utils';
-import { EVM_CHAINS, tokens } from './config';
+import { EVM_CHAINS } from './config';
 import { TokenForm } from './components/Form';
 import 'react-toastify/dist/ReactToastify.css';
 import { ToastContainer } from 'react-toastify';
@@ -150,7 +149,7 @@ function App() {
               Token Transfer
             </button>
             <button
-              className={`tab-button ${type === 1 ? 'active' : ''}`}
+              className={`tab-button ${type === 2 ? 'active' : ''}`}
               onClick={() =>
                 useAppStore.setState({
                   type: 2,

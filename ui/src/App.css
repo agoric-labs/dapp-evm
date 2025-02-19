@@ -93,7 +93,9 @@ button {
   color: #f7f7f7;
 }
 
-.metamask-button:hover .connect-button:hover,
+.view-transaction-button:hover,
+.metamask-button:hover,
+.connect-button:hover,
 .send-button:hover {
   background: #4248fe;
 }
