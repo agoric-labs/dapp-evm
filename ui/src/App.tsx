@@ -14,6 +14,7 @@ import { EVM_CHAINS, tokens } from './config';
 import { TokenForm } from './components/Form';
 import 'react-toastify/dist/ReactToastify.css';
 import { ToastContainer } from 'react-toastify';
+import Logo from './components/Logo';
 
 type Wallet = Awaited<ReturnType<typeof makeAgoricWalletConnection>>;
 
@@ -136,9 +137,10 @@ function App() {
         pauseOnHover
         theme='colored'></ToastContainer>
 
+      <Logo />
+
       {!wallet ? (
         <>
-          <h1 className='title'>Agoric to EVM Bridge</h1>
           <button
             className='connect-button'
             onClick={connectWallet}

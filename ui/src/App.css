@@ -137,3 +137,26 @@ button {
   background: #666cff;
   color: white;
 }
+
+.logo-container {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+}
+
+.logo {
+  height: 8.5em;
+  padding: 1rem;
+  will-change: filter;
+  transition: filter 300ms;
+}
+.logo:hover {
+  filter: drop-shadow(0 0 2em #646cffaa);
+}
+.logo.react:hover {
+  filter: drop-shadow(0 0 2em #61dafbaa);
+}
+.logo.agoric:hover {
+  filter: drop-shadow(0 0 2em #fa4a49aa);
+}
