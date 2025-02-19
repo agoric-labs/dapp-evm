@@ -104,9 +104,7 @@ export const TokenForm = (props: Props) => {
   } = useAppStore.getState();
 
   const makeOffer = async () => {
-    const toastId = toast.info('Submitting transaction...', {
-      isLoading: true,
-    });
+    let toastId;
 
     useAppStore.setState({
       transactionUrl: null,
@@ -151,8 +149,9 @@ export const TokenForm = (props: Props) => {
     try {
       const transactionTime = Math.floor(Date.now() / 1000);
 
-      // await simulateContractCall(offerArgs);
-
+      toastId = toast.info('Submitting transaction...', {
+        isLoading: true,
+      });
       wallet?.makeOffer(
         {
           source: 'contract',
