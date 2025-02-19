@@ -11,14 +11,14 @@ export const chainInfo = JSON.stringify({
         id: 'connection-0',
         client_id: '07-tendermint-0',
         counterparty: {
-          client_id: '07-tendermint-4430',
-          connection_id: 'connection-3871',
+          client_id: '07-tendermint-4431',
+          connection_id: 'connection-3872',
         },
         state: 3,
         transferChannel: {
           channelId: 'channel-0',
           portId: 'transfer',
-          counterPartyChannelId: 'channel-10158',
+          counterPartyChannelId: 'channel-10161',
           counterPartyPortId: 'transfer',
           ordering: 0,
           state: 3,
@@ -37,15 +37,15 @@ export const chainInfo = JSON.stringify({
     ],
     connections: {
       agoriclocal: {
-        id: 'connection-3871',
-        client_id: '07-tendermint-4430',
+        id: 'connection-3872',
+        client_id: '07-tendermint-4431',
         counterparty: {
           client_id: '07-tendermint-0',
           connection_id: 'connection-0',
         },
         state: 3,
         transferChannel: {
-          channelId: 'channel-10158',
+          channelId: 'channel-10161',
           portId: 'transfer',
           counterPartyChannelId: 'channel-0',
           counterPartyPortId: 'transfer',

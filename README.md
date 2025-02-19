@@ -90,6 +90,16 @@ Replace:
 
 Run this command once for `AUSDC` and again for `WAVAX`.
 
+If the channel ID for Agoric's local chain is `channel-0`, use the following commands:
+
+```bash
+agoric run multichain-testing/src/register-interchain-bank-assets.builder.js --assets='[{"denom":"ibc/94EB1E9A676004E74ECF47F8E4BF183F4017CE0630A4D1AC7C7D9EB9CD6A3D53","issuerName":"AUSDC","decimalPlaces":6}]'
+```
+
+```bash
+agoric run multichain-testing/src/register-interchain-bank-assets.builder.js --assets='[{"denom":"ibc/3C870A71004EAD01A29709B779FECBB9F150559B1276825584E149596BD450DE","issuerName":"WAVAX","decimalPlaces":18}]'
+```
+
 #### 1. Copy the Generated Files
 
 This command will create some bundle files. Copy them to this project’s root folder.
