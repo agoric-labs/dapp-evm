@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { StoreApi, UseBoundStore } from 'zustand';
 import { AppState, OfferArgs } from '../App';
 import WalletStatus from './WalletStatus';
@@ -90,6 +90,8 @@ const createQueryParameters = (
 };
 
 export const TokenForm = (props: Props) => {
+  const [gasInfo, setGasInfo] = useState('');
+
   const { useAppStore } = props;
 
   const {
@@ -219,6 +221,36 @@ export const TokenForm = (props: Props) => {
     }
   };
 
+  const handleAmountToSend = (e) => {
+    if (type === 3) {
+      useAppStore.setState({
+        amountToSend: Number(e.target.value),
+      });
+    } else {
+      useAppStore.setState({
+        amountToSend: Number(e.target.value),
+      });
+    }
+  };
+
+  useEffect(() => {
+    // TODO: Compute gas amount and then deduct it from amount to send
+    if (type !== 3 && amountToSend !== 0) {
+      const value = amountToSend * 1_000_000_000_000_000_000;
+      const gas = 8000000000000000; // Temporarily hard-coded
+
+      if (gas > value) {
+        setGasInfo('Your amount after gas deduction is very low');
+      } else {
+        setGasInfo(
+          `Net amount after gas fee: ${
+            (value - gas) / 1_000_000_000_000_000_000
+          }`
+        );
+      }
+    }
+  });
+
   return (
     <div className='dashboard-container'>
       <WalletStatus address={wallet?.address} />
@@ -295,13 +327,12 @@ export const TokenForm = (props: Props) => {
               className='input-field'
               type='number'
               value={amountToSend}
-              onChange={(e) =>
-                useAppStore.setState({ amountToSend: e.target.value })
-              }
+              onChange={handleAmountToSend}
               placeholder='0.00'
               min='0'
               step='0.01'
             />
+            {gasInfo !== '' && <p className='gas-message'>{gasInfo}</p>}
           </div>
 
           <button

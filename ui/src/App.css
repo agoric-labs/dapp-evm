@@ -9,6 +9,7 @@
   text-align: center;
   color: #f7f7f7;
   margin-bottom: 2rem;
+  font-size: 2rem;
 }
 
 .dashboard-container {
@@ -159,4 +160,8 @@ button {
 }
 .logo.agoric:hover {
   filter: drop-shadow(0 0 2em #fa4a49aa);
+}
+
+.gas-message {
+  font-size: 0.8rem;
 }
