@@ -11,6 +11,21 @@ if (!PRIVATE_KEY) {
 module.exports = {
   solidity: '0.8.28',
   defaultNetwork: 'hardhat',
+  etherscan: {
+    apiKey: {
+      fuji: "snowtrace", // apiKey is not required, just set a placeholder
+    },
+    customChains: [
+      {
+        network: "fuji",
+        chainId: 43113,
+        urls: {
+          apiURL: "https://api.routescan.io/v2/network/testnet/evm/43113/etherscan",
+          browserURL: "https://avalanche.testnet.localhost:8080"
+        }
+      }
+    ]
+  },
   networks: {
     hardhat: {
       chainId: 31337,
