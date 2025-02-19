@@ -13,6 +13,7 @@
   "private": true,
   "useWorkspaces": true,
   "workspaces": [
+    "contract",
     "ui"
   ],
   "keywords": [],

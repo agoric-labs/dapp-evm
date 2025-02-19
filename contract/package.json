@@ -1,5 +1,7 @@
 {
   "name": "orchestration-contract",
+  "private": true,
+  "version": "1.0.0",
   "type": "module",
   "scripts": {
     "deploy": "agoric run proposal/init-axelar-gmp.js && bash deploy.sh startAxelarGmp-plan.json"
