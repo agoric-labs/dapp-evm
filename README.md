@@ -154,3 +154,4 @@ If the transactions are successful, you can verify them on the respective block 
 
 🔹 **Axelar Scan** – Verify the transaction for the GMP wallet:  
 **`axelar1dv4u5k73pzqrxlzujxg3qp8kvc3pje7jtdvu72npnt5zhq05ejcsn5qme5`**
+🔗 [View on AxelarScan](https://testnet.axelarscan.io/account/axelar1dv4u5k73pzqrxlzujxg3qp8kvc3pje7jtdvu72npnt5zhq05ejcsn5qme5)
