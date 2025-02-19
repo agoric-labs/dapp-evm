@@ -42,10 +42,12 @@ const prepareOfferArguments = async (
         gasLimit: 8000000000000000,
         gasMuliplier: 'auto',
       });
-
+      // TODO: This needs refinement
+      // It should be "destAddr: AGORIC_PROXY_CONTRACT[chain]"
+      // address should be part of contractInvocationPayload
       return {
         type,
-        destAddr: AGORIC_PROXY_CONTRACT[chain],
+        destAddr: address || AGORIC_PROXY_CONTRACT[chain],
         destinationEVMChain: EVM_CHAINS[chain],
         contractInvocationPayload: contractPayload,
         gasAmount,
@@ -201,7 +203,7 @@ export const TokenForm = (props: Props) => {
     }
   };
 
-  const buttonText = type === 3 ? 'Send Tokens' : 'Invoke AAVE';
+  const buttonText = type === 3 ? 'Send Tokens' : 'Invoke Contract';
   let disableButton = true;
   if (type === 3) {
     disableButton = !evmAddress || !amountToSend || !destinationEVMChain;
@@ -248,19 +250,43 @@ export const TokenForm = (props: Props) => {
 
           <div className='form-group'>
             {type === 3 ? (
-              <label className='input-label'>To (EVM Address):</label>
-            ) : // <label className='input-label'>EVM Contract Address:</label>
-            null}
-            {type === 3 ? (
-              <input
-                className='input-field'
-                value={evmAddress}
-                onChange={(e) =>
-                  useAppStore.setState({ evmAddress: e.target.value })
-                }
-                placeholder='0x...'
-              />
-            ) : null}
+              <>
+                <label className='input-label'>To (EVM Address):</label>
+                <input
+                  className='input-field'
+                  value={evmAddress}
+                  onChange={(e) =>
+                    useAppStore.setState({ evmAddress: e.target.value })
+                  }
+                  placeholder='0x...'
+                />
+              </>
+            ) : (
+              <>
+                <label className='input-label'>EVM Contract:</label>
+                <select
+                  className='select-field'
+                  value={destinationEVMChain}
+                  onChange={(e) =>
+                    useAppStore.setState({
+                      evmAddress: e.target.value,
+                    })
+                  }>
+                  <option value='' disabled>
+                    Select contract
+                  </option>
+                  <option value='0x479d5B0115dCf2259C4e613E6D5C4fc14A5Dce95'>
+                    Aave
+                  </option>
+                  <option value='0x479d5B0115dCf2259C4e613E6D5C4fc14A5Dce95'>
+                    Compound
+                  </option>
+                  <option value='0x479d5B0115dCf2259C4e613E6D5C4fc14A5Dce95'>
+                    Morpho
+                  </option>
+                </select>
+              </>
+            )}
           </div>
 
           {type === 3 ? (
