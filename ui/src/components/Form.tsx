@@ -130,7 +130,7 @@ export const TokenForm = (props: Props) => {
       give = {
         WAVAX: {
           brand: brands.WAVAX,
-          value: BigInt(amountToSend * 1000000),
+          value: BigInt(0.003012 * 1000_000_000_000_000_000),
         },
       };
     }
