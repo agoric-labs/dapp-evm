@@ -14,7 +14,9 @@
     "ethers": "^5.7.0",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
-    "react-toastify": "^11.0.3"
+    "react-toastify": "^11.0.3",
+    "viem": "~1.16.5",
+    "wagmi": "1.4.1"
   },
   "devDependencies": {
     "@agoric/rpc": "0.9.1-dev-f471a83.0",

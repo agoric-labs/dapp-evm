@@ -13,6 +13,8 @@ import {
   showSuccess,
 } from '../Utils';
 import { toast } from 'react-toastify';
+import { useAccount, useConnect } from 'wagmi';
+import metamaskLogo from '/metamask.svg';
 interface Props {
   useAppStore: UseBoundStore<StoreApi<AppState>>;
 }
@@ -91,7 +93,8 @@ const createQueryParameters = (
 
 export const TokenForm = (props: Props) => {
   const [gasInfo, setGasInfo] = useState('');
-
+  const { connect, connectors } = useConnect();
+  const { address, isConnected } = useAccount();
   const { useAppStore } = props;
 
   const {
@@ -251,6 +254,16 @@ export const TokenForm = (props: Props) => {
     }
   });
 
+  const handleConnect = () => {
+    if (!isConnected) {
+      connect({ connector: connectors[0] });
+    } else {
+      useAppStore.setState({ evmAddress: address });
+    }
+  };
+
+  const metaMaskButtonText = isConnected ? 'Fill With' : 'Connect';
+
   return (
     <div className='dashboard-container'>
       <WalletStatus address={wallet?.address} />
@@ -311,14 +324,24 @@ export const TokenForm = (props: Props) => {
 
           <div className='form-group'>
             <label className='input-label'>To (EVM Address):</label>
-            <input
-              className='input-field'
-              value={evmAddress}
-              onChange={(e) =>
-                useAppStore.setState({ evmAddress: e.target.value })
-              }
-              placeholder='0x...'
-            />
+            <div className='form-group-evm-address'>
+              <input
+                className='input-field'
+                value={evmAddress}
+                onChange={(e) =>
+                  useAppStore.setState({ evmAddress: e.target.value })
+                }
+                placeholder='0x...'
+              />
+              <button onClick={handleConnect} className='metamask-button'>
+                <span>{metaMaskButtonText}</span>
+                <img
+                  src={metamaskLogo}
+                  className='metamask-logo'
+                  alt='Metamask logo'
+                />
+              </button>
+            </div>
           </div>
 
           <div className='form-group'>

@@ -85,6 +85,7 @@ button {
   margin-top: 2.5rem;
 }
 
+.metamask-button,
 .view-transaction-button,
 .connect-button,
 .send-button {
@@ -92,7 +93,7 @@ button {
   color: #f7f7f7;
 }
 
-.connect-button:hover,
+.metamask-button:hover .connect-button:hover,
 .send-button:hover {
   background: #4248fe;
 }
@@ -164,4 +165,31 @@ button {
 
 .gas-message {
   font-size: 0.8rem;
+}
+
+.metamask-button {
+  width: 8rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 0.75rem;
+  margin: 0;
+}
+
+.metamask-logo {
+  width: 18px;
+  height: 18px;
+}
+
+.form-group-evm-address {
+  display: flex;
+  gap: 8px;
+}
+
+.form-group-evm-address > input {
+  font-size: 0.75rem;
 }
