@@ -209,12 +209,6 @@ export const TokenForm = (props: Props) => {
   };
 
   const buttonText = type === 3 ? 'Send Tokens' : 'Invoke Contract';
-  let disableButton = true;
-  if (type === 3) {
-    disableButton = !evmAddress || !amountToSend || !destinationEVMChain;
-  } else {
-    disableButton = !destinationEVMChain;
-  }
 
   const viewTransaction = () => {
     if (transactionUrl) {
@@ -356,7 +350,9 @@ export const TokenForm = (props: Props) => {
           <button
             className='send-button'
             onClick={makeOffer}
-            disabled={loading || disableButton}>
+            disabled={
+              loading || !evmAddress || !amountToSend || !destinationEVMChain
+            }>
             {loading ? 'Processing...' : buttonText}
           </button>
         </div>
