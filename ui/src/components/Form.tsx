@@ -103,7 +103,6 @@ export const TokenForm = (props: Props) => {
     evmAddress,
     amountToSend,
     loading,
-    balance,
     contractInstance,
     brands,
     type,
@@ -118,8 +117,9 @@ export const TokenForm = (props: Props) => {
     });
 
     console.log('Brands', brands);
-    if (!(brands && brands.AUSDC)) {
-      throw Error('brands not available');
+    const requiredBrand = type === 3 ? 'AUSDC' : type === 2 ? 'WAVAX' : null;
+    if (!(requiredBrand && brands && brands[requiredBrand])) {
+      throw Error(`brand ${requiredBrand} not available`);
     }
 
     let give;
