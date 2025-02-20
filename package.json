@@ -13,7 +13,8 @@
   "private": true,
   "useWorkspaces": true,
   "workspaces": [
-    "ui"
+    "ui",
+    "evm"
   ],
   "keywords": [],
   "author": "",
