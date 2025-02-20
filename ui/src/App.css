@@ -9,6 +9,7 @@
   text-align: center;
   color: #f7f7f7;
   margin-bottom: 2rem;
+  margin-top: 0;
   font-size: 2rem;
 }
 
@@ -148,20 +149,24 @@ button {
   justify-content: center;
   align-items: center;
 }
+.github-logo {
+  height: 1.5rem;
+}
 
-.logo {
+.agoric-logo {
   height: 8.5em;
   padding: 1rem;
   will-change: filter;
   transition: filter 300ms;
 }
-.logo:hover {
+
+.agoric-logo:hover {
   filter: drop-shadow(0 0 2em #646cffaa);
 }
-.logo.react:hover {
+.agoric-logo.react:hover {
   filter: drop-shadow(0 0 2em #61dafbaa);
 }
-.logo.agoric:hover {
+.agoric-logo.agoric:hover {
   filter: drop-shadow(0 0 2em #fa4a49aa);
 }
 
@@ -194,4 +199,39 @@ button {
 
 .form-group-evm-address > input {
   font-size: 0.75rem;
+}
+
+.view-source {
+  position: fixed;
+  top: 20px;
+  left: 20px;
+  z-index: 1000;
+  background: #242424;
+  padding: 10px 16px;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
+}
+
+.view-source:hover {
+  transform: scale(1.05);
+  box-shadow: 0px 4px 10px rgba(255, 255, 255, 0.3);
+}
+
+.view-source a {
+  text-decoration: none;
+  color: white;
+  font-weight: bold;
+  font-size: 14px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.github-logo {
+  width: 20px;
+  height: 20px;
+  filter: invert(1);
 }

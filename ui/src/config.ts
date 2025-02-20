@@ -64,3 +64,21 @@ export const EVM_CHAINS = {
 };
 
 export const ONE_DAY_IN_SECONDS = 24 * 60 * 60; // 24 hours in seconds
+
+export const BRAND_CONFIG = {
+  3: {
+    brandKey: 'AUSDC',
+    decimals: 6,
+    needsEVMCheck: true,
+  },
+  2: {
+    brandKey: 'WAVAX',
+    decimals: 18,
+    needsEVMCheck: false,
+  },
+};
+
+export const TOAST_DURATION = {
+  ERROR: 3000,
+  SUCCESS: 4000,
+} as const;

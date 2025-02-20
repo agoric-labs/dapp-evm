@@ -14,6 +14,7 @@ import { TokenForm } from './components/Form';
 import 'react-toastify/dist/ReactToastify.css';
 import { ToastContainer } from 'react-toastify';
 import Logo from './components/Logo';
+import gituhbLogo from '/github.svg';
 
 type Wallet = Awaited<ReturnType<typeof makeAgoricWalletConnection>>;
 
@@ -107,6 +108,13 @@ function App() {
 
   return (
     <div className='container'>
+      <div className='view-source'>
+        <a href='https://github.com/agoric-labs/dapp-evm' target='_blank'>
+          <img src={gituhbLogo} className='github-logo' alt='Source Code' />
+          Fork me on GitHub
+        </a>
+      </div>
+
       <ToastContainer
         aria-label
         position='bottom-right'

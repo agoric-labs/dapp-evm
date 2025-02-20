@@ -2,7 +2,12 @@ import React, { useState, useEffect } from 'react';
 import { StoreApi, UseBoundStore } from 'zustand';
 import { AppState, OfferArgs } from '../App';
 import WalletStatus from './WalletStatus';
-import { AGORIC_PROXY_CONTRACT, EVM_CHAINS } from '../config';
+import {
+  AGORIC_PROXY_CONTRACT,
+  BRAND_CONFIG,
+  EVM_CHAINS,
+  TOAST_DURATION,
+} from '../config';
 import {
   AxelarQueryParams,
   getAxelarTxURL,
@@ -103,7 +108,6 @@ export const TokenForm = (props: Props) => {
     evmAddress,
     amountToSend,
     loading,
-    balance,
     contractInstance,
     brands,
     type,
@@ -111,74 +115,77 @@ export const TokenForm = (props: Props) => {
   } = useAppStore.getState();
 
   const makeOffer = async () => {
-    let toastId;
-
-    useAppStore.setState({
-      transactionUrl: null,
-    });
-
-    console.log('Brands', brands);
-    if (!(brands && brands.AUSDC)) {
-      throw Error('brands not available');
-    }
-
-    let give;
-
-    if (type === 3) {
-      give = {
-        AUSDC: {
-          brand: brands.AUSDC,
-          value: BigInt(amountToSend * 1000000),
-        },
-      };
-    } else {
-      give = {
-        WAVAX: {
-          brand: brands.WAVAX,
-          value: BigInt(amountToSend * 1000_000_000_000_000_000),
-        },
-      };
-    }
-
-    if (type === 3 && !isValidEthereumAddress(evmAddress)) {
-      showError({ content: 'Invalid Ethereum Address', duration: 3000 });
-      return;
-    }
-    if (!contractInstance) throw Error('No contract instance');
-
-    const offerArgs = await prepareOfferArguments(
-      type,
-      destinationEVMChain,
-      evmAddress,
-      amountToSend
-    );
+    let toastId: string | number | null = null;
 
     try {
+      if (!contractInstance) throw new Error('No contract instance');
+      if (!brands) throw new Error('Brands not initialized');
+      if (!wallet) throw new Error('Wallet not connected');
+
+      useAppStore.setState({
+        loading: true,
+        transactionUrl: null,
+      });
+
+      const config = BRAND_CONFIG[type];
+      if (!config) throw new Error(`Invalid offer type: ${type}`);
+
+      const requiredBrand = brands[config.brandKey];
+      if (!requiredBrand)
+        throw new Error(`Brand ${config.brandKey} not available`);
+
+      if (config.needsEVMCheck && !isValidEthereumAddress(evmAddress)) {
+        showError({
+          content: 'Invalid Ethereum Address',
+          duration: TOAST_DURATION.ERROR,
+        });
+        return;
+      }
+
+      const offerArgs = await prepareOfferArguments(
+        type,
+        destinationEVMChain,
+        evmAddress,
+        amountToSend
+      );
+
+      const amountValue = BigInt(Number(amountToSend) * 10 ** config.decimals);
+
+      const give = {
+        [config.brandKey]: {
+          brand: requiredBrand,
+          value: amountValue,
+        },
+      };
+
+      toastId = toast.info('Submitting transaction...', { isLoading: true });
       const transactionTime = Math.floor(Date.now() / 1000);
 
-      toastId = toast.info('Submitting transaction...', {
-        isLoading: true,
-      });
-      wallet?.makeOffer(
-        {
-          source: 'contract',
-          instance: contractInstance,
-          publicInvitationMaker: 'makeSendInvitation',
-        },
-        { give },
-        offerArgs,
-        (update: { status: string; data?: unknown }) => {
-          if (update.status === 'error') {
-            toast.dismiss(toastId);
-            alert(`Offer error: ${update.data}`);
-          } else if (update.status === 'accepted') {
-            alert('Offer accepted');
-          } else if (update.status === 'refunded') {
-            alert('Offer rejected');
-            toast.dismiss(toastId);
+      await new Promise<void>((resolve, reject) => {
+        wallet.makeOffer(
+          {
+            source: 'contract',
+            instance: contractInstance,
+            publicInvitationMaker: 'makeSendInvitation',
+          },
+          { give },
+          offerArgs,
+          (update: { status: string; data?: unknown }) => {
+            switch (update.status) {
+              case 'error':
+                reject(new Error(`Offer error: ${update.data}`));
+                break;
+              case 'accepted':
+                toast.success('Offer accepted!');
+                resolve();
+                break;
+              case 'refunded':
+                reject(new Error('Offer was rejected'));
+                break;
+            }
           }
-        }
-      );
+        );
+      });
 
       const queryParams = createQueryParameters(
         type,
@@ -187,24 +194,19 @@ export const TokenForm = (props: Props) => {
         destinationEVMChain
       );
 
-      // TODO: handle failure cases too
-      // TODO: check for valid URL
       const txURL = await getAxelarTxURL(queryParams);
-      if (txURL) {
-        toast.dismiss(toastId);
-        showSuccess({
-          content: 'Transaction Submitted Successfully',
-          duration: 4000,
-        });
-        useAppStore.setState({ transactionUrl: txURL });
-      } else {
-        toast.dismiss(toastId);
-      }
+      if (!txURL) throw new Error('Failed to retrieve transaction URL');
+
+      useAppStore.setState({ transactionUrl: txURL });
+      showSuccess({
+        content: 'Transaction Submitted Successfully',
+        duration: TOAST_DURATION.SUCCESS,
+      });
     } catch (error) {
-      console.error(error);
-      showError({ content: error.message, duration: 3000 });
+      showError({ content: error.message, duration: TOAST_DURATION.ERROR });
     } finally {
-      toast.dismiss(toastId);
+      if (toastId) toast.dismiss(toastId);
+      useAppStore.setState({ loading: false });
     }
   };
 
