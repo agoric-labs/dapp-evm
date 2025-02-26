@@ -4,19 +4,18 @@ import {
   makeAgoricChainStorageWatcher,
   AgoricChainStoragePathKind as Kind,
 } from '@agoric/rpc';
-import { create } from 'zustand';
 import {
   makeAgoricWalletConnection,
   suggestChain,
 } from '@agoric/web-components';
-import { EVM_CHAINS } from './config';
-import { TokenForm } from './components/Form';
+import { AgoricContractForm } from './components/AgoricContractForm';
 import 'react-toastify/dist/ReactToastify.css';
 import { ToastContainer } from 'react-toastify';
 import Logo from './components/Logo';
 import gituhbLogo from '/github.svg';
-
-type Wallet = Awaited<ReturnType<typeof makeAgoricWalletConnection>>;
+import WalletStatus from './components/WalletStatus';
+import { useAppStore } from './state';
+import { Tabs } from './components/Tabs';
 
 const ENDPOINTS = {
   RPC: 'http://localhost:26657',
@@ -24,41 +23,6 @@ const ENDPOINTS = {
 };
 
 const watcher = makeAgoricChainStorageWatcher(ENDPOINTS.API, 'agoriclocal');
-
-export interface OfferArgs {
-  type: number;
-  destinationEVMChain: (typeof EVM_CHAINS)[keyof typeof EVM_CHAINS];
-  contractInvocationPayload: number[] | null;
-  destAddr: string;
-  amountToSend: number;
-  gasAmount?: number;
-}
-export interface AppState {
-  wallet?: Wallet;
-  contractInstance?: unknown;
-  brands?: Record<string, unknown>;
-  balance: number;
-  destinationEVMChain: keyof typeof EVM_CHAINS;
-  evmAddress: string;
-  amountToSend: number;
-  loading: boolean;
-  error?: string;
-  type: number;
-  gasAmount?: number;
-  contractInvocationPayload?: number[];
-  transactionUrl: string | null;
-}
-const useAppStore = create<AppState>((set) => ({
-  contractInstance: null,
-  balance: 0,
-  evmAddress: '',
-  destinationEVMChain: 'Avalanche',
-  amountToSend: 0,
-  loading: false,
-  error: undefined,
-  type: 3,
-  transactionUrl: null,
-}));
 
 const setup = async () => {
   watcher.watchLatest<Array<[string, unknown]>>(
@@ -95,7 +59,7 @@ function App() {
     setup();
   }, []);
 
-  const { wallet, loading, type } = useAppStore((state) => ({
+  const { wallet, loading, tab } = useAppStore((state) => ({
     wallet: state.wallet,
     balance: state.balance,
     destinationEVMChain: state.destinationEVMChain,
@@ -103,7 +67,7 @@ function App() {
     amountToSend: state.amountToSend,
     loading: state.loading,
     error: state.error,
-    type: state.type,
+    tab: state.tab,
   }));
 
   return (
@@ -141,38 +105,13 @@ function App() {
         </>
       ) : (
         <>
-          <div className='tabs'>
-            <button
-              className={`tab-button ${type === 3 ? 'active' : ''}`}
-              onClick={() =>
-                useAppStore.setState({
-                  type: 3,
-                  evmAddress: '',
-                  destinationEVMChain: 'Avalanche',
-                  amountToSend: 0,
-                  loading: false,
-                  error: undefined,
-                })
-              }>
-              Token Transfer
-            </button>
-            <button
-              className={`tab-button ${type === 2 ? 'active' : ''}`}
-              onClick={() =>
-                useAppStore.setState({
-                  type: 2,
-                  evmAddress: '',
-                  destinationEVMChain: 'Avalanche',
-                  amountToSend: 0,
-                  loading: false,
-                  error: undefined,
-                })
-              }>
-              Contract Invocation
-            </button>
+          <div className='main-container'>
+            <Tabs />
+            <div className='content'>
+              <WalletStatus address={wallet?.address} />
+              {(tab === 1 || tab === 2) && <AgoricContractForm />}
+            </div>
           </div>
-
-          <TokenForm useAppStore={useAppStore} />
         </>
       )}
     </div>
