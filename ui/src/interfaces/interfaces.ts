@@ -25,6 +25,7 @@ export interface AppState {
   gasAmount?: number;
   contractInvocationPayload?: number[];
   transactionUrl: string | null;
+  tab: number;
 }
 
 export interface BalanceCheckParams {

@@ -15,6 +15,7 @@ import Logo from './components/Logo';
 import gituhbLogo from '/github.svg';
 import WalletStatus from './components/WalletStatus';
 import { useAppStore } from './state';
+import { Tabs } from './components/Tabs';
 
 const ENDPOINTS = {
   RPC: 'http://localhost:26657',
@@ -58,7 +59,7 @@ function App() {
     setup();
   }, []);
 
-  const { wallet, loading, type } = useAppStore((state) => ({
+  const { wallet, loading, tab } = useAppStore((state) => ({
     wallet: state.wallet,
     balance: state.balance,
     destinationEVMChain: state.destinationEVMChain,
@@ -66,7 +67,7 @@ function App() {
     amountToSend: state.amountToSend,
     loading: state.loading,
     error: state.error,
-    type: state.type,
+    tab: state.tab,
   }));
 
   return (
@@ -105,39 +106,10 @@ function App() {
       ) : (
         <>
           <div className='main-container'>
-            <div className='tabs'>
-              <button
-                className={`tab-button ${type === 3 ? 'active' : ''}`}
-                onClick={() =>
-                  useAppStore.setState({
-                    type: 3,
-                    evmAddress: '',
-                    destinationEVMChain: 'Avalanche',
-                    amountToSend: 0,
-                    loading: false,
-                    error: undefined,
-                  })
-                }>
-                Token Transfer
-              </button>
-              <button
-                className={`tab-button ${type === 2 ? 'active' : ''}`}
-                onClick={() =>
-                  useAppStore.setState({
-                    type: 2,
-                    evmAddress: '',
-                    destinationEVMChain: 'Avalanche',
-                    amountToSend: 0,
-                    loading: false,
-                    error: undefined,
-                  })
-                }>
-                Contract Invocation
-              </button>
-            </div>
+            <Tabs />
             <div className='content'>
               <WalletStatus address={wallet?.address} />
-              <AgoricContractForm />
+              {(tab === 1 || tab === 2) && <AgoricContractForm />}
             </div>
           </div>
         </>
