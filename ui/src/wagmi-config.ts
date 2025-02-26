@@ -1,31 +1,18 @@
-import { configureChains, createConfig } from 'wagmi';
-import { MetaMaskConnector } from 'wagmi/connectors/metaMask';
-import { jsonRpcProvider } from 'wagmi/providers/jsonRpc';
-import { publicProvider } from 'wagmi/providers/public';
-import { avalancheFuji, baseSepolia, sepolia } from 'viem/chains';
-
-const { chains, publicClient } = configureChains(
-  [avalancheFuji, baseSepolia, sepolia],
-  [
-    jsonRpcProvider({
-      rpc: (chain) => ({ http: chain.rpcUrls.default.http[0] }),
-    }),
-    publicProvider(),
-  ],
-  {
-    pollingInterval: 10_000,
-  }
-);
+import { createConfig, http } from 'wagmi';
+import { QueryClient } from '@tanstack/react-query';
+import { sepolia, baseSepolia, avalancheFuji } from '@wagmi/core/chains';
 
 export const wagmiConfig = createConfig({
-  autoConnect: true,
-  connectors: [
-    new MetaMaskConnector({
-      chains,
-      options: {
-        shimDisconnect: false,
-      },
-    }),
+  chains: [
+    { ...avalancheFuji, network: 'avalancheFuji' },
+    { ...sepolia, network: 'sepolia' },
+    { ...baseSepolia, network: 'baseSepolia' },
   ],
-  publicClient,
+  transports: {
+    [avalancheFuji.id]: http(),
+    [sepolia.id]: http(),
+    [baseSepolia.id]: http(),
+  },
 });
+
+export const queryClient = new QueryClient();
