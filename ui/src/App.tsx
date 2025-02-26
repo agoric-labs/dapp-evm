@@ -4,7 +4,6 @@ import {
   makeAgoricChainStorageWatcher,
   AgoricChainStoragePathKind as Kind,
 } from '@agoric/rpc';
-import { create } from 'zustand';
 import {
   makeAgoricWalletConnection,
   suggestChain,
@@ -15,7 +14,7 @@ import { ToastContainer } from 'react-toastify';
 import Logo from './components/Logo';
 import gituhbLogo from '/github.svg';
 import WalletStatus from './components/WalletStatus';
-import { AppState } from './interfaces/interfaces';
+import { useAppStore } from './state';
 
 const ENDPOINTS = {
   RPC: 'http://localhost:26657',
@@ -23,18 +22,6 @@ const ENDPOINTS = {
 };
 
 const watcher = makeAgoricChainStorageWatcher(ENDPOINTS.API, 'agoriclocal');
-
-const useAppStore = create<AppState>((set) => ({
-  contractInstance: null,
-  balance: 0,
-  evmAddress: '',
-  destinationEVMChain: 'Avalanche',
-  amountToSend: 0,
-  loading: false,
-  error: undefined,
-  type: 3,
-  transactionUrl: null,
-}));
 
 const setup = async () => {
   watcher.watchLatest<Array<[string, unknown]>>(
@@ -150,7 +137,7 @@ function App() {
             </div>
             <div className='content'>
               <WalletStatus address={wallet?.address} />
-              <AgoricContractForm useAppStore={useAppStore} />
+              <AgoricContractForm />
             </div>
           </div>
         </>

@@ -1,5 +1,4 @@
 import React, { useState, useEffect } from 'react';
-import { StoreApi, UseBoundStore } from 'zustand';
 import {
   AppState,
   AxelarQueryParams,
@@ -22,9 +21,7 @@ import {
 import { toast } from 'react-toastify';
 import { useAccount, useConnect } from 'wagmi';
 import metamaskLogo from '/metamask.svg';
-interface Props {
-  useAppStore: UseBoundStore<StoreApi<AppState>>;
-}
+import { useAppStore } from '../state';
 
 const prepareOfferArguments = async (
   type: number,
@@ -98,11 +95,10 @@ const createQueryParameters = (
       };
 };
 
-export const AgoricContractForm = (props: Props) => {
+export const AgoricContractForm = () => {
   const [gasInfo, setGasInfo] = useState('');
   const { connect, connectors } = useConnect();
   const { address, isConnected } = useAccount();
-  const { useAppStore } = props;
 
   const {
     wallet,
