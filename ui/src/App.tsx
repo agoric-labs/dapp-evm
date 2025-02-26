@@ -87,6 +87,7 @@ const setup = async () => {
 const connectWallet = async () => {
   await suggestChain('https://local.agoric.net/network-config');
   const wallet = await makeAgoricWalletConnection(watcher, ENDPOINTS.RPC);
+  console.log('WAL', wallet);
   useAppStore.setState({ wallet });
 };
 
@@ -141,38 +142,41 @@ function App() {
         </>
       ) : (
         <>
-          <div className='tabs'>
-            <button
-              className={`tab-button ${type === 3 ? 'active' : ''}`}
-              onClick={() =>
-                useAppStore.setState({
-                  type: 3,
-                  evmAddress: '',
-                  destinationEVMChain: 'Avalanche',
-                  amountToSend: 0,
-                  loading: false,
-                  error: undefined,
-                })
-              }>
-              Token Transfer
-            </button>
-            <button
-              className={`tab-button ${type === 2 ? 'active' : ''}`}
-              onClick={() =>
-                useAppStore.setState({
-                  type: 2,
-                  evmAddress: '',
-                  destinationEVMChain: 'Avalanche',
-                  amountToSend: 0,
-                  loading: false,
-                  error: undefined,
-                })
-              }>
-              Contract Invocation
-            </button>
+          <div className='main-container'>
+            <div className='tabs'>
+              <button
+                className={`tab-button ${type === 3 ? 'active' : ''}`}
+                onClick={() =>
+                  useAppStore.setState({
+                    type: 3,
+                    evmAddress: '',
+                    destinationEVMChain: 'Avalanche',
+                    amountToSend: 0,
+                    loading: false,
+                    error: undefined,
+                  })
+                }>
+                Token Transfer
+              </button>
+              <button
+                className={`tab-button ${type === 2 ? 'active' : ''}`}
+                onClick={() =>
+                  useAppStore.setState({
+                    type: 2,
+                    evmAddress: '',
+                    destinationEVMChain: 'Avalanche',
+                    amountToSend: 0,
+                    loading: false,
+                    error: undefined,
+                  })
+                }>
+                Contract Invocation
+              </button>
+            </div>
+            <div>
+              <TokenForm useAppStore={useAppStore} />
+            </div>
           </div>
-
-          <TokenForm useAppStore={useAppStore} />
         </>
       )}
     </div>

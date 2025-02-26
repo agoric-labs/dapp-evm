@@ -121,14 +121,21 @@ button {
   background-size: 1rem;
 }
 
-.tabs {
+.main-container {
   display: flex;
-  gap: 0.5rem;
-  margin-bottom: 1.5rem;
+  gap: 3rem;
+}
+
+.tabs {
+  width: 250px;
+  background-color: #1e1e1e;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 20px;
 }
 
 .tab-button {
-  flex: 1;
   padding: 0.75rem;
   background: #29324c;
   border: none;
