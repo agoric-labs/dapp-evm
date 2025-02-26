@@ -4,6 +4,7 @@ import { CounterForm } from './CounterForm';
 import { ConnectMetaMask } from './ConnectMetaMask';
 import { useEthersSigner } from '../Utils';
 import { SafeForm } from './SafeForm';
+import { SafeTransaction } from './SafeTransaction';
 
 export const EVMContractForm = ({ tab }) => {
   const { address, isConnected, chain } = useAccount();
@@ -22,6 +23,9 @@ export const EVMContractForm = ({ tab }) => {
       break;
     case 4:
       FormComponent = <SafeForm signer={signer} />;
+      break;
+    case 5:
+      FormComponent = <SafeTransaction signer={signer} />;
       break;
     default:
       throw Error('Invalid Tab');

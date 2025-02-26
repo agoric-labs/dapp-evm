@@ -56,6 +56,15 @@ export const Tabs = () => {
         }>
         Create Safe
       </button>
+      <button
+        className={`tab-button ${tab === 5 ? 'active' : ''}`}
+        onClick={() =>
+          useAppStore.setState({
+            tab: 5,
+          })
+        }>
+        Safe Transaction
+      </button>
     </div>
   );
 };
