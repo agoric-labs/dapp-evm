@@ -9,14 +9,13 @@ import {
   makeAgoricWalletConnection,
   suggestChain,
 } from '@agoric/web-components';
-import { EVM_CHAINS } from './config';
-import { TokenForm } from './components/Form';
+import { AgoricContractForm } from './components/AgoricContractForm';
 import 'react-toastify/dist/ReactToastify.css';
 import { ToastContainer } from 'react-toastify';
 import Logo from './components/Logo';
 import gituhbLogo from '/github.svg';
-
-type Wallet = Awaited<ReturnType<typeof makeAgoricWalletConnection>>;
+import WalletStatus from './components/WalletStatus';
+import { AppState } from './interfaces/interfaces';
 
 const ENDPOINTS = {
   RPC: 'http://localhost:26657',
@@ -25,29 +24,6 @@ const ENDPOINTS = {
 
 const watcher = makeAgoricChainStorageWatcher(ENDPOINTS.API, 'agoriclocal');
 
-export interface OfferArgs {
-  type: number;
-  destinationEVMChain: (typeof EVM_CHAINS)[keyof typeof EVM_CHAINS];
-  contractInvocationPayload: number[] | null;
-  destAddr: string;
-  amountToSend: number;
-  gasAmount?: number;
-}
-export interface AppState {
-  wallet?: Wallet;
-  contractInstance?: unknown;
-  brands?: Record<string, unknown>;
-  balance: number;
-  destinationEVMChain: keyof typeof EVM_CHAINS;
-  evmAddress: string;
-  amountToSend: number;
-  loading: boolean;
-  error?: string;
-  type: number;
-  gasAmount?: number;
-  contractInvocationPayload?: number[];
-  transactionUrl: string | null;
-}
 const useAppStore = create<AppState>((set) => ({
   contractInstance: null,
   balance: 0,
@@ -87,7 +63,6 @@ const setup = async () => {
 const connectWallet = async () => {
   await suggestChain('https://local.agoric.net/network-config');
   const wallet = await makeAgoricWalletConnection(watcher, ENDPOINTS.RPC);
-  console.log('WAL', wallet);
   useAppStore.setState({ wallet });
 };
 
@@ -174,7 +149,8 @@ function App() {
               </button>
             </div>
             <div className='content'>
-              <TokenForm useAppStore={useAppStore} />
+              <WalletStatus address={wallet?.address} />
+              <AgoricContractForm useAppStore={useAppStore} />
             </div>
           </div>
         </>

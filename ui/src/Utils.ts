@@ -7,23 +7,22 @@ import {
   addresses,
   channels,
   COSMOS_CHAINS,
-  EVM_CHAINS,
   evmAddresses,
   tokens,
   urls,
 } from './config';
 import { ethers } from 'ethers';
 import { AxelarQueryAPI, Environment } from '@axelar-network/axelarjs-sdk';
-import { OfferArgs } from './App';
 import { DirectSecp256k1HdWallet } from '@cosmjs/proto-signing';
 import { stringToPath } from '@cosmjs/crypto';
 import { toast } from 'react-toastify';
-
-interface BalanceCheckParams {
-  walletAddress: string;
-  rpcUrl: string;
-  tokenDenom: string;
-}
+import {
+  BalanceCheckParams,
+  PayloadParams,
+  OfferArgs,
+  AxelarMemo,
+  AxelarQueryParams,
+} from './interfaces/interfaces';
 
 export const getSigner = async () => {
   const mnemonic = import.meta.env.VITE_MNEMONIC;
@@ -110,12 +109,6 @@ const getType1Payload = ({ chain }) => {
   return Array.from(ethers.utils.arrayify(payload));
 };
 
-interface PayloadParams {
-  type: number;
-  chain: keyof typeof EVM_CHAINS;
-  address: string;
-}
-
 export const getPayload = (params: PayloadParams) => {
   const { type, chain, address } = params;
   const abiCoder = new ethers.utils.AbiCoder();
@@ -160,18 +153,6 @@ export const getGasEstimate = async ({
 
   return usdcAtomic;
 };
-
-interface AxelarFeeObject {
-  amount: string;
-  recipient: string;
-}
-interface AxelarMemo {
-  destination_chain: string;
-  destination_address: string;
-  payload: number[] | null;
-  type: number;
-  fee?: AxelarFeeObject;
-}
 
 // Off-chain implementation for cross-chain EVM transactions.
 // This is intended for development purposes only and will not be used in production.
@@ -287,20 +268,6 @@ export const showWarning = ({ content, duration }) => {
     autoClose: duration,
   });
 };
-
-export interface AxelarQueryParams {
-  transfersType: 'gmp' | 'transfers';
-  searchParams: {
-    address: string;
-    sourceChain: string;
-    destinationChain: string;
-    fromTime: number;
-    toTime?: number;
-    asset?: string;
-    senderAddress?: string;
-    size?: number;
-  };
-}
 
 export const wait = async (seconds) => {
   return new Promise((resolve) => setTimeout(resolve, seconds * 1000));

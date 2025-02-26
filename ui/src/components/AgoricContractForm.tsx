@@ -1,7 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import { StoreApi, UseBoundStore } from 'zustand';
-import { AppState, OfferArgs } from '../App';
-import WalletStatus from './WalletStatus';
+import {
+  AppState,
+  AxelarQueryParams,
+  OfferArgs,
+} from '../interfaces/interfaces';
 import {
   AGORIC_PROXY_CONTRACT,
   BRAND_CONFIG,
@@ -9,7 +12,6 @@ import {
   TOAST_DURATION,
 } from '../config';
 import {
-  AxelarQueryParams,
   getAxelarTxURL,
   getGasEstimate,
   getPayload,
@@ -96,7 +98,7 @@ const createQueryParameters = (
       };
 };
 
-export const TokenForm = (props: Props) => {
+export const AgoricContractForm = (props: Props) => {
   const [gasInfo, setGasInfo] = useState('');
   const { connect, connectors } = useConnect();
   const { address, isConnected } = useAccount();
@@ -262,7 +264,6 @@ export const TokenForm = (props: Props) => {
 
   return (
     <div className='dashboard-container'>
-      <WalletStatus address={wallet?.address} />
       <div className='dashboard'>
         <div className='transfer-form'>
           <div className='form-group'>
