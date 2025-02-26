@@ -47,6 +47,15 @@ export const Tabs = () => {
         }>
         Counter Contract
       </button>
+      <button
+        className={`tab-button ${tab === 4 ? 'active' : ''}`}
+        onClick={() =>
+          useAppStore.setState({
+            tab: 4,
+          })
+        }>
+        Safe Contract
+      </button>
     </div>
   );
 };
