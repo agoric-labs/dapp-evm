@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import contractABI from '../abi/safe.json';
 import { ethers, constants } from 'ethers';
+import { showSuccess } from '../Utils';
+import { TOAST_DURATION } from '../config';
 
 interface Props {
   signer: any;
@@ -59,9 +61,23 @@ export const SafeForm = (props: Props) => {
         initializer,
         saltNonce: Date.now(),
       };
+
       const txResponse = await contractInstance.createSafe(creationData);
-      const response = await txResponse.wait();
-      console.log('Transaction Response:', response);
+      const receipt = await txResponse.wait();
+
+      const event = receipt.events.find((e) => e.event === 'SafeCreated');
+      if (event && event.args) {
+        console.log('Event ARGS:', event.args);
+        const safeAddress = event.args[0];
+        console.log('New Safe Created at:', safeAddress);
+
+        showSuccess({
+          content: 'Safe Created Successfully',
+          duration: TOAST_DURATION.SUCCESS,
+        });
+      } else {
+        console.error('SafeCreated event not found in transaction logs.');
+      }
     } catch (error) {
       console.error('Failed to create safe:', error);
     }

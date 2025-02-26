@@ -54,7 +54,7 @@ export const Tabs = () => {
             tab: 4,
           })
         }>
-        Safe Contract
+        Create Safe
       </button>
     </div>
   );
