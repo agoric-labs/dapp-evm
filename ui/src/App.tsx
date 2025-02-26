@@ -173,7 +173,7 @@ function App() {
                 Contract Invocation
               </button>
             </div>
-            <div>
+            <div className='content'>
               <TokenForm useAppStore={useAppStore} />
             </div>
           </div>
