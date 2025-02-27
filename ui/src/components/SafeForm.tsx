@@ -36,7 +36,7 @@ export const SafeForm = (props: Props) => {
     try {
       console.log('Creating Safe...');
 
-      const addresses = ['0xD02b28E85F1484D82535ce1f556DFbDc8a3B8332'];
+      const addresses = ['0x20E68F6c276AC6E297aC46c84Ab260928276691D'];
       const threshold = 1;
       const ZERO_ADDRESS = constants.AddressZero;
       const fallbackHandler = '0xfd0732Dc9E303f09fCEf3a7388Ad10A83459Ec99';
