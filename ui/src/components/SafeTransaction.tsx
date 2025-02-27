@@ -17,7 +17,7 @@ export const SafeTransaction = (props: Props) => {
 
     const fetchContract = async () => {
       try {
-        const contractAddress = '0x938aD37ACb4ACD14CE5B9d6335f89B7ca1ec85E9';
+        const contractAddress = '0x90CcCB8C2e5Bf82e5b718E4784B61BF789155c40';
         const contract = new ethers.Contract(
           contractAddress,
           contractABI,
