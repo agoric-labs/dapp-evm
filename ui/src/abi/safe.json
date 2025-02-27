@@ -142,11 +142,6 @@
             "internalType": "address payable",
             "name": "refundReceiver",
             "type": "address"
-          },
-          {
-            "internalType": "bytes",
-            "name": "signatures",
-            "type": "bytes"
           }
         ],
         "internalType": "struct SafeWalletFactory.SafeExecutionData",
@@ -157,6 +152,43 @@
     "name": "executeSafeTransaction",
     "outputs": [],
     "stateMutability": "payable",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "getPreApprovedSignature",
+    "outputs": [
+      {
+        "internalType": "bytes",
+        "name": "",
+        "type": "bytes"
+      }
+    ],
+    "stateMutability": "pure",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "bytes32",
+        "name": "_hash",
+        "type": "bytes32"
+      },
+      {
+        "internalType": "bytes",
+        "name": "_signature",
+        "type": "bytes"
+      }
+    ],
+    "name": "isValidSignature",
+    "outputs": [
+      {
+        "internalType": "bytes4",
+        "name": "",
+        "type": "bytes4"
+      }
+    ],
+    "stateMutability": "view",
     "type": "function"
   },
   {

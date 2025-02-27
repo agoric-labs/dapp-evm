@@ -17,7 +17,7 @@ export const SafeTransaction = (props: Props) => {
 
     const fetchContract = async () => {
       try {
-        const contractAddress = '0x90CcCB8C2e5Bf82e5b718E4784B61BF789155c40';
+        const contractAddress = '0xD02b28E85F1484D82535ce1f556DFbDc8a3B8332';
         const contract = new ethers.Contract(
           contractAddress,
           contractABI,
@@ -36,50 +36,40 @@ export const SafeTransaction = (props: Props) => {
     try {
       console.log('Making transaction...');
 
-      const addresses = ['0x20E68F6c276AC6E297aC46c84Ab260928276691D'];
-      const threshold = 1;
       const ZERO_ADDRESS = constants.AddressZero;
-      const fallbackHandler = '0xfd0732Dc9E303f09fCEf3a7388Ad10A83459Ec99';
+      const counterContractAddress =
+        '0x76e1b76A6643aCac6Cce34692Cc9F7c9Aa63D911';
 
-      const safeInterface = new ethers.utils.Interface([
-        'function setup(address[],uint256,address,bytes,address,address,uint256,address)',
-      ]);
+      const iface = new ethers.utils.Interface(['function increment() public']);
+      const encodedData = iface.encodeFunctionData('increment', []);
 
-      const initializer = safeInterface.encodeFunctionData('setup', [
-        addresses,
-        threshold,
-        ZERO_ADDRESS, // to
-        '0x', // data
-        fallbackHandler,
-        ZERO_ADDRESS, // paymentToken
-        0, // payment
-        ZERO_ADDRESS, // paymentReceiver
-      ]);
-
-      const creationData = {
-        singleton: '0x41675C099F32341bf84BFc5382aF534df5C7461a',
-        initializer,
-        saltNonce: Date.now(),
+      const executionData = {
+        to: counterContractAddress,
+        value: 0,
+        data: encodedData,
+        operation: 0,
+        safeTxGas: 500000,
+        baseGas: 50000,
+        gasPrice: ethers.utils.parseUnits('20', 'gwei'), // Adjusted to a reasonable gas price
+        gasToken: ZERO_ADDRESS,
+        refundReceiver: ZERO_ADDRESS,
       };
 
-      const txResponse = await contractInstance.createSafe(creationData);
-      const receipt = await txResponse.wait();
+      const tx = await contractInstance.executeSafeTransaction(
+        '0x5Eef9Dd00f5D5A4136370D9051Ef5fC5f72263ea',
+        executionData
+      );
+      console.log('Transaction sent:', tx.hash);
 
-      const event = receipt.events.find((e) => e.event === 'SafeCreated');
-      if (event && event.args) {
-        console.log('Event ARGS:', event.args);
-        const safeAddress = event.args[0];
-        console.log('New Safe Created at:', safeAddress);
+      const receipt = await tx.wait();
+      console.log('Receipt:', JSON.stringify(receipt));
 
-        showSuccess({
-          content: 'Safe Created Successfully',
-          duration: TOAST_DURATION.SUCCESS,
-        });
-      } else {
-        console.error('SafeCreated event not found in transaction logs.');
-      }
+      showSuccess({
+        content: 'Transaction Successful',
+        duration: TOAST_DURATION.SUCCESS,
+      });
     } catch (error) {
-      console.error('Failed to create safe:', error);
+      console.error('Failed to execute transaction:', error);
     }
   };
 

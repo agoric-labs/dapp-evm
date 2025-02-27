@@ -17,7 +17,7 @@ export const SafeForm = (props: Props) => {
 
     const fetchContract = async () => {
       try {
-        const contractAddress = '0x90CcCB8C2e5Bf82e5b718E4784B61BF789155c40';
+        const contractAddress = '0xD02b28E85F1484D82535ce1f556DFbDc8a3B8332';
         const contract = new ethers.Contract(
           contractAddress,
           contractABI,
@@ -36,7 +36,7 @@ export const SafeForm = (props: Props) => {
     try {
       console.log('Creating Safe...');
 
-      const addresses = ['0x90CcCB8C2e5Bf82e5b718E4784B61BF789155c40'];
+      const addresses = ['0xD02b28E85F1484D82535ce1f556DFbDc8a3B8332'];
       const threshold = 1;
       const ZERO_ADDRESS = constants.AddressZero;
       const fallbackHandler = '0xfd0732Dc9E303f09fCEf3a7388Ad10A83459Ec99';

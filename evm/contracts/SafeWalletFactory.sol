@@ -92,8 +92,8 @@ contract SafeWalletFactory is IERC1271 {
         bytes memory preApprovedSig = getPreApprovedSignature();
         bytes memory signature = abi.encodePacked(
             bytes32(uint256(uint160(address(this)))),
-            bytes32(uint(65)),
-            uint8(4),
+            bytes32(uint256(65)),
+            uint8(0),
             preApprovedSig
         );
 
