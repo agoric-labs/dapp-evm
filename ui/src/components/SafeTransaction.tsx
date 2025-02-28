@@ -1,9 +1,17 @@
 import React, { useState, useEffect } from 'react';
 import contractABI from '../abi/safe.json';
-import Safe, { SigningMethod } from '@safe-global/protocol-kit';
+import Safe, {
+  SigningMethod,
+  buildContractSignature,
+} from '@safe-global/protocol-kit';
 import { constants, ethers } from 'ethers';
 import { showSuccess } from '../Utils';
-import { DEMO_SAFE_ADDRESS, SAFE_FACTORY, TOAST_DURATION } from '../config';
+import {
+  DEMO_OWNER,
+  DEMO_SAFE_ADDRESS,
+  SAFE_FACTORY,
+  TOAST_DURATION,
+} from '../config';
 
 interface Props {
   signer: any;
@@ -18,7 +26,7 @@ export const SafeTransaction = (props: Props) => {
 
     console.log('Before Init...');
     // @ts-ignore
-    const sdk = await Safe.default.init({
+    const sdk = await Safe.init({
       safeAddress: DEMO_SAFE_ADDRESS,
       provider: rpcUrl,
       signer,
@@ -45,13 +53,21 @@ export const SafeTransaction = (props: Props) => {
         transactions: [transactionData],
         options: {
           nonce,
-          safeTxGas: 9543,
-          baseGas: 50000,
-          gasPrice: 150000,
+          safeTxGas: '9543',
+          baseGas: '50000',
+          gasPrice: '150000',
           refundReceiver: '0x20E68F6c276AC6E297aC46c84Ab260928276691D',
         },
       });
       console.log('Safe transaction created.');
+
+      // Build Contract Signature
+      const contractSignature = await buildContractSignature(
+        Array.from(safeTransaction.signatures.values()),
+        DEMO_OWNER
+      );
+
+      safeTransaction.addSignature(contractSignature);
 
       console.log('Signing Safe transaction...');
       const signedSafeTransaction = await sdk.signTransaction(
@@ -87,6 +103,73 @@ export const SafeTransaction = (props: Props) => {
 
     fetchContract();
   }, [signer]);
+
+  const handleTransaction = async () => {
+    const rpcUrl = 'https://sepolia.drpc.org';
+
+    console.log('Before Init...');
+    // @ts-ignore
+    const sdk = await Safe.init({
+      safeAddress: DEMO_SAFE_ADDRESS,
+      provider: rpcUrl,
+      signer:
+        '9fb35c872c756a8363bd5ec39c573157d5540490174684b94af1cbd36fa9c7c8',
+    });
+
+    console.log('Preparing target contract call');
+    const targetAddress = '0x78158e3B07C499aABaB55C0fe8Ba0Af5d7746CaB';
+    const targetABI = ['function increment()'];
+    const targetInterface = new ethers.utils.Interface(targetABI);
+    const data = targetInterface.encodeFunctionData('increment');
+
+    const transactionData = {
+      to: targetAddress,
+      data,
+      value: '0',
+    };
+
+    try {
+      console.log('Creating Safe transaction...');
+
+      const nonce = await sdk.getNonce();
+      console.log('Current nonce:', nonce);
+      const safeTransaction = await sdk.createTransaction({
+        transactions: [transactionData],
+        options: {
+          nonce,
+          safeTxGas: '9543',
+          baseGas: '50000',
+          gasPrice: '150000',
+          refundReceiver: '0x20E68F6c276AC6E297aC46c84Ab260928276691D',
+        },
+      });
+      console.log('Safe transaction created.');
+
+      // Build Contract Signature
+      console.log('Building contract signature...');
+      const contractSignature = await buildContractSignature(
+        Array.from(safeTransaction.signatures.values()),
+        DEMO_OWNER
+      );
+      safeTransaction.addSignature(contractSignature);
+      console.log('Contract signature built.');
+
+      console.log('Transaction Data:', JSON.stringify(safeTransaction));
+      const tx = await contractInstance.executeSafeTransaction(
+        DEMO_SAFE_ADDRESS,
+        {
+          ...safeTransaction.data,
+          signatures: safeTransaction.signatures,
+        }
+      );
+      console.log('Transaction sent:', tx.hash);
+
+      const receipt = await tx.wait();
+      console.log('Receipt:', JSON.stringify(receipt));
+    } catch (error) {
+      console.error(error);
+    }
+  };
 
   const makeTransaction = async () => {
     try {
@@ -133,7 +216,7 @@ export const SafeTransaction = (props: Props) => {
     <div className='dashboard-container'>
       <div className='dashboard'>
         <div className='transfer-form'>
-          <button className='invoke-button' onClick={executeSafeTransaction}>
+          <button className='invoke-button' onClick={handleTransaction}>
             Make Transaction
           </button>
         </div>
