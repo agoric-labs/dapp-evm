@@ -16,7 +16,7 @@ export const CounterForm = (props: Props) => {
 
     const fetchContract = async () => {
       try {
-        const contractAddress = '0x76e1b76A6643aCac6Cce34692Cc9F7c9Aa63D911';
+        const contractAddress = '0x78158e3B07C499aABaB55C0fe8Ba0Af5d7746CaB';
         const contract = new ethers.Contract(
           contractAddress,
           contractABI,

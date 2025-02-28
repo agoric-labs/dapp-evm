@@ -12,6 +12,7 @@ export const EVMContractForm = ({ tab }) => {
   console.log(`Connected Address: ${address}`);
   console.log(`Connected Chain: ${chain?.name}`);
   console.log(`Chain ID: ${chain?.id}`);
+  console.log(`RPC: ${JSON.stringify(chain?.rpcUrls.default.http[0])}`);
 
   const signer = useEthersSigner({ chainId: chain?.id });
 

@@ -7,7 +7,8 @@
     "compile": "hardhat compile",
     "deploy-fuji": "./scripts/deploy.sh fuji",
     "deploy-base": "./scripts/deploy.sh base",
-    "deploy-eth": "npx hardhat ignition deploy ./ignition/modules/deploySafeFactory.cjs --network sepolia"
+    "deploy-eth": "npx hardhat ignition deploy ./ignition/modules/deploySafeFactory.cjs --network sepolia",
+    "deploy-counter": "npx hardhat ignition deploy ./ignition/modules/deployCounter.cjs --network sepolia"
   },
   "keywords": [],
   "author": "",
