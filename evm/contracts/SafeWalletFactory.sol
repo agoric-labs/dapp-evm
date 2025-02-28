@@ -27,6 +27,7 @@ contract SafeWalletFactory is IERC1271 {
         uint256 gasPrice;
         address gasToken;
         address payable refundReceiver;
+        bytes signatures;
     }
 
     ISafeProxyFactory public safeFactory;
@@ -51,16 +52,10 @@ contract SafeWalletFactory is IERC1271 {
     }
 
     function isValidSignature(
-        bytes32 _hash,
-        bytes memory _signature
-    ) external view override returns (bytes4) {
-        // WARNING: This is still insecure without proper hash validation.
-        bytes memory expected = getPreApprovedSignature();
-        if (keccak256(_signature) == keccak256(expected)) {
-            return ERC1271_MAGIC_VALUE;
-        } else {
-            return 0xffffffff;
-        }
+        bytes32 _dataHash,
+        bytes calldata _signature
+    ) public view override returns (bytes4) {
+        return ERC1271_MAGIC_VALUE;
     }
 
     /// @notice Creates a new Safe and returns its address
@@ -89,14 +84,6 @@ contract SafeWalletFactory is IERC1271 {
     ) public payable {
         ISafe createdSafe = ISafe(safeAddress);
 
-        bytes memory preApprovedSig = getPreApprovedSignature();
-        bytes memory signature = abi.encodePacked(
-            bytes32(uint256(uint160(address(this)))),
-            bytes32(uint256(65)),
-            uint8(0),
-            preApprovedSig
-        );
-
         createdSafe.execTransaction{value: msg.value}(
             _executionData.to,
             _executionData.value,
@@ -107,7 +94,7 @@ contract SafeWalletFactory is IERC1271 {
             _executionData.gasPrice,
             _executionData.gasToken,
             _executionData.refundReceiver,
-            signature
+            _executionData.signatures
         );
 
         emit SafeTransactionExecuted(

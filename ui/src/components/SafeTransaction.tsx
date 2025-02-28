@@ -3,7 +3,7 @@ import contractABI from '../abi/safe.json';
 import Safe, { SigningMethod } from '@safe-global/protocol-kit';
 import { constants, ethers } from 'ethers';
 import { showSuccess } from '../Utils';
-import { TOAST_DURATION } from '../config';
+import { DEMO_SAFE_ADDRESS, SAFE_FACTORY, TOAST_DURATION } from '../config';
 
 interface Props {
   signer: any;
@@ -14,13 +14,12 @@ export const SafeTransaction = (props: Props) => {
   const { signer } = props;
 
   const executeSafeTransaction = async () => {
-    const safeAddress = '0xc5dceeE412c7CEE76827046F165d8Af06982Ad1f';
     const rpcUrl = 'https://sepolia.drpc.org';
 
     console.log('Before Init...');
     // @ts-ignore
     const sdk = await Safe.default.init({
-      safeAddress,
+      safeAddress: DEMO_SAFE_ADDRESS,
       provider: rpcUrl,
       signer,
     });
@@ -79,12 +78,7 @@ export const SafeTransaction = (props: Props) => {
 
     const fetchContract = async () => {
       try {
-        const contractAddress = '0xD02b28E85F1484D82535ce1f556DFbDc8a3B8332';
-        const contract = new ethers.Contract(
-          contractAddress,
-          contractABI,
-          signer
-        );
+        const contract = new ethers.Contract(SAFE_FACTORY, contractABI, signer);
         setContractInstance(contract);
       } catch (error) {
         console.error('Failed to load contract:', error);

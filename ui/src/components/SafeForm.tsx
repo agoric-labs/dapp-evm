@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import contractABI from '../abi/safe.json';
 import { ethers, constants } from 'ethers';
 import { showSuccess } from '../Utils';
-import { TOAST_DURATION } from '../config';
+import { DEMO_OWNER, SAFE_FACTORY, TOAST_DURATION } from '../config';
 
 interface Props {
   signer: any;
@@ -17,12 +17,7 @@ export const SafeForm = (props: Props) => {
 
     const fetchContract = async () => {
       try {
-        const contractAddress = '0xD02b28E85F1484D82535ce1f556DFbDc8a3B8332';
-        const contract = new ethers.Contract(
-          contractAddress,
-          contractABI,
-          signer
-        );
+        const contract = new ethers.Contract(SAFE_FACTORY, contractABI, signer);
         setContractInstance(contract);
       } catch (error) {
         console.error('Failed to load contract:', error);
@@ -36,7 +31,7 @@ export const SafeForm = (props: Props) => {
     try {
       console.log('Creating Safe...');
 
-      const addresses = ['0x20E68F6c276AC6E297aC46c84Ab260928276691D'];
+      const addresses = [DEMO_OWNER];
       const threshold = 1;
       const ZERO_ADDRESS = constants.AddressZero;
       const fallbackHandler = '0xfd0732Dc9E303f09fCEf3a7388Ad10A83459Ec99';
