@@ -16,6 +16,7 @@ import gituhbLogo from '/github.svg';
 import WalletStatus from './components/WalletStatus';
 import { useAppStore } from './state';
 import { Tabs } from './components/Tabs';
+import { EVMContractForm } from './components/EVMContractForm';
 
 const ENDPOINTS = {
   RPC: 'http://localhost:26657',
@@ -110,6 +111,7 @@ function App() {
             <div className='content'>
               <WalletStatus address={wallet?.address} />
               {(tab === 1 || tab === 2) && <AgoricContractForm />}
+              {tab > 2 && <EVMContractForm tab={tab} />}
             </div>
           </div>
         </>

@@ -38,6 +38,33 @@ export const Tabs = () => {
         }>
         Contract Invocation
       </button>
+      <button
+        className={`tab-button ${tab === 3 ? 'active' : ''}`}
+        onClick={() =>
+          useAppStore.setState({
+            tab: 3,
+          })
+        }>
+        Counter Contract
+      </button>
+      <button
+        className={`tab-button ${tab === 4 ? 'active' : ''}`}
+        onClick={() =>
+          useAppStore.setState({
+            tab: 4,
+          })
+        }>
+        Create Safe
+      </button>
+      <button
+        className={`tab-button ${tab === 5 ? 'active' : ''}`}
+        onClick={() =>
+          useAppStore.setState({
+            tab: 5,
+          })
+        }>
+        Safe Transaction
+      </button>
     </div>
   );
 };

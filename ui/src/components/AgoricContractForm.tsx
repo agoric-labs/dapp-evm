@@ -1,9 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import {
-  AppState,
-  AxelarQueryParams,
-  OfferArgs,
-} from '../interfaces/interfaces';
+import { AxelarQueryParams, OfferArgs } from '../interfaces/interfaces';
 import {
   AGORIC_PROXY_CONTRACT,
   BRAND_CONFIG,
