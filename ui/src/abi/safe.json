@@ -54,6 +54,10 @@
     "type": "event"
   },
   {
+    "stateMutability": "payable",
+    "type": "fallback"
+  },
+  {
     "inputs": [
       {
         "components": [
@@ -142,6 +146,11 @@
             "internalType": "address payable",
             "name": "refundReceiver",
             "type": "address"
+          },
+          {
+            "internalType": "bytes",
+            "name": "signatures",
+            "type": "bytes"
           }
         ],
         "internalType": "struct SafeWalletFactory.SafeExecutionData",
@@ -152,19 +161,6 @@
     "name": "executeSafeTransaction",
     "outputs": [],
     "stateMutability": "payable",
-    "type": "function"
-  },
-  {
-    "inputs": [],
-    "name": "getPreApprovedSignature",
-    "outputs": [
-      {
-        "internalType": "bytes",
-        "name": "",
-        "type": "bytes"
-      }
-    ],
-    "stateMutability": "pure",
     "type": "function"
   },
   {
@@ -203,5 +199,22 @@
     ],
     "stateMutability": "view",
     "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "signer",
+    "outputs": [
+      {
+        "internalType": "address",
+        "name": "",
+        "type": "address"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "stateMutability": "payable",
+    "type": "receive"
   }
 ]

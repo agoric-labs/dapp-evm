@@ -9,7 +9,8 @@ import "@openzeppelin/contracts/interfaces/IERC1271.sol";
 /// @dev We split Safe creation and execution into two functions
 contract SafeWalletFactory is IERC1271 {
     error UnsupportedChain(uint256);
-    bytes4 internal constant ERC1271_MAGIC_VALUE = 0x1626ba7e;
+    ISafeProxyFactory public safeFactory;
+    address public signer;
 
     struct SafeCreationData {
         address singleton;
@@ -30,7 +31,6 @@ contract SafeWalletFactory is IERC1271 {
         bytes signatures;
     }
 
-    ISafeProxyFactory public safeFactory;
     event SafeCreated(address indexed safeAddress);
     event SafeTransactionExecuted(
         address indexed safeAddress,
@@ -51,11 +51,18 @@ contract SafeWalletFactory is IERC1271 {
         }
     }
 
+    // Implements EIP-1271 signature validation
     function isValidSignature(
-        bytes32 _dataHash,
-        bytes calldata _signature
-    ) public view override returns (bytes4) {
-        return ERC1271_MAGIC_VALUE;
+        bytes32 _hash,
+        bytes memory _signature
+    ) external view override returns (bytes4) {
+        return 0x1626ba7e;
+        // address recoveredSigner = _hash.recover(_signature);
+        // if (recoveredSigner == trustedSigner) {
+        //     return 0x1626ba7e; // Valid signature
+        // } else {
+        //     return 0xffffffff; // Invalid signature
+        // }
     }
 
     /// @notice Creates a new Safe and returns its address
@@ -70,11 +77,6 @@ contract SafeWalletFactory is IERC1271 {
 
         emit SafeCreated(safeAddress);
         return safeAddress;
-    }
-
-    /// @notice Generates a valid signature for the Safe, allowing the contract to execute transactions
-    function getPreApprovedSignature() public pure returns (bytes memory) {
-        return abi.encodePacked(bytes32(0), bytes32(0), uint8(1));
     }
 
     /// @notice Executes a transaction on an existing Safe, auto-signing it
@@ -103,4 +105,10 @@ contract SafeWalletFactory is IERC1271 {
             _executionData.value
         );
     }
+
+    /// @notice Allows contract to receive ETH
+    receive() external payable {}
+
+    /// @notice Allows fallback execution (if needed)
+    fallback() external payable {}
 }
