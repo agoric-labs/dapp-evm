@@ -84,16 +84,16 @@ export const startAxelarGmp = async (
   );
 
   /** @param {() => Promise<Issuer>} p */
-  const safeFulfill = async (p) =>
-    E.when(
-      p(),
-      (i) => i,
-      () => undefined
-    );
+  // const safeFulfill = async (p) =>
+  //   E.when(
+  //     p(),
+  //     (i) => i,
+  //     () => undefined
+  //   );
 
-  const ausdcIssuer = await safeFulfill(() =>
-    E(agoricNames).lookup('issuer', 'AUSDC')
-  );
+  // const ausdcIssuer = await safeFulfill(() =>
+  //   E(agoricNames).lookup('issuer', 'AUSDC')
+  // );
 
   // const wavaxIssuer = await safeFulfill(() =>
   //   E(agoricNames).lookup('issuer', 'WAVAX')
@@ -102,7 +102,7 @@ export const startAxelarGmp = async (
   const issuerKeywordRecord = harden({
     BLD: await BLD,
     IST: await IST,
-    ...(ausdcIssuer && { AUSDC: ausdcIssuer }),
+    // ...(ausdcIssuer && { AUSDC: ausdcIssuer }),
     // ...(wavaxIssuer && { WAVAX: wavaxIssuer }),
   });
   trace('issuerKeywordRecord', issuerKeywordRecord);

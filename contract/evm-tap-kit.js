@@ -68,11 +68,6 @@ const prepareEvmTapKit = (zone, { watch }) => {
         receiveUpcall(event) {
           trace('receiveUpcall', event);
 
-          // ignore packets from unknown channels
-          if (event.packet.source_channel !== this.state.sourceChannel) {
-            return;
-          }
-
           const tx = /** @type {FungibleTokenPacketData} */ (
             JSON.parse(atob(event.packet.data))
           );
