@@ -2,7 +2,7 @@ import { M, mustMatch } from '@endo/patterns';
 import { VowShape } from '@agoric/vow';
 import { makeTracer } from '@agoric/internal';
 import { atob } from '@endo/base64';
-import { ChainAddressShape } from '@agoric/orchestration';
+import { CosmosChainAddressShape } from '@agoric/orchestration';
 
 const trace = makeTracer('EvmTap');
 
@@ -11,7 +11,7 @@ const trace = makeTracer('EvmTap');
  * @import {VowTools} from '@agoric/vow';
  * @import {Zone} from '@agoric/zone';
  * @import {TargetApp} from '@agoric/vats/src/bridge-target.js';
- * @import {ChainAddress, Denom, OrchestrationAccount} from '@agoric/orchestration';
+ * @import {CosmosChainAddress, Denom, OrchestrationAccount} from '@agoric/orchestration';
  * @import {FungibleTokenPacketData} from '@agoric/cosmic-proto/ibc/applications/transfer/v2/packet.js';
  * @import {TypedPattern} from '@agoric/internal';
  */
@@ -19,7 +19,7 @@ const trace = makeTracer('EvmTap');
 /**
  * @typedef {{
  *   localAccount: ERef<OrchestrationAccount<{ chainId: 'agoric' }>>;
- *   localChainAddress: ChainAddress;
+ *   localChainAddress: CosmosChainAddress;
  *   sourceChannel: IBCChannelID;
  *   remoteDenom: Denom;
  *   localDenom: Denom;
@@ -29,7 +29,7 @@ const trace = makeTracer('EvmTap');
 /** @type {TypedPattern<EvmTapState>} */
 const EvmTapStateShape = {
   localAccount: M.remotable('LocalOrchestrationAccount'),
-  localChainAddress: ChainAddressShape,
+  localChainAddress: CosmosChainAddressShape,
   sourceChannel: M.string(),
   remoteDenom: M.string(),
   localDenom: M.string(),
@@ -46,7 +46,7 @@ const prepareEvmTapKit = (zone, { watch }) => {
     {
       tap: M.interface('EvmTap', {
         receiveUpcall: M.call(M.record()).returns(
-          M.or(VowShape, M.undefined())
+          M.or(VowShape, M.undefined()),
         ),
       }),
       transferWatcher: M.interface('TransferWatcher', {
@@ -56,7 +56,7 @@ const prepareEvmTapKit = (zone, { watch }) => {
       }),
     },
     /** @param {EvmTapState} initialState */
-    (initialState) => {
+    initialState => {
       mustMatch(initialState, EvmTapStateShape);
       return harden(initialState);
     },
@@ -88,7 +88,7 @@ const prepareEvmTapKit = (zone, { watch }) => {
           return;
         },
       },
-    }
+    },
   );
 };
 

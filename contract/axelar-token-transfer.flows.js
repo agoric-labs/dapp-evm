@@ -37,26 +37,22 @@ const channels = {
  *   type: number;
  *   destinationEVMChain: string;
  *   gasAmount: number;
- *   payload: number[];
+ *   contractInvocationPayload: number[];
  * }} offerArgs
  */
-export const makeEVMContractCall = async (
+export const sendTokensToEVM = async (
   orch,
   { sharedLocalAccountP, zoeTools: { localTransfer, withdrawToSeat } },
   seat,
   offerArgs,
 ) => {
-  const { destinationAddress, type, destinationEVMChain, gasAmount, payload } =
-    offerArgs;
-  console.log('Inside sendIt');
+  const { destinationAddress, destinationEVMChain } = offerArgs;
+  console.log('Inside sendTokensToEVM');
   console.log(
     'Offer Args',
     JSON.stringify({
       destinationAddress,
-      type,
       destinationEVMChain,
-      gasAmount,
-      payload,
     }),
   );
 
@@ -87,19 +83,14 @@ export const makeEVMContractCall = async (
    *   https://github.com/Agoric/agoric-sdk/issues/9822
    */
   const sharedLocalAccount = await sharedLocalAccountP;
-
   await localTransfer(seat, sharedLocalAccount, give);
   console.log('After local transfer');
 
   const memoToAxelar = {
     destination_chain: destinationEVMChain,
     destination_address: destinationAddress,
-    payload,
-    type,
-    fee: {
-      amount: String(gasAmount),
-      recipient: addresses.AXELAR_GAS,
-    },
+    payload: null,
+    type: 3,
   };
 
   const memo = {
@@ -141,4 +132,4 @@ export const makeEVMContractCall = async (
 
   seat.exit();
 };
-harden(makeEVMContractCall);
+harden(sendTokensToEVM);

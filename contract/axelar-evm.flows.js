@@ -22,13 +22,13 @@ import { denomHash } from '@agoric/orchestration/src/utils/denomHash.js';
  *   chainName: string;
  * }} offerArgs
  */
-export const createAndMonitorAccount = async (
+export const createAndMonitorLCA = async (
   orch,
   { makeEvmTap, chainHub },
   seat,
-  { chainName }
+  { chainName },
 ) => {
-  seat.exit(); // no funds exchanged
+  seat.exit();
   const [agoric, remoteChain] = await Promise.all([
     orch.getChain('agoric'),
     orch.getChain(chainName),
@@ -45,7 +45,7 @@ export const createAndMonitorAccount = async (
   const agoricChainId = (await agoric.getChainInfo()).chainId;
   const { transferChannel } = await chainHub.getConnectionInfo(
     agoricChainId,
-    chainId
+    chainId,
   );
   assert(transferChannel.counterPartyChannelId, 'unable to find sourceChannel');
 
@@ -54,7 +54,6 @@ export const createAndMonitorAccount = async (
     channelId: transferChannel.channelId,
   })}`;
 
-  // Every time the `localAccount` receives `remoteDenom` over IBC, delegate it.
   const tap = makeEvmTap({
     localAccount,
     localChainAddress,
@@ -66,6 +65,6 @@ export const createAndMonitorAccount = async (
   // @ts-expect-error tap.receiveUpcall: 'Vow<void> | undefined' not assignable to 'Promise<any>'
   await localAccount.monitorTransfers(tap);
 
-  return 'Offer Successful';
+  return localChainAddress.value;
 };
-harden(createAndMonitorAccount);
+harden(createAndMonitorLCA);
