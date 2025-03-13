@@ -19,8 +19,8 @@ import { Tabs } from './components/Tabs';
 import { MakeAccount } from './components/MakeAccount';
 
 const ENDPOINTS = {
-  RPC: 'http://localhost/agoric-rpc',
-  API: 'http://localhost/agoric-lcd',
+  RPC: 'http://localhost:26657',
+  API: 'http://localhost:1317',
 };
 
 const watcher = makeAgoricChainStorageWatcher(ENDPOINTS.API, 'agoriclocal');
