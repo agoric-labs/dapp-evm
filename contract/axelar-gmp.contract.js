@@ -5,8 +5,11 @@ import { prepareChainHubAdmin } from '@agoric/orchestration/src/exos/chain-hub-a
 import { AnyNatAmountShape } from '@agoric/orchestration/src/typeGuards.js';
 import { withOrchestration } from '@agoric/orchestration/src/utils/start-helper.js';
 import { registerChainsAndAssets } from '@agoric/orchestration/src/utils/chain-hub-helper.js';
-import * as flows from './axelar.flows.js';
+import * as flows from './axelar-gmp.flows.js';
 import * as sharedFlows from './shared.flows.js';
+import * as evmFlows from './evm.flows.js';
+import { prepareEvmTap } from './evm-tap-kit.js';
+import { EmptyProposalShape } from '@agoric/zoe/src/typeGuards';
 
 /**
  * @import {Vow} from '@agoric/vow';
@@ -58,6 +61,8 @@ export const contract = async (
     privateArgs.assetInfo
   );
 
+  const makeEvmTap = prepareEvmTap(zone.subZone('evmTap'), vowTools);
+
   const creatorFacet = prepareChainHubAdmin(zone, chainHub);
 
   // UNTIL https://github.com/Agoric/agoric-sdk/issues/9066
@@ -80,24 +85,38 @@ export const contract = async (
   );
 
   // orchestrate uses the names on orchestrationFns to do a "prepare" of the associated behavior
-  const orchFns = orchestrateAll(flows, {
+  const { sendIt } = orchestrateAll(flows, {
     log,
     sharedLocalAccountP,
     zoeTools,
+  });
+
+  const { createAndMonitorAccount } = orchestrateAll(evmFlows, {
+    makeEvmTap,
+    chainHub,
   });
 
   const publicFacet = zone.exo(
     'Send PF',
     M.interface('Send PF', {
       makeSendInvitation: M.callWhen().returns(InvitationShape),
+      createAndMonitorAccount: M.callWhen().returns(M.any()),
     }),
     {
       makeSendInvitation() {
         return zcf.makeInvitation(
-          orchFns.sendIt,
+          sendIt,
           'send',
           undefined,
           M.splitRecord({ give: SingleNatAmountRecord })
+        );
+      },
+      createAndMonitorAccount() {
+        return zcf.makeInvitation(
+          createAndMonitorAccount,
+          'send',
+          undefined,
+          EmptyProposalShape
         );
       },
     }

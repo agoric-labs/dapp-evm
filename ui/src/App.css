@@ -86,6 +86,7 @@ button {
   margin-top: 2.5rem;
 }
 
+.invoke-button,
 .metamask-button,
 .view-transaction-button,
 .connect-button,
@@ -94,6 +95,7 @@ button {
   color: #f7f7f7;
 }
 
+.invoke-button:hover,
 .view-transaction-button:hover,
 .metamask-button:hover,
 .connect-button:hover,
