@@ -43,7 +43,7 @@ export const contract = async (
   zone,
   { chainHub, orchestrateAll, vowTools, zoeTools }
 ) => {
-  console.log('Inside Contract');
+  console.log('Inside Contract', functionSelector);
 
   console.log('Channel Info Agoric:');
   console.log(privateArgs.chainInfo['agoric'].connections);

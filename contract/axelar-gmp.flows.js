@@ -1,5 +1,6 @@
 import { NonNullish } from '@agoric/internal';
 import { makeError, q } from '@endo/errors';
+import { ethers } from 'ethers';
 
 /**
  * @import {GuestInterface, GuestOf} from '@agoric/async-flow';
@@ -64,6 +65,8 @@ export const sendGmp = async (
       contractInvocationPayload,
     })
   );
+
+  const functionSelector = ethers.utils.id('setCount(uint256)').slice(0, 10);
 
   const { give } = seat.getProposal();
   const [[_kw, amt]] = entries(give);
