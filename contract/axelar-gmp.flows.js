@@ -33,21 +33,21 @@ const channels = {
  * @param {GuestOf<(msg: string) => Vow<void>>} ctx.log
  * @param {ZCFSeat} seat
  * @param {{
- *   destAddr: string;
+ *   destinationAddress: string;
  *   type: number;
  *   destinationEVMChain: string;
  *   gasAmount: number;
  *   contractInvocationPayload: number[];
  * }} offerArgs
  */
-export const sendIt = async (
+export const sendGmp = async (
   orch,
-  { sharedLocalAccountP, log, zoeTools: { localTransfer, withdrawToSeat } },
+  { sharedLocalAccountP, zoeTools: { localTransfer, withdrawToSeat } },
   seat,
   offerArgs
 ) => {
   const {
-    destAddr,
+    destinationAddress,
     type,
     destinationEVMChain,
     gasAmount,
@@ -57,7 +57,7 @@ export const sendIt = async (
   console.log(
     'Offer Args',
     JSON.stringify({
-      destAddr,
+      destinationAddress,
       type,
       destinationEVMChain,
       gasAmount,
@@ -100,7 +100,7 @@ export const sendIt = async (
 
   const memoToAxelar = {
     destination_chain: destinationEVMChain,
-    destination_address: destAddr,
+    destination_address: destinationAddress,
     payload,
     type,
   };
@@ -140,7 +140,7 @@ export const sendIt = async (
       { memo: JSON.stringify(memo) }
     );
 
-    console.log(`Completed transfer to ${destAddr}`);
+    console.log(`Completed transfer to ${destinationAddress}`);
   } catch (e) {
     await withdrawToSeat(sharedLocalAccount, seat, give);
     const errorMsg = `IBC Transfer failed ${q(e)}`;
@@ -150,4 +150,4 @@ export const sendIt = async (
 
   seat.exit();
 };
-harden(sendIt);
+harden(sendGmp);

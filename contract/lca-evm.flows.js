@@ -22,7 +22,7 @@ import { denomHash } from '@agoric/orchestration/src/utils/denomHash.js';
  *   chainName: string;
  * }} offerArgs
  */
-export const createAndMonitorAccount = async (
+export const createAndMonitorLCA = async (
   orch,
   { makeEvmTap, chainHub },
   seat,
@@ -66,6 +66,6 @@ export const createAndMonitorAccount = async (
   // @ts-expect-error tap.receiveUpcall: 'Vow<void> | undefined' not assignable to 'Promise<any>'
   await localAccount.monitorTransfers(tap);
 
-  return 'Offer Successful';
+  return localChainAddress.value;
 };
-harden(createAndMonitorAccount);
+harden(createAndMonitorLCA);
