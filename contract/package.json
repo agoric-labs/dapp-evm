@@ -8,17 +8,26 @@
     "@agoric/deploy-script-support": "^0.10.4-u19.1",
     "agoric": "^0.22.0-u17.1"
   },
+  "scripts": {
+    "postinstall": "patch-package"
+  },
+  "resolutions": {
+    "**/bn.js": "5.2.0"
+  },
   "dependencies": {
     "@agoric/internal": "^0.4.0-u19.1",
     "@agoric/orchestration": "^0.2.0-u19.1",
     "@agoric/vats": "^0.16.0-u17.1",
+    "@agoric/vow": "^0.2.0-u17.1",
     "@agoric/zoe": "^0.26.3-u17.1",
+    "@agoric/zone": "^0.3.0-u17.1",
     "@endo/base64": "^1.0.9",
     "@endo/errors": "^1.2.9",
     "@endo/far": "^1.1.4",
     "@endo/patterns": "^1.4.8",
-    "@agoric/vow": "^0.2.0-u17.1",
-    "@agoric/zone": "^0.3.0-u17.1"
+    "ethers": "^5.7.0",
+    "patch-package": "^8.0.0",
+    "postinstall-postinstall": "^2.1.0"
   },
   "packageManager": "yarn@1.22.22+sha512.a6b2f7906b721bba3d67d4aff083df04dad64c399707841b7acf00f6b133b7ac24255f2652fa22ae3534329dc6180534e98d17432037ff6fd140556e2bb3137e"
 }
