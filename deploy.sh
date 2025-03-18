@@ -18,7 +18,7 @@
 
 declare createVault=false
 declare dockerFlag=true
-declare containerID=$(docker ps -q | head -n 1)
+declare containerID=agoric
 declare agops="/usr/src/agoric-sdk/packages/agoric-cli/bin/agops"
 
 declare JSON_FILE=$1

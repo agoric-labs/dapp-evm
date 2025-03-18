@@ -23,7 +23,8 @@ const prepareOfferArguments = async (
   type: number,
   chain: keyof typeof EVM_CHAINS,
   address: string,
-  amount: number
+  amount: number,
+  decimalPlaces: number
 ): Promise<OfferArgs> => {
   const contractPayload = getPayload({ type, chain, address });
 
@@ -48,12 +49,12 @@ const prepareOfferArguments = async (
       // It should be "destAddr: AGORIC_PROXY_CONTRACT[chain]"
       // address should be part of contractInvocationPayload
       return {
-        type,
-        destAddr: AGORIC_PROXY_CONTRACT[chain],
+        type: 1,
+        destAddr: '0x5B34876FFB1656710fb963ecD199C6f173c29267',
         destinationEVMChain: EVM_CHAINS[chain],
-        contractInvocationPayload: contractPayload,
-        gasAmount: 0.008 * 10 ** 18,
-        amountToSend: amount * 10 ** 18,
+        contractInvocationPayload: [],
+        gasAmount: 0.008 * 10 ** decimalPlaces,
+        amountToSend: amount * 10 ** decimalPlaces,
       };
 
     default:
@@ -140,7 +141,8 @@ export const AgoricContractForm = () => {
         type,
         destinationEVMChain,
         evmAddress,
-        amountToSend
+        amountToSend,
+        config.decimals
       );
 
       const amountValue = BigInt(Number(amountToSend) * 10 ** config.decimals);
@@ -160,7 +162,7 @@ export const AgoricContractForm = () => {
           {
             source: 'contract',
             instance: contractInstance,
-            publicInvitationMaker: 'makeSendInvitation',
+            publicInvitationMaker: 'gmpInvitation',
           },
           { give },
           offerArgs,
@@ -271,7 +273,6 @@ export const AgoricContractForm = () => {
               <option value='' disabled>
                 Select a chain
               </option>
-              <option value='Avalanche'>Avalanche</option>
               <option value='Ethereum'>Ethereum</option>
               <option value='Base'>Base</option>
             </select>

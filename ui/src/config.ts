@@ -58,9 +58,8 @@ export const COSMOS_CHAINS = {
 };
 
 export const EVM_CHAINS = {
-  Avalanche: 'Avalanche',
+  Ethereum: 'Ethereum',
   Base: 'base-sepolia',
-  Ethereum: 'ethereum-sepolia',
 };
 
 export const ONE_DAY_IN_SECONDS = 24 * 60 * 60; // 24 hours in seconds
@@ -72,8 +71,8 @@ export const BRAND_CONFIG = {
     needsEVMCheck: true,
   },
   2: {
-    brandKey: 'WAVAX',
-    decimals: 18,
+    brandKey: 'BLD',
+    decimals: 6,
     needsEVMCheck: false,
   },
 };

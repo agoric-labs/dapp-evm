@@ -3,8 +3,8 @@ import crypto from 'crypto';
 const hashAgoricLocal = crypto.createHash('sha256');
 
 const newtraceLocal = {
-  path: 'transfer/channel-0/transfer/channel-4118',
-  base_denom: 'wavax-wei',
+  path: 'transfer/channel-0',
+  base_denom: 'uaxl',
 };
 
 hashAgoricLocal.update(`${newtraceLocal.path}/${newtraceLocal.base_denom}`);

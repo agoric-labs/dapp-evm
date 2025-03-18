@@ -1,6 +1,7 @@
 import React from 'react';
 import { showError, showSuccess } from '../Utils';
-import { TOAST_DURATION } from '../config';
+import { TOAST_DURATION,
+  BRAND_CONFIG, } from '../config';
 import { useAppStore } from '../state';
 import { toast } from 'react-toastify';
 
@@ -17,14 +18,26 @@ export const MakeAccount = () => {
 
       const offerArgs = { chainName: 'osmosis' };
 
+      const config = BRAND_CONFIG[2];
+
+      const requiredBrand = brands[config.brandKey];
+      const amountValue = BigInt(Number('1') * 10 ** config.decimals);
+
+      const give = {
+        [config.brandKey]: {
+          brand: requiredBrand,
+          value: amountValue,
+        },
+      };
+
       await new Promise<void>((resolve, reject) => {
         wallet.makeOffer(
           {
             source: 'contract',
             instance: contractInstance,
-            publicInvitationMaker: 'createAndMonitorAccount',
+            publicInvitationMaker: 'createAndMonitorLCA',
           },
-          {},
+          { give },
           offerArgs,
           (update: { status: string; data?: unknown }) => {
             switch (update.status) {

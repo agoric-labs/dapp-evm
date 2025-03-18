@@ -47,7 +47,7 @@ export const sendGmp = async (
   offerArgs
 ) => {
   const {
-    destinationAddress,
+    destAddr,
     type,
     destinationEVMChain,
     gasAmount,
@@ -57,7 +57,7 @@ export const sendGmp = async (
   console.log(
     'Offer Args',
     JSON.stringify({
-      destinationAddress,
+      destAddr,
       type,
       destinationEVMChain,
       gasAmount,
@@ -80,7 +80,7 @@ export const sendGmp = async (
     `${amt.brand} not registered in vbank`
   );
 
-  const osmosisChain = await orch.getChain('osmosis');
+  const osmosisChain = await orch.getChain('axelar');
   console.log('Osmosis Chain ID:', (await osmosisChain.getChainInfo()).chainId);
 
   const info = await osmosisChain.getChainInfo();
@@ -100,7 +100,7 @@ export const sendGmp = async (
 
   const memoToAxelar = {
     destination_chain: destinationEVMChain,
-    destination_address: destinationAddress,
+    destination_address: destAddr,
     payload,
     type,
   };
@@ -112,24 +112,13 @@ export const sendGmp = async (
     };
   }
 
-  const memo = {
-    forward: {
-      receiver: addresses.AXELAR_GMP,
-      port: 'transfer',
-      channel: channels.OSMOSIS_TO_AXELAR,
-      timeout: '10m',
-      retries: 2,
-      next: JSON.stringify(memoToAxelar),
-    },
-  };
-
   try {
     console.log(`Initiating IBC Transfer...`);
     console.log(`DENOM of token:${denom}`);
 
     await sharedLocalAccount.transfer(
       {
-        value: addresses.OSMOSIS_RECEIVER,
+        value: addresses.AXELAR_GMP,
         encoding: 'bech32',
         chainId,
       },
@@ -137,13 +126,13 @@ export const sendGmp = async (
         denom,
         value: amt.value,
       },
-      { memo: JSON.stringify(memo) }
+      { memo: JSON.stringify(memoToAxelar) }
     );
 
-    console.log(`Completed transfer to ${destinationAddress}`);
+    console.log(`Completed transfer to ${destAddr}`);
   } catch (e) {
     await withdrawToSeat(sharedLocalAccount, seat, give);
-    const errorMsg = `IBC Transfer failed ${q(e)}`;
+    const errorMsg = `IBC Transfer failed ${e}`;
     seat.exit(errorMsg);
     throw makeError(errorMsg);
   }
