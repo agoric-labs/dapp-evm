@@ -10,6 +10,7 @@ export interface OfferArgs {
   destAddr: string;
   amountToSend: number;
   gasAmount?: number;
+  chainName?: string;
 }
 export interface AppState {
   wallet?: Wallet;

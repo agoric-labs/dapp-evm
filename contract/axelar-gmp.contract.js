@@ -1,14 +1,15 @@
-import { InvitationShape } from '@agoric/zoe/src/typeGuards.js';
+// import { InvitationShape } from '@agoric/zoe/src/typeGuards.js';
 import { M } from '@endo/patterns';
 import { prepareChainHubAdmin } from '@agoric/orchestration/src/exos/chain-hub-admin.js';
 import { AnyNatAmountShape } from '@agoric/orchestration/src/typeGuards.js';
 import { withOrchestration } from '@agoric/orchestration/src/utils/start-helper.js';
 import { registerChainsAndAssets } from '@agoric/orchestration/src/utils/chain-hub-helper.js';
-import * as flows from './axelar-gmp.flows.js';
-import * as sharedFlows from './shared.flows.js';
-import * as evmFlows from './lca-evm.flows.js';
+// import * as flows from './axelar-gmp.flows.js';
+// import * as sharedFlows from './shared.flows.js';
+// import * as evmFlows from './lca-evm.flows.js';
+import * as makeAccountFlows from './make-account.flows.js';
 import { prepareEvmTap } from './evm-tap-kit.js';
-import { EmptyProposalShape } from '@agoric/zoe/src/typeGuards';
+// import { EmptyProposalShape } from '@agoric/zoe/src/typeGuards';
 
 /**
  * @import {Zone} from '@agoric/zone';
@@ -63,7 +64,7 @@ export const contract = async (
 
   const creatorFacet = prepareChainHubAdmin(zone, chainHub);
 
-  const { makeLocalAccount } = orchestrateAll(sharedFlows, {});
+  // const { makeLocalAccount } = orchestrateAll(sharedFlows, {});
   /**
    * Setup a shared local account for use in async-flow functions. Typically,
    * exo initState functions need to resolve synchronously, but `makeOnce`
@@ -73,41 +74,55 @@ export const contract = async (
    * @type {any} sharedLocalAccountP expects a Promise but this is a vow
    *   https://github.com/Agoric/agoric-sdk/issues/9822
    */
-  const sharedLocalAccountP = zone.makeOnce('localAccount', () =>
-    makeLocalAccount()
-  );
+  // const sharedLocalAccountP = zone.makeOnce('localAccount', () =>
+  //   makeLocalAccount()
+  // );
 
-  // orchestrate uses the names on orchestrationFns to do a "prepare" of the associated behavior
-  const { sendGmp } = orchestrateAll(flows, {
-    sharedLocalAccountP,
-    zoeTools,
-  });
+  // // orchestrate uses the names on orchestrationFns to do a "prepare" of the associated behavior
+  // const { sendGmp } = orchestrateAll(flows, {
+  //   sharedLocalAccountP,
+  //   zoeTools,
+  // });
 
-  const { createAndMonitorLCA } = orchestrateAll(evmFlows, {
-    sendGmp,
+  // const { createAndMonitorLCA } = orchestrateAll(evmFlows, {
+  //   makeEvmTap,
+  //   chainHub,
+  // });
+
+  const { makeAccountAndSendGMP } = orchestrateAll(makeAccountFlows, {
     makeEvmTap,
     chainHub,
+    zoeTools,
   });
 
   const publicFacet = zone.exo(
     'Send PF',
     M.interface('Send PF', {
-      gmpInvitation: M.callWhen().returns(InvitationShape),
-      createAndMonitorLCA: M.callWhen().returns(M.any()),
+      // gmpInvitation: M.callWhen().returns(InvitationShape),
+      // createAndMonitorLCA: M.callWhen().returns(M.any()),
+      makeAccountAndSendGMP: M.callWhen().returns(M.any()),
     }),
     {
-      gmpInvitation() {
+      // gmpInvitation() {
+      //   return zcf.makeInvitation(
+      //     sendGmp,
+      //     'send',
+      //     undefined,
+      //     M.splitRecord({ give: SingleNatAmountRecord })
+      //   );
+      // },
+      // createAndMonitorLCA() {
+      //   return zcf.makeInvitation(
+      //     createAndMonitorLCA,
+      //     'send',
+      //     undefined,
+      //     EmptyProposalShape
+      //   );
+      // },
+      makeAccountAndSendGMP() {
         return zcf.makeInvitation(
-          sendGmp,
-          'send3',
-          undefined,
-          M.splitRecord({ give: SingleNatAmountRecord })
-        );
-      },
-      createAndMonitorLCA() {
-        return zcf.makeInvitation(
-          createAndMonitorLCA,
-          'send2',
+          makeAccountAndSendGMP,
+          'send',
           undefined,
           M.splitRecord({ give: SingleNatAmountRecord })
         );
