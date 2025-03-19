@@ -47,7 +47,7 @@ export const sendGmp = async (
   offerArgs
 ) => {
   const {
-    destAddr,
+    destinationAddress,
     type,
     destinationEVMChain,
     gasAmount,
@@ -57,7 +57,7 @@ export const sendGmp = async (
   console.log(
     'Offer Args',
     JSON.stringify({
-      destAddr,
+      destinationAddress,
       type,
       destinationEVMChain,
       gasAmount,
@@ -80,7 +80,7 @@ export const sendGmp = async (
     `${amt.brand} not registered in vbank`
   );
 
-  const osmosisChain = await orch.getChain('axelar');
+  const osmosisChain = await orch.getChain('osmosis');
   console.log('Osmosis Chain ID:', (await osmosisChain.getChainInfo()).chainId);
 
   const info = await osmosisChain.getChainInfo();
@@ -100,7 +100,7 @@ export const sendGmp = async (
 
   const memoToAxelar = {
     destination_chain: destinationEVMChain,
-    destination_address: destAddr,
+    destination_address: destinationAddress,
     payload,
     type,
   };
@@ -112,13 +112,24 @@ export const sendGmp = async (
     };
   }
 
+  const memo = {
+    forward: {
+      receiver: addresses.AXELAR_GMP,
+      port: 'transfer',
+      channel: channels.OSMOSIS_TO_AXELAR,
+      timeout: '10m',
+      retries: 2,
+      next: JSON.stringify(memoToAxelar),
+    },
+  };
+
   try {
     console.log(`Initiating IBC Transfer...`);
     console.log(`DENOM of token:${denom}`);
 
     await sharedLocalAccount.transfer(
       {
-        value: addresses.AXELAR_GMP,
+        value: addresses.OSMOSIS_RECEIVER,
         encoding: 'bech32',
         chainId,
       },
@@ -126,13 +137,13 @@ export const sendGmp = async (
         denom,
         value: amt.value,
       },
-      { memo: JSON.stringify(memoToAxelar) }
+      { memo: JSON.stringify(memo) }
     );
 
-    console.log(`Completed transfer to ${destAddr}`);
+    console.log(`Completed transfer to ${destinationAddress}`);
   } catch (e) {
     await withdrawToSeat(sharedLocalAccount, seat, give);
-    const errorMsg = `IBC Transfer failed ${e}`;
+    const errorMsg = `IBC Transfer failed ${q(e)}`;
     seat.exit(errorMsg);
     throw makeError(errorMsg);
   }

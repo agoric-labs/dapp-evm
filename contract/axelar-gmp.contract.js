@@ -84,7 +84,6 @@ export const contract = async (
   });
 
   const { createAndMonitorLCA } = orchestrateAll(evmFlows, {
-    sendGmp,
     makeEvmTap,
     chainHub,
   });
@@ -99,7 +98,7 @@ export const contract = async (
       gmpInvitation() {
         return zcf.makeInvitation(
           sendGmp,
-          'send3',
+          'send',
           undefined,
           M.splitRecord({ give: SingleNatAmountRecord })
         );
@@ -107,9 +106,9 @@ export const contract = async (
       createAndMonitorLCA() {
         return zcf.makeInvitation(
           createAndMonitorLCA,
-          'send2',
+          'send',
           undefined,
-          M.splitRecord({ give: SingleNatAmountRecord })
+          EmptyProposalShape
         );
       },
     }
