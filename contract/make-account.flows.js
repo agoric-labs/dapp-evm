@@ -137,10 +137,9 @@ export const makeAccountAndSendGMP = async (
     `${amt.brand} not registered in vbank`
   );
 
-  const osmosisChain = await orch.getChain('osmosis');
-  console.log('Osmosis Chain ID:', (await osmosisChain.getChainInfo()).chainId);
+  console.log('Remote Chain ID:', (await remoteChain.getChainInfo()).chainId);
 
-  const info = await osmosisChain.getChainInfo();
+  const info = await remoteChain.getChainInfo();
   const { chainId } = info;
   assert(typeof chainId === 'string', 'bad chainId');
 
@@ -186,7 +185,7 @@ export const makeAccountAndSendGMP = async (
       { memo: JSON.stringify(memo) }
     );
 
-    console.log(`Completed transfer to ${destinationAddress}`);
+    console.log(`Completed transfer`);
   } catch (e) {
     await withdrawToSeat(localAccount, seat, give);
     const errorMsg = `IBC Transfer failed ${q(e)}`;
