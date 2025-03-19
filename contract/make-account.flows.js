@@ -19,12 +19,6 @@ const addresses = {
   OSMOSIS_RECEIVER: 'osmo1yh3ra8eage5xtr9a3m5utg6mx0pmqreytudaqj',
 };
 
-const channels = {
-  AGORIC_XNET_TO_OSMOSIS: 'channel-6',
-  AGORIC_DEVNET_TO_OSMOSIS: 'channel-61',
-  OSMOSIS_TO_AXELAR: 'channel-4118',
-};
-
 /**
  * Creates a Local Chain Account (LCA)
  *
@@ -164,28 +158,14 @@ export const makeAccountAndSendGMP = async (
 
   const payload = type === 1 || type === 2 ? contractInvocationPayload : null;
 
-  const memoToAxelar = {
-    destination_chain: destinationEVMChain,
-    destination_address: destinationAddress,
-    payload,
-    type,
-  };
-
-  if (type === 1 || type === 2) {
-    memoToAxelar.fee = {
-      amount: String(gasAmount),
-      recipient: addresses.AXELAR_GAS,
-    };
-  }
-
   const memo = {
-    forward: {
-      receiver: addresses.AXELAR_GMP,
-      port: 'transfer',
-      channel: channels.OSMOSIS_TO_AXELAR,
-      timeout: '10m',
-      retries: 2,
-      next: JSON.stringify(memoToAxelar),
+    destination_chain: 'Ethereum',
+    destination_address: '0x5B34876FFB1656710fb963ecD199C6f173c29267',
+    payload: [],
+    type: 1,
+    fee: {
+      amount: '8000',
+      recipient: addresses.AXELAR_GAS,
     },
   };
 
@@ -195,7 +175,7 @@ export const makeAccountAndSendGMP = async (
 
     await localAccount.transfer(
       {
-        value: addresses.OSMOSIS_RECEIVER,
+        value: addresses.AXELAR_GMP,
         encoding: 'bech32',
         chainId,
       },
