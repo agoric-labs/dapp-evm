@@ -162,7 +162,7 @@ export const AgoricContractForm = () => {
           {
             source: 'contract',
             instance: contractInstance,
-            publicInvitationMaker: 'gmpInvitation',
+            publicInvitationMaker: 'makeAccountAndSendGMP',
           },
           { give },
           offerArgs,
