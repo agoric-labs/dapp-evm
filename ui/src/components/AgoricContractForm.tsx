@@ -55,6 +55,7 @@ const prepareOfferArguments = async (
         contractInvocationPayload: [],
         gasAmount: 0.008 * 10 ** decimalPlaces,
         amountToSend: amount * 10 ** decimalPlaces,
+        chainName: 'axelar',
       };
 
     default:
