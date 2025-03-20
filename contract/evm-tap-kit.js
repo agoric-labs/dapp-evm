@@ -1,10 +1,11 @@
-import { M, mustMatch } from '@endo/patterns';
-import { VowShape } from '@agoric/vow';
-import { makeTracer } from '@agoric/internal';
-import { atob } from '@endo/base64';
-import { ChainAddressShape } from '@agoric/orchestration';
+import { M, mustMatch } from "@endo/patterns";
+import { VowShape } from "@agoric/vow";
+import { makeTracer } from "@agoric/internal";
+import { atob, decodeBase64 } from "@endo/base64";
+import { ChainAddressShape } from "@agoric/orchestration";
+import { decode } from "@findeth/abi";
 
-const trace = makeTracer('EvmTap');
+const trace = makeTracer("EvmTap");
 
 /**
  * @import {IBCChannelID, VTransferIBCEvent} from '@agoric/vats';
@@ -28,7 +29,7 @@ const trace = makeTracer('EvmTap');
 
 /** @type {TypedPattern<EvmTapState>} */
 const EvmTapStateShape = {
-  localAccount: M.remotable('LocalOrchestrationAccount'),
+  localAccount: M.remotable("LocalOrchestrationAccount"),
   localChainAddress: ChainAddressShape,
   sourceChannel: M.string(),
   remoteDenom: M.string(),
@@ -42,14 +43,14 @@ harden(EvmTapStateShape);
  */
 const prepareEvmTapKit = (zone, { watch }) => {
   return zone.exoClassKit(
-    'EvmTapKit',
+    "EvmTapKit",
     {
-      tap: M.interface('EvmTap', {
+      tap: M.interface("EvmTap", {
         receiveUpcall: M.call(M.record()).returns(
           M.or(VowShape, M.undefined())
         ),
       }),
-      transferWatcher: M.interface('TransferWatcher', {
+      transferWatcher: M.interface("TransferWatcher", {
         onFulfilled: M.call(M.undefined())
           .optional(M.bigint())
           .returns(VowShape),
@@ -66,14 +67,20 @@ const prepareEvmTapKit = (zone, { watch }) => {
          * @param {VTransferIBCEvent} event
          */
         receiveUpcall(event) {
-          trace('receiveUpcall', event);
+          trace("receiveUpcall", event);
 
           const tx = /** @type {FungibleTokenPacketData} */ (
             JSON.parse(atob(event.packet.data))
           );
-          trace('receiveUpcall packet data', tx);
+          trace("receiveUpcall packet data", tx);
+          const memo = JSON.parse(tx.memo);
+          if (memo.source_chain === "Ethereum") {
+            const p = decodeBase64(memo.payload);
+            const decoded = decode(["address"], p);
+            console.log("decoded:", decoded);
+          }
 
-          trace('receiveUpcall completed');
+          trace("receiveUpcall completed");
         },
       },
       transferWatcher: {
@@ -82,9 +89,9 @@ const prepareEvmTapKit = (zone, { watch }) => {
          * @param {bigint} value the qty of uatom to delegate
          */
         onFulfilled(_result, value) {
-          trace('onFulfilled _result:', JSON.stringify(_result));
-          trace('onFulfilled value:', JSON.stringify(value));
-          trace('onFulfilled state:', JSON.stringify(this.state));
+          trace("onFulfilled _result:", JSON.stringify(_result));
+          trace("onFulfilled value:", JSON.stringify(value));
+          trace("onFulfilled state:", JSON.stringify(this.state));
           return;
         },
       },
