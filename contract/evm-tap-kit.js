@@ -24,6 +24,7 @@ const trace = makeTracer("EvmTap");
  *   sourceChannel: IBCChannelID;
  *   remoteDenom: Denom;
  *   localDenom: Denom;
+ *   updateAddress: Function;
  * }} EvmTapState
  */
 
@@ -34,6 +35,7 @@ const EvmTapStateShape = {
   sourceChannel: M.string(),
   remoteDenom: M.string(),
   localDenom: M.string(),
+  updateAddress: M.call(M.string()).returns(M.undefined()),
 };
 harden(EvmTapStateShape);
 
@@ -78,6 +80,8 @@ const prepareEvmTapKit = (zone, { watch }) => {
             const p = decodeBase64(memo.payload);
             const decoded = decode(["address"], p);
             console.log("decoded:", decoded);
+            this.state.updateAddress(decoded[0])
+
           }
 
           trace("receiveUpcall completed");

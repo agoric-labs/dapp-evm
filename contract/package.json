@@ -12,6 +12,7 @@
   "dependencies": {
     "@agoric/internal": "^0.4.0-u19.1",
     "@agoric/orchestration": "^0.2.0-u19.1",
+    "@agoric/vat-data": "^0.5.3-u19.2",
     "@agoric/vats": "^0.16.0-u17.1",
     "@agoric/vow": "^0.2.0-u17.1",
     "@agoric/zoe": "^0.26.3-u17.1",

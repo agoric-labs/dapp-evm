@@ -93,6 +93,8 @@ export const contract = async (
     makeEvmTap,
     chainHub,
     zoeTools,
+    baggage: privateArgs.baggage,
+    zcf,
   });
 
   const publicFacet = zone.exo(

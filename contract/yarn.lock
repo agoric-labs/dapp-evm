@@ -265,6 +265,24 @@
     anylogger "^0.21.0"
     jessie.js "^0.3.4"
 
+"@agoric/internal@^0.4.0-u19.2":
+  version "0.4.0-u19.2"
+  resolved "https://registry.yarnpkg.com/@agoric/internal/-/internal-0.4.0-u19.2.tgz#e19a917dd2cdc44de127b5918d450c0eec99a3a2"
+  integrity sha512-1MKD9peGRmOKawu02TF8SV75XJIyCt1n/V5/VKWNyxck1RBVYRT7M7gOtF5AlYkMGCuRIVb7SY3iv7JWV0yXeg==
+  dependencies:
+    "@agoric/base-zone" "^0.1.1-u19.0"
+    "@endo/common" "^1.2.9"
+    "@endo/errors" "^1.2.9"
+    "@endo/far" "^1.1.10"
+    "@endo/init" "^1.1.8"
+    "@endo/marshal" "^1.6.3"
+    "@endo/pass-style" "^1.4.8"
+    "@endo/patterns" "^1.4.8"
+    "@endo/promise-kit" "^1.1.9"
+    "@endo/stream" "^1.2.9"
+    anylogger "^0.21.0"
+    jessie.js "^0.3.4"
+
 "@agoric/kmarshal@0.1.1-upgrade-19-dev-c605745.0+c605745":
   version "0.1.1-upgrade-19-dev-c605745.0"
   resolved "https://registry.yarnpkg.com/@agoric/kmarshal/-/kmarshal-0.1.1-upgrade-19-dev-c605745.0.tgz#8d9558a3fb139576cb4b6e5c8a7016f296c48f60"
@@ -456,6 +474,25 @@
     "@endo/patterns" "^1.4.8"
     "@endo/promise-kit" "^1.1.9"
 
+"@agoric/swingset-liveslots@^0.10.3-u19.2":
+  version "0.10.3-u19.2"
+  resolved "https://registry.yarnpkg.com/@agoric/swingset-liveslots/-/swingset-liveslots-0.10.3-u19.2.tgz#38e6560628cb426380b9f7c41cc3da12bb3e6d61"
+  integrity sha512-ZDFCg8t2sn0T6qAXzSjhbvrhE1drugJSjYjqr8tsjHGu4o5QKSZaxoEx770fouvbYUwRDCMOEp/lhxZkz7pqYw==
+  dependencies:
+    "@agoric/internal" "^0.4.0-u19.2"
+    "@agoric/store" "^0.9.3-u19.0"
+    "@endo/env-options" "^1.1.8"
+    "@endo/errors" "^1.2.9"
+    "@endo/eventual-send" "^1.3.0"
+    "@endo/exo" "^1.5.8"
+    "@endo/far" "^1.1.10"
+    "@endo/init" "^1.1.8"
+    "@endo/marshal" "^1.6.3"
+    "@endo/nat" "^5.0.14"
+    "@endo/pass-style" "^1.4.8"
+    "@endo/patterns" "^1.4.8"
+    "@endo/promise-kit" "^1.1.9"
+
 "@agoric/swingset-vat@0.32.3-upgrade-19-dev-c605745.0+c605745":
   version "0.32.3-upgrade-19-dev-c605745.0"
   resolved "https://registry.yarnpkg.com/@agoric/swingset-vat/-/swingset-vat-0.32.3-upgrade-19-dev-c605745.0.tgz#b318e9f62dcf260ec301e71646121e6690c8b110"
@@ -588,6 +625,18 @@
     "@agoric/base-zone" "^0.1.1-u19.0"
     "@agoric/store" "^0.9.3-u19.0"
     "@agoric/swingset-liveslots" "^0.10.3-u19.1"
+    "@endo/errors" "^1.2.9"
+    "@endo/exo" "^1.5.8"
+    "@endo/patterns" "^1.4.8"
+
+"@agoric/vat-data@^0.5.3-u19.2":
+  version "0.5.3-u19.2"
+  resolved "https://registry.yarnpkg.com/@agoric/vat-data/-/vat-data-0.5.3-u19.2.tgz#2f0a8599d4080197377c0d5968ca013c56a4ebd9"
+  integrity sha512-Yclbdco0Vy4qpGk5T/2yTbV7vAZ8/PPjKRd8GhMoPL9i1PW/jkqk50kTTxhVaBMzBeEF/luCBmgc25K1b2Glrw==
+  dependencies:
+    "@agoric/base-zone" "^0.1.1-u19.0"
+    "@agoric/store" "^0.9.3-u19.0"
+    "@agoric/swingset-liveslots" "^0.10.3-u19.2"
     "@endo/errors" "^1.2.9"
     "@endo/exo" "^1.5.8"
     "@endo/patterns" "^1.4.8"
