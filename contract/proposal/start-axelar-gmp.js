@@ -4,6 +4,7 @@ import {
   NonNullish,
 } from '@agoric/internal';
 import { E } from '@endo/far';
+import { makeStorageNodeChild } from '@agoric/internal/src/lib-chainStorage.js';
 
 /// <reference types="@agoric/vats/src/core/types-ambient"/>
 
@@ -50,6 +51,7 @@ export const startAxelarGmp = async (
       cosmosInterchainService,
       localchain,
       startUpgradable,
+      chainStorage,
     },
     installation: {
       consume: { axelarGmp },
@@ -67,6 +69,8 @@ export const startAxelarGmp = async (
 
   const marshaller = await E(board).getReadonlyMarshaller();
 
+  const storageNode = await makeStorageNodeChild(chainStorage, 'axelarGmp');
+
   trace('Setting privateArgs');
 
   const privateArgs = await deeplyFulfilledObject(
@@ -76,6 +80,7 @@ export const startAxelarGmp = async (
       marshaller,
       orchestrationService: cosmosInterchainService,
       timerService: chainTimerService,
+      storageNode,
       chainInfo,
       assetInfo,
     })
@@ -126,6 +131,7 @@ export const getManifest = ({ restoreRef }, { installationRef, options }) => {
           board: true,
           chainTimerService: true,
           cosmosInterchainService: true,
+          chainStorage: true,
           localchain: true,
 
           startUpgradable: true,

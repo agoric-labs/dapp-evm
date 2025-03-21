@@ -89,7 +89,7 @@ const createLCA = async ({
  *   destinationEVMChain: string;
  *   gasAmount: number;
  *   contractInvocationPayload: number[];
- *   chainName: string
+ *   chainName: string;
  * }} offerArgs
  */
 export const makeAccountAndSendGMP = async (
@@ -194,5 +194,6 @@ export const makeAccountAndSendGMP = async (
   }
 
   seat.exit();
+  return localAccount.asContinuingOffer();
 };
 harden(makeAccountAndSendGMP);
