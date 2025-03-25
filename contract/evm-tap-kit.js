@@ -67,11 +67,10 @@ export const prepareEvmAccountKit = (zone, { zcf }) => {
         asContinuingOffer: M.call().returns(),
         getPublicTopics: M.call().returns(),
         getAddress: M.call().returns(M.string()),
-        voteOnParamChange: M.call(M.any()).returns(VowShape),
-        sendGmp: M.call().returns(),
+        callContract: M.call().returns(VowShape),
       }),
       invitationMakers: M.interface('invitationMakers', {
-        VoteOnParamChange: M.callWhen().returns(M.any()),
+        CallContract: M.callWhen().returns(M.any()),
       }),
     },
     /**
@@ -157,7 +156,7 @@ export const prepareEvmAccountKit = (zone, { zcf }) => {
         CallContract() {
           return zcf.makeInvitation((seat, _offerArgs) => {
             seat.exit(); // assuming no offer / exchange of funds
-            return this.facets.holder.callContract(_offerArgs);
+            return this.facets.holder.callContract();
           }, 'CallContract');
         },
 
