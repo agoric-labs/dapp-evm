@@ -1,44 +1,49 @@
 // @ts-check
-import { NonNullish } from "@agoric/internal";
-import { makeError, q } from "@endo/errors";
-import { Fail } from "@endo/errors";
-import { denomHash } from "@agoric/orchestration/src/utils/denomHash.js";
-import { prepareExo, provideDurableMapStore } from "@agoric/vat-data";
+import { NonNullish } from '@agoric/internal';
+import { makeError, q, Fail } from '@endo/errors';
+import { denomHash } from '@agoric/orchestration/src/utils/denomHash.js';
 
 /**
  * @import {GuestInterface} from '@agoric/async-flow';
  * @import {ZoeTools} from '@agoric/orchestration/src/utils/zoe-tools.js';
- * @import {Orchestrator, OrchestrationFlow, Chain, ChainHub, OrchestrationAccount, CosmosChainInfo} from '@agoric/orchestration/src/types.js';
+ * @import {Orchestrator, OrchestrationFlow, Chain, ChainHub, OrchestrationAccount, CosmosChainInfo, ZcfTools} from '@agoric/orchestration/src/types.js';
  */
 
 const { entries } = Object;
 
 const addresses = {
   AXELAR_GMP:
-    "axelar1dv4u5k73pzqrxlzujxg3qp8kvc3pje7jtdvu72npnt5zhq05ejcsn5qme5",
-  AXELAR_GAS: "axelar1zl3rxpp70lmte2xr6c4lgske2fyuj3hupcsvcd",
-  OSMOSIS_RECEIVER: "osmo1yh3ra8eage5xtr9a3m5utg6mx0pmqreytudaqj",
+    'axelar1dv4u5k73pzqrxlzujxg3qp8kvc3pje7jtdvu72npnt5zhq05ejcsn5qme5',
+  AXELAR_GAS: 'axelar1zl3rxpp70lmte2xr6c4lgske2fyuj3hupcsvcd',
+  OSMOSIS_RECEIVER: 'osmo1yh3ra8eage5xtr9a3m5utg6mx0pmqreytudaqj',
 };
 
 /**
  * Creates a Local Chain Account (LCA)
  *
- * @param {Object} params - The parameters object.
- * @param {Chain<{ chainId: "agoric" }>} params.agoricChain - Agoric chain object.
+ * @param {object} params - The parameters object.
+ * @param {Chain<{ chainId: 'agoric' }>} params.agoricChain - Agoric chain
+ *   object.
  * @param {Chain<any>} params.remoteChain - Remote chain object.
- * @param {GuestInterface<ChainHub>} params.chainHub - The ChainHub interface for retrieving connection info.
+ * @param {GuestInterface<ChainHub>} params.chainHub - The ChainHub interface
+ *   for retrieving connection info.
  * @param {string} params.chainName - The name of the remote chain.
- * @param {Function} params.updateAddress - Function that updates the chain address
- * @param {import('./evm-tap-kit').MakeEvmTap} params.makeEvmTap - Function to create an EVM tap.
- * @returns {Promise<OrchestrationAccount<{ chainId: "agoric" }>>} A promise that resolves to the created OrchestrationAccount.
+ * @param {import('./evm-tap-kit').MakeEvmAccountKit} params.makeEvmAccountKit
+ *   - Function to create an EVM tap.
+ *
+ * @returns {Promise<{
+ *   evmAccountKit: import('./evm-tap-kit').EvmAccountKit;
+ *   localAccount: OrchestrationAccount<{ chainId: 'agoric' }>;
+ * }>}
+ *   A promise that resolves to the created OrchestrationAccount.
  */
 const createLCA = async ({
   agoricChain: agoric,
   remoteChain,
   chainHub,
   chainName,
-  makeEvmTap,
-  updateAddress,
+  makeEvmAccountKit,
+  sendValue,
 }) => {
   const { chainId, stakingTokens } = await remoteChain.getChainInfo();
   const remoteDenom = stakingTokens[0].denom;
@@ -47,45 +52,47 @@ const createLCA = async ({
 
   const localAccount = await agoric.makeAccount();
   const localChainAddress = await localAccount.getAddress();
-  console.log("Local Chain Address:", localChainAddress);
+  console.log('Local Chain Address:', localChainAddress);
 
   const agoricChainId = (await agoric.getChainInfo()).chainId;
   const { transferChannel } = await chainHub.getConnectionInfo(
     agoricChainId,
-    chainId
+    chainId,
   );
 
-  assert(transferChannel.counterPartyChannelId, "unable to find sourceChannel");
+  assert(transferChannel.counterPartyChannelId, 'unable to find sourceChannel');
 
   const localDenom = `ibc/${denomHash({
     denom: remoteDenom,
     channelId: transferChannel.channelId,
   })}`;
 
-  const tap = makeEvmTap({
+  const evmAccountKit = makeEvmAccountKit({
     localAccount,
     localChainAddress,
     sourceChannel: transferChannel.counterPartyChannelId,
     remoteDenom,
     localDenom,
-    updateAddress,
+    sendValue
   });
 
   // XXX consider storing appRegistration, so we can .revoke() or .updateTargetApp()
   // @ts-expect-error tap.receiveUpcall: 'Vow<void> | undefined' not assignable to 'Promise<any>'
-  await localAccount.monitorTransfers(tap);
+  await localAccount.monitorTransfers(evmAccountKit.tap);
 
-  return localAccount;
+  return harden({ evmAccountKit, localAccount });
 };
 /**
  * @satisfies {OrchestrationFlow}
  * @param {Orchestrator} orch
- *  @param {{
- *   zoeTools: GuestInterface<ZoeTools>
- *   makeEvmTap: import('./evm-tap-kit').MakeEvmTap;
+ * @param {{
+ *   zoeTools: GuestInterface<ZoeTools>;
+ *   makeEvmAccountKit: import('./evm-tap-kit').MakeEvmAccountKit;
+ *   makeUpdateAddress: import('./axelar-gmp.contract').MakeUpdateAddress;
  *   chainHub: GuestInterface<ChainHub>;
  *   baggage: import('@agoric/vat-data').Baggage;
- *   zcf: ZCF;
+ *   zcf: ZcfTools;
+ *   zone: import('@agoric/zone').Zone;
  * }} ctx
  * @param {ZCFSeat} seat
  * @param {{
@@ -102,12 +109,13 @@ export const makeAccountAndSendGMP = async (
   {
     zcf,
     baggage,
-    makeEvmTap,
+    makeEvmAccountKit,
     chainHub,
     zoeTools: { localTransfer, withdrawToSeat },
+    zone,
   },
   seat,
-  offerArgs
+  offerArgs,
 ) => {
   const {
     destinationAddress,
@@ -117,70 +125,68 @@ export const makeAccountAndSendGMP = async (
     contractInvocationPayload,
     chainName,
   } = offerArgs;
-  console.log("Inside sendIt");
+  console.log('Inside sendIt', baggage);
   console.log(
-    "Offer Args",
+    'Offer Args',
     JSON.stringify({
       destinationAddress,
       type,
       destinationEVMChain,
       gasAmount,
       contractInvocationPayload,
-    })
+    }),
   );
 
   const { give } = seat.getProposal();
   const [[_kw, amt]] = entries(give);
-  console.log("_kw, amt", _kw, amt);
+  console.log('_kw, amt', _kw, amt);
 
   const [agoric, remoteChain] = await Promise.all([
-    orch.getChain("agoric"),
+    orch.getChain('agoric'),
     orch.getChain(chainName),
   ]);
 
-  console.log("Agoric Chain ID:", (await agoric.getChainInfo()).chainId);
+  console.log('Agoric Chain ID:', (await agoric.getChainInfo()).chainId);
 
   const assets = await agoric.getVBankAssetInfo();
-  console.log(`Denoms: ${assets.map((a) => a.denom).join(", ")}`);
+  console.log(`Denoms: ${assets.map(a => a.denom).join(', ')}`);
 
   const { denom } = NonNullish(
-    assets.find((a) => a.brand === amt.brand),
-    `${amt.brand} not registered in vbank`
+    assets.find(a => a.brand === amt.brand),
+    `${amt.brand} not registered in vbank`,
   );
 
-  console.log("Remote Chain ID:", (await remoteChain.getChainInfo()).chainId);
+  console.log('Remote Chain ID:', (await remoteChain.getChainInfo()).chainId);
 
   const info = await remoteChain.getChainInfo();
   const { chainId } = info;
-  assert(typeof chainId === "string", "bad chainId");
+  assert(typeof chainId === 'string', 'bad chainId');
 
-  let address;
-  const updateAddress = (newAddress) => {
-    address = newAddress;
-  };
-
-  const localAccount = await createLCA({
+  const { localAccount, evmAccountKit } = await createLCA({
     // @ts-ignore
     agoricChain: agoric,
     remoteChain,
     chainHub,
     chainName,
-    makeEvmTap,
-    updateAddress,
+    makeEvmAccountKit,
+    sendValue: {
+      denom,
+      value: amt.value,
+    }
   });
 
   await localTransfer(seat, localAccount, give);
-  console.log("After local transfer");
+  console.log('After local transfer');
 
   const payload = type === 1 || type === 2 ? contractInvocationPayload : null;
 
   const memo = {
-    destination_chain: "Ethereum",
-    destination_address: "0x5B34876FFB1656710fb963ecD199C6f173c29267",
+    destination_chain: 'Ethereum',
+    destination_address: '0x5B34876FFB1656710fb963ecD199C6f173c29267',
     payload: [],
     type: 1,
     fee: {
-      amount: "1",
+      amount: '1',
       recipient: addresses.AXELAR_GAS,
     },
   };
@@ -192,14 +198,14 @@ export const makeAccountAndSendGMP = async (
     await localAccount.transfer(
       {
         value: addresses.AXELAR_GMP,
-        encoding: "bech32",
+        encoding: 'bech32',
         chainId,
       },
       {
         denom,
         value: amt.value,
       },
-      { memo: JSON.stringify(memo) }
+      { memo: JSON.stringify(memo) },
     );
 
     console.log(`Completed transfer`);
@@ -210,66 +216,19 @@ export const makeAccountAndSendGMP = async (
     throw makeError(errorMsg);
   }
 
-  const makeParamInvitation = (...args1) => {
-    console.log("fraz", args1);
-    /**
-     * @param {ZCFSeat} seat
-     * @param {any} args
-     */
-    const voteOnParamChanges = (seat, args) => {
-      // mustMatch(args, ParamChangesOfferArgsShape);
-      seat.exit();
-      console.log("fraz2", args, address);
-      // const {
-      //   params,
-      //   instance,
-      //   deadline,
-      //   path = { paramPath: { key: 'governedApi' } },
-      // } = args;
-      // const governor = instanceToGovernor.get(instance);
-      // return E(governor).voteOnParamChanges(counter, deadline, {
-      //   ...path,
-      //   // @ts-expect-error XXX
-      //   changes: params,
-      // });
-      localAccount.transfer(
-        {
-          value: addresses.AXELAR_GMP,
-          encoding: "bech32",
-          chainId,
-        },
-        {
-          denom,
-          value: amt.value,
-        },
-        {
-          memo: JSON.stringify({
-            destination_chain: "Ethereum",
-            destination_address: address,
-            payload: [],
-            type: 1,
-            fee: {
-              amount: "1",
-              recipient: addresses.AXELAR_GAS,
-            },
-          }),
-        }
-      );
-    };
-
-    return zcf.makeInvitation(voteOnParamChanges, "vote on param changes");
-  };
+  // TODO: move logic to evm-(tap|account)-kit
 
   seat.exit();
-  const invitationMakers = prepareExo(
-    baggage,
-    "Charter Invitation Makers",
-    undefined,
-    {
-      VoteOnParamChange: makeParamInvitation,
-    }
-  );
+  // const invitationMakers = prepareExo(
+  //   baggage,
+  //   'Charter Invitation Makers',
+  //   undefined,
+  //   {
+  //     getAddress: () => address,
+  //     VoteOnParamChange: makeParamInvitation,
+  //   },
+  // );
 
-  return harden({ invitationMakers });
+  return harden({ invitationMakers: evmAccountKit.invitationMakers });
 };
 harden(makeAccountAndSendGMP);

@@ -1,7 +1,6 @@
 import {
   deeplyFulfilledObject,
   makeTracer,
-  NonNullish,
 } from '@agoric/internal';
 import { E } from '@endo/far';
 import { makeStorageNodeChild } from '@agoric/internal/src/lib-chainStorage.js';

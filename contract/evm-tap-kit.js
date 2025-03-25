@@ -1,18 +1,27 @@
-import { M, mustMatch } from "@endo/patterns";
-import { VowShape } from "@agoric/vow";
-import { makeTracer } from "@agoric/internal";
-import { atob, decodeBase64 } from "@endo/base64";
-import { ChainAddressShape } from "@agoric/orchestration";
-import { decode } from "@findeth/abi";
+//@ts-check
+import { M, mustMatch } from '@endo/patterns';
+import { VowShape } from '@agoric/vow';
+import { makeTracer, NonNullish } from '@agoric/internal';
+import { atob, decodeBase64 } from '@endo/base64';
+import { ChainAddressShape } from '@agoric/orchestration';
+import { decode } from '@findeth/abi';
+// import { InvitationShape } from '@agoric/zoe/src/typeGuards';
 
-const trace = makeTracer("EvmTap");
+const trace = makeTracer('EvmTap');
+
+const addresses = {
+  AXELAR_GMP:
+    'axelar1dv4u5k73pzqrxlzujxg3qp8kvc3pje7jtdvu72npnt5zhq05ejcsn5qme5',
+  AXELAR_GAS: 'axelar1zl3rxpp70lmte2xr6c4lgske2fyuj3hupcsvcd',
+  OSMOSIS_RECEIVER: 'osmo1yh3ra8eage5xtr9a3m5utg6mx0pmqreytudaqj',
+};
 
 /**
  * @import {IBCChannelID, VTransferIBCEvent} from '@agoric/vats';
  * @import {VowTools} from '@agoric/vow';
  * @import {Zone} from '@agoric/zone';
  * @import {TargetApp} from '@agoric/vats/src/bridge-target.js';
- * @import {ChainAddress, Denom, OrchestrationAccount} from '@agoric/orchestration';
+ * @import {AccountId, ChainAddress, Denom, OrchestrationAccount} from '@agoric/orchestration';
  * @import {FungibleTokenPacketData} from '@agoric/cosmic-proto/ibc/applications/transfer/v2/packet.js';
  * @import {TypedPattern} from '@agoric/internal';
  */
@@ -24,44 +33,54 @@ const trace = makeTracer("EvmTap");
  *   sourceChannel: IBCChannelID;
  *   remoteDenom: Denom;
  *   localDenom: Denom;
- *   updateAddress: Function;
+ *   evmAccountAddress: AccountId | undefined;
+ *   sendValue: any;
  * }} EvmTapState
  */
 
-/** @type {TypedPattern<EvmTapState>} */
-const EvmTapStateShape = {
-  localAccount: M.remotable("LocalOrchestrationAccount"),
+/** @type {TypedPattern<Omit<EvmTapState, 'evmAccountAddress'>>} */
+const EvmTapInitStateShape = {
+  localAccount: M.remotable('LocalOrchestrationAccount'),
   localChainAddress: ChainAddressShape,
   sourceChannel: M.string(),
   remoteDenom: M.string(),
   localDenom: M.string(),
-  updateAddress: M.call(M.string()).returns(M.undefined()),
+  sendValue: M.any(),
+  // updateAddress: M.call(M.string()).returns(M.undefined()),
 };
-harden(EvmTapStateShape);
+harden(EvmTapInitStateShape);
 
 /**
  * @param {Zone} zone
- * @param {VowTools} vowTools
+ * @param {{ vowTools: VowTools; zcf: ZCF }} powers
  */
-const prepareEvmTapKit = (zone, { watch }) => {
+export const prepareEvmAccountKit = (zone, { zcf }) => {
   return zone.exoClassKit(
-    "EvmTapKit",
+    'EvmTapKit',
     {
-      tap: M.interface("EvmTap", {
+      tap: M.interface('EvmTap', {
         receiveUpcall: M.call(M.record()).returns(
-          M.or(VowShape, M.undefined())
+          M.or(VowShape, M.undefined()),
         ),
       }),
-      transferWatcher: M.interface("TransferWatcher", {
-        onFulfilled: M.call(M.undefined())
-          .optional(M.bigint())
-          .returns(VowShape),
+      holder: M.interface('Holder', {
+        asContinuingOffer: M.call().returns(),
+        getPublicTopics: M.call().returns(),
+        getAddress: M.call().returns(M.string()),
+        voteOnParamChange: M.call(M.any()).returns(VowShape),
+        sendGmp: M.call().returns(),
+      }),
+      invitationMakers: M.interface('invitationMakers', {
+        VoteOnParamChange: M.callWhen().returns(M.any()),
       }),
     },
-    /** @param {EvmTapState} initialState */
-    (initialState) => {
-      mustMatch(initialState, EvmTapStateShape);
-      return harden(initialState);
+    /**
+     * @param {Omit<EvmTapState, 'evmAccountAddress'>} initialState
+     * @returns {EvmTapState}
+     */
+    initialState => {
+      mustMatch(initialState, EvmTapInitStateShape);
+      return harden({ evmAccountAddress: undefined, ...initialState });
     },
     {
       tap: {
@@ -69,53 +88,83 @@ const prepareEvmTapKit = (zone, { watch }) => {
          * @param {VTransferIBCEvent} event
          */
         receiveUpcall(event) {
-          trace("receiveUpcall", event);
+          trace('receiveUpcall', event);
 
           const tx = /** @type {FungibleTokenPacketData} */ (
             JSON.parse(atob(event.packet.data))
           );
-          trace("receiveUpcall packet data", tx);
+          trace('receiveUpcall packet data', tx);
           const memo = JSON.parse(tx.memo);
-          if (memo.source_chain === "Ethereum") {
-            const p = decodeBase64(memo.payload);
-            const decoded = decode(["address"], p);
-            console.log("decoded:", decoded);
-            this.state.updateAddress(decoded[0])
-
+          if (memo.source_chain === 'Ethereum') {
+            const payload = decodeBase64(memo.payload);
+            const decodedPayload = decode(['address'], payload);
+            console.log('decoded:', decodedPayload);
+            // todo: prepend with `eip155:${1,8453}:`
+            this.state.evmAccountAddress = decodedPayload[0];
           }
 
-          trace("receiveUpcall completed");
+          trace('receiveUpcall completed');
+
+          // TODO: we will need more robust logic here to associate an evm call that expects a response to an outgoing request.
+          // This isn't something we need to prioritize immediately. `packet-tools.js` and `ibc-packet.js` have good patterns
+          // we can look at for inspiration
         },
       },
-      transferWatcher: {
+      holder: {
+        // convention that returns { publicSubscribers, invitationMakers }
+        // in the original makeAccount() invitation, we can use this for the return
+        asContinuingOffer() {},
+        // returns storage path the vstorage writer uses for this exo (once it exists)
+        getPublicTopics() {},
         /**
-         * @param {void} _result
-         * @param {bigint} value the qty of uatom to delegate
+         * Returns the Smart Contract Account address on the EVM Chain
+         *
+         * @returns {AccountId}
+         * @throws {Error} if not initialized
          */
-        onFulfilled(_result, value) {
-          trace("onFulfilled _result:", JSON.stringify(_result));
-          trace("onFulfilled value:", JSON.stringify(value));
-          trace("onFulfilled state:", JSON.stringify(this.state));
-          return;
+        getAddress() {
+          return NonNullish(this.state.evmAccountAddress);
+        },
+        callContract() {
+          // logic for voting, aka this.state.localAccount.transfer(...)
+          // we cannot use async/await in this context, but we could reference
+          // orchFns/flows to simplify the code. see `staking-combinations.contract.js`
+          // as an example
+
+          return this.state.localAccount.transfer(
+            {
+              value: addresses.AXELAR_GMP,
+              encoding: 'bech32',
+              chainId: 'axelar',
+            },
+            this.state.sendValue,
+            {
+              memo: JSON.stringify({
+                destination_chain: 'Ethereum',
+                destination_address: this.state.evmAccountAddress,
+                payload: [],
+                type: 1,
+                fee: {
+                  amount: '1',
+                  recipient: addresses.AXELAR_GAS,
+                },
+              }),
+            },
+          );
         },
       },
-    }
+      invitationMakers: {
+        CallContract() {
+          return zcf.makeInvitation((seat, _offerArgs) => {
+            seat.exit(); // assuming no offer / exchange of funds
+            return this.facets.holder.callContract(_offerArgs);
+          }, 'CallContract');
+        },
+
+      },
+    },
   );
 };
 
-/**
- * Provides a {@link TargetApp} that reacts to an incoming IBC transfer
- *
- * @param {Zone} zone
- * @param {VowTools} vowTools
- * @returns {(
- *   ...args: Parameters<ReturnType<typeof prepareEvmTapKit>>
- * ) => ReturnType<ReturnType<typeof prepareEvmTapKit>>['tap']}
- */
-export const prepareEvmTap = (zone, vowTools) => {
-  const makeKit = prepareEvmTapKit(zone, vowTools);
-  return (...args) => makeKit(...args).tap;
-};
-
-/** @typedef {ReturnType<typeof prepareEvmTap>} MakeEvmTap */
-/** @typedef {ReturnType<MakeEvmTap>} EvmTap */
+/** @typedef {ReturnType<typeof prepareEvmAccountKit>} MakeEvmAccountKit */
+/** @typedef {ReturnType<MakeEvmAccountKit>} EvmAccountKit */

@@ -75,7 +75,7 @@ export const MakeAccount = () => {
       invitationSpec: {
         source: 'continuing',
         previousOffer: latestInvitation[0],
-        invitationMakerName: 'VoteOnParamChange',
+        invitationMakerName: 'CallContract',
       },
       offerArgs: {
         // instance,
