@@ -5,11 +5,12 @@ export const useAppStore = create<AppState>((set) => ({
   contractInstance: null,
   balance: 0,
   evmAddress: '',
-  destinationEVMChain: 'Avalanche',
+  destinationEVMChain: 'Ethereum',
   amountToSend: 0,
   loading: false,
   error: undefined,
   type: 3,
   transactionUrl: null,
   tab: 1,
+  currentOffers: null,
 }));

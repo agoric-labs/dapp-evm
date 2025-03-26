@@ -1,9 +1,9 @@
 import {
   deeplyFulfilledObject,
   makeTracer,
-  NonNullish,
 } from '@agoric/internal';
 import { E } from '@endo/far';
+import { makeStorageNodeChild } from '@agoric/internal/src/lib-chainStorage.js';
 
 /// <reference types="@agoric/vats/src/core/types-ambient"/>
 
@@ -50,6 +50,7 @@ export const startAxelarGmp = async (
       cosmosInterchainService,
       localchain,
       startUpgradable,
+      chainStorage,
     },
     installation: {
       consume: { axelarGmp },
@@ -67,6 +68,8 @@ export const startAxelarGmp = async (
 
   const marshaller = await E(board).getReadonlyMarshaller();
 
+  const storageNode = await makeStorageNodeChild(chainStorage, 'axelarGmp');
+
   trace('Setting privateArgs');
 
   const privateArgs = await deeplyFulfilledObject(
@@ -76,22 +79,23 @@ export const startAxelarGmp = async (
       marshaller,
       orchestrationService: cosmosInterchainService,
       timerService: chainTimerService,
+      storageNode,
       chainInfo,
       assetInfo,
     })
   );
 
   /** @param {() => Promise<Issuer>} p */
-  // const safeFulfill = async (p) =>
-  //   E.when(
-  //     p(),
-  //     (i) => i,
-  //     () => undefined
-  //   );
+  const safeFulfill = async (p) =>
+    E.when(
+      p(),
+      (i) => i,
+      () => undefined
+    );
 
-  // const ausdcIssuer = await safeFulfill(() =>
-  //   E(agoricNames).lookup('issuer', 'AUSDC')
-  // );
+  const axlIssuer = await safeFulfill(() =>
+    E(agoricNames).lookup('issuer', 'AXL')
+  );
 
   // const wavaxIssuer = await safeFulfill(() =>
   //   E(agoricNames).lookup('issuer', 'WAVAX')
@@ -100,7 +104,7 @@ export const startAxelarGmp = async (
   const issuerKeywordRecord = harden({
     BLD: await BLD,
     IST: await IST,
-    // ...(ausdcIssuer && { AUSDC: ausdcIssuer }),
+    ...(axlIssuer && { AXL: axlIssuer }),
     // ...(wavaxIssuer && { WAVAX: wavaxIssuer }),
   });
   trace('issuerKeywordRecord', issuerKeywordRecord);
@@ -126,6 +130,7 @@ export const getManifest = ({ restoreRef }, { installationRef, options }) => {
           board: true,
           chainTimerService: true,
           cosmosInterchainService: true,
+          chainStorage: true,
           localchain: true,
 
           startUpgradable: true,

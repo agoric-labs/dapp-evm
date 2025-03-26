@@ -3,6 +3,21 @@ import { EVM_CHAINS } from '../config';
 
 type Wallet = Awaited<ReturnType<typeof makeAgoricWalletConnection>>;
 
+export interface CurrentOffer {
+  liveOffers: Array<unknown>;
+  offerToPublicSubscriberPaths: Array<unknown>;
+  offerToUsedInvitation: Array<[string, {
+    brand: unknown;
+    value: Array<{
+      description: string;
+      handle: unknown;
+      instance: unknown;
+      installation: unknown;
+    }>
+  }]>;
+  purses: Array<unknown>;
+};
+
 export interface OfferArgs {
   type: number;
   destinationEVMChain: (typeof EVM_CHAINS)[keyof typeof EVM_CHAINS];
@@ -10,6 +25,7 @@ export interface OfferArgs {
   destAddr: string;
   amountToSend: number;
   gasAmount?: number;
+  chainName?: string;
 }
 export interface AppState {
   wallet?: Wallet;
@@ -26,6 +42,7 @@ export interface AppState {
   contractInvocationPayload?: number[];
   transactionUrl: string | null;
   tab: number;
+  currentOffers: CurrentOffer | null;
 }
 
 export interface BalanceCheckParams {

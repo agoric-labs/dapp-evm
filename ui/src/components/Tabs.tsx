@@ -14,7 +14,7 @@ export const Tabs = () => {
           useAppStore.setState({
             type: 3,
             evmAddress: '',
-            destinationEVMChain: 'Avalanche',
+            destinationEVMChain: 'Ethereum',
             amountToSend: 0,
             loading: false,
             error: undefined,
@@ -29,7 +29,7 @@ export const Tabs = () => {
           useAppStore.setState({
             type: 2,
             evmAddress: '',
-            destinationEVMChain: 'Avalanche',
+            destinationEVMChain: 'Ethereum',
             amountToSend: 0,
             loading: false,
             error: undefined,

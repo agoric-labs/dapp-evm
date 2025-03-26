@@ -17,6 +17,7 @@ import WalletStatus from './components/WalletStatus';
 import { useAppStore } from './state';
 import { Tabs } from './components/Tabs';
 import { MakeAccount } from './components/MakeAccount';
+import { CurrentOffer } from './interfaces/interfaces';
 
 const ENDPOINTS = {
   RPC: 'http://localhost:26657',
@@ -25,7 +26,7 @@ const ENDPOINTS = {
 
 const watcher = makeAgoricChainStorageWatcher(ENDPOINTS.API, 'agoriclocal');
 
-const setup = async () => {
+const setup = async (walletAddress: string | undefined) => {
   watcher.watchLatest<Array<[string, unknown]>>(
     [Kind.Data, 'published.agoricNames.instance'],
     (instances) => {
@@ -47,6 +48,19 @@ const setup = async () => {
       });
     }
   );
+
+  watcher.watchLatest<CurrentOffer>(
+    [Kind.Data, `published.wallet.${walletAddress}.current`],
+    (co) => {
+      const currentOffer = co ? co : null;
+      if (!currentOffer) {
+        return;
+      }
+      useAppStore.setState({
+        currentOffers: currentOffer,
+      });
+    }
+  );
 };
 
 const connectWallet = async () => {
@@ -56,9 +70,6 @@ const connectWallet = async () => {
 };
 
 function App() {
-  useEffect(() => {
-    setup();
-  }, []);
 
   const { wallet, loading, tab } = useAppStore((state) => ({
     wallet: state.wallet,
@@ -69,7 +80,12 @@ function App() {
     loading: state.loading,
     error: state.error,
     tab: state.tab,
+    currentOffers: state.currentOffers,
   }));
+  
+  useEffect(() => {
+    setup(wallet?.address);
+  }, [wallet]);
 
   return (
     <div className='container'>
