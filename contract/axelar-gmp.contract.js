@@ -1,5 +1,9 @@
-import { InvitationShape } from '@agoric/zoe/src/typeGuards.js';
 import { M } from '@endo/patterns';
+import {
+  EmptyProposalShape,
+  InvitationShape,
+} from '@agoric/zoe/src/typeGuards';
+import { E } from '@endo/far';
 import { prepareChainHubAdmin } from '@agoric/orchestration/src/exos/chain-hub-admin.js';
 import { AnyNatAmountShape } from '@agoric/orchestration/src/typeGuards.js';
 import { withOrchestration } from '@agoric/orchestration/src/utils/start-helper.js';
@@ -7,14 +11,14 @@ import { registerChainsAndAssets } from '@agoric/orchestration/src/utils/chain-h
 import * as flows from './axelar-gmp.flows.js';
 import * as sharedFlows from './shared.flows.js';
 import * as evmFlows from './lca-evm.flows.js';
-import { prepareEvmTap } from './evm-tap-kit.js';
-import { EmptyProposalShape } from '@agoric/zoe/src/typeGuards';
+import { prepareEvmAccountKit } from './evm-account-kit.js';
 
 /**
+ * @import {Remote, Vow} from '@agoric/vow';
  * @import {Zone} from '@agoric/zone';
  * @import {OrchestrationPowers, OrchestrationTools} from '@agoric/orchestration/src/utils/start-helper.js';
  * @import {CosmosChainInfo, Denom, DenomDetail} from '@agoric/orchestration';
- * @import {Marshaller} from '@agoric/internal/src/lib-chainStorage.js';
+ * @import {Marshaller, StorageNode} from '@agoric/internal/src/lib-chainStorage.js';
  */
 
 export const SingleNatAmountRecord = M.and(
@@ -33,6 +37,7 @@ harden(SingleNatAmountRecord);
  *   marshaller: Marshaller;
  *   chainInfo: Record<string, CosmosChainInfo>;
  *   assetInfo?: [Denom, DenomDetail & { brandKey?: string }][];
+ *   storageNode: Remote<StorageNode>;
  * }} privateArgs
  * @param {Zone} zone
  * @param {OrchestrationTools} tools
@@ -46,10 +51,10 @@ export const contract = async (
   console.log('Inside Contract');
 
   console.log('Channel Info Agoric:');
-  console.log(privateArgs.chainInfo['agoric'].connections);
+  console.log(privateArgs.chainInfo.agoric.connections);
 
-  console.log('Channel Info Osmosis:');
-  console.log(privateArgs.chainInfo['osmosis'].connections);
+  console.log('Channel Info Axelar:');
+  console.log(privateArgs.chainInfo.axelar.connections);
 
   console.log('Registering Chain and Assets....');
   registerChainsAndAssets(
@@ -59,9 +64,17 @@ export const contract = async (
     privateArgs.assetInfo
   );
 
-  const makeEvmTap = prepareEvmTap(zone.subZone('evmTap'), vowTools);
+  const makeEvmAccountKit = prepareEvmAccountKit(zone.subZone('evmTap'), {
+    vowTools,
+    zcf,
+  });
 
   const creatorFacet = prepareChainHubAdmin(zone, chainHub);
+
+  // UNTIL https://github.com/Agoric/agoric-sdk/issues/9066
+  const logNode = E(privateArgs.storageNode).makeChildNode('log');
+  /** @type {(msg: string) => Vow<void>} */
+  const log = (msg) => vowTools.watch(E(logNode).setValue(msg));
 
   const { makeLocalAccount } = orchestrateAll(sharedFlows, {});
   /**
@@ -80,11 +93,13 @@ export const contract = async (
   // orchestrate uses the names on orchestrationFns to do a "prepare" of the associated behavior
   const { sendGmp } = orchestrateAll(flows, {
     sharedLocalAccountP,
+    log,
     zoeTools,
   });
 
   const { createAndMonitorLCA } = orchestrateAll(evmFlows, {
-    makeEvmTap,
+    makeEvmAccountKit,
+    log,
     chainHub,
   });
 
@@ -106,7 +121,7 @@ export const contract = async (
       createAndMonitorLCA() {
         return zcf.makeInvitation(
           createAndMonitorLCA,
-          'send',
+          'makeAccount',
           undefined,
           EmptyProposalShape
         );
