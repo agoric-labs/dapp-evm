@@ -8,9 +8,9 @@ import { E } from '@endo/far';
 /// <reference types="@agoric/vats/src/core/types-ambient"/>
 
 /**
- * @import {Installation} from '@agoric/zoe/src/zoeService/utils.js';
+ * @import {Installation, Instance} from '@agoric/zoe/src/zoeService/utils.js';
  * @import {CosmosChainInfo, Denom, DenomDetail} from '@agoric/orchestration';
- * @import {start as StartFn} from '@agoric/orchestration/src/examples/axelar-gmp.contract.js';
+ * @import {start as StartFn} from '../axelar-gmp.contract.js';
  */
 
 const trace = makeTracer('start axelarGmp', true);
@@ -46,6 +46,7 @@ export const startAxelarGmp = async (
     consume: {
       agoricNames,
       board,
+      chainStorage,
       chainTimerService,
       cosmosInterchainService,
       localchain,
@@ -75,26 +76,27 @@ export const startAxelarGmp = async (
       localchain,
       marshaller,
       orchestrationService: cosmosInterchainService,
+      storageNode: E(NonNullish(await chainStorage)).makeChildNode('axelarGmp'),
       timerService: chainTimerService,
       chainInfo,
       assetInfo,
     })
   );
 
-  /** @param {() => Promise<Issuer>} p */
-  // const safeFulfill = async (p) =>
+  // /** @param {() => Promise<Issuer>} p */
+  // const safeFulfill = async p =>
   //   E.when(
   //     p(),
-  //     (i) => i,
-  //     () => undefined
+  //     i => i,
+  //     () => undefined,
   //   );
 
   // const ausdcIssuer = await safeFulfill(() =>
-  //   E(agoricNames).lookup('issuer', 'AUSDC')
+  //   E(agoricNames).lookup('issuer', 'AUSDC'),
   // );
 
   // const wavaxIssuer = await safeFulfill(() =>
-  //   E(agoricNames).lookup('issuer', 'WAVAX')
+  //   E(agoricNames).lookup('issuer', 'WAVAX'),
   // );
 
   const issuerKeywordRecord = harden({
@@ -125,6 +127,7 @@ export const getManifest = ({ restoreRef }, { installationRef, options }) => {
           agoricNames: true,
           board: true,
           chainTimerService: true,
+          chainStorage: true,
           cosmosInterchainService: true,
           localchain: true,
 

@@ -2,43 +2,39 @@ import { Fail } from '@endo/errors';
 import { denomHash } from '@agoric/orchestration/src/utils/denomHash.js';
 
 /**
- * @import {GuestInterface} from '@agoric/async-flow';
+ * @import {GuestInterface, GuestOf} from '@agoric/async-flow';
  * @import {Orchestrator, OrchestrationFlow} from '@agoric/orchestration';
- * @import {MakeEvmTap} from './evm-tap-kit.js';
- * @import {MakePortfolioHolder} from '@agoric/orchestration/src/exos/portfolio-holder-kit.js';
+ * @import {MakeEvmAccountKit} from './evm-account-kit.js';
  * @import {ChainHub} from '@agoric/orchestration/src/exos/chain-hub.js';
+ * @import {Vow} from '@agoric/vow';
  */
 
 /**
  * @satisfies {OrchestrationFlow}
  * @param {Orchestrator} orch
  * @param {{
- *   makeEvmTap: MakeEvmTap;
- *   makePortfolioHolder: MakePortfolioHolder;
+ *   makeEvmAccountKit: MakeEvmAccountKit;
  *   chainHub: GuestInterface<ChainHub>;
+ *   log: GuestOf<(msg: string) => Vow<void>>;
  * }} ctx
  * @param {ZCFSeat} seat
- * @param {{
- *   chainName: string;
- * }} offerArgs
  */
 export const createAndMonitorLCA = async (
   orch,
-  { makeEvmTap, chainHub },
-  seat,
-  { chainName }
+  { log, makeEvmAccountKit, chainHub },
+  seat
 ) => {
-  seat.exit(); // no funds exchanged
+  void log('Inside createAndMonitorLCA');
   const [agoric, remoteChain] = await Promise.all([
     orch.getChain('agoric'),
-    orch.getChain(chainName),
+    orch.getChain('axelar'),
   ]);
   const { chainId, stakingTokens } = await remoteChain.getChainInfo();
   const remoteDenom = stakingTokens[0].denom;
-  remoteDenom ||
-    Fail`${chainId || chainName} does not have stakingTokens in config`;
+  remoteDenom || Fail`${chainId} does not have stakingTokens in config`;
 
   const localAccount = await agoric.makeAccount();
+  void log('localAccount created successfully');
   const localChainAddress = await localAccount.getAddress();
   console.log('Local Chain Address:', localChainAddress);
 
@@ -55,17 +51,20 @@ export const createAndMonitorLCA = async (
   })}`;
 
   // Every time the `localAccount` receives `remoteDenom` over IBC, delegate it.
-  const tap = makeEvmTap({
+  const evmAccountKit = makeEvmAccountKit({
     localAccount,
     localChainAddress,
     sourceChannel: transferChannel.counterPartyChannelId,
     remoteDenom,
     localDenom,
   });
+  void log('tap created successfully');
   // XXX consider storing appRegistration, so we can .revoke() or .updateTargetApp()
   // @ts-expect-error tap.receiveUpcall: 'Vow<void> | undefined' not assignable to 'Promise<any>'
-  await localAccount.monitorTransfers(tap);
+  await localAccount.monitorTransfers(evmAccountKit.tap);
+  void log('Monitoring transfers setup successfully');
 
-  return localChainAddress.value;
+  seat.exit();
+  return harden({ invitationMakers: evmAccountKit.invitationMakers });
 };
 harden(createAndMonitorLCA);
