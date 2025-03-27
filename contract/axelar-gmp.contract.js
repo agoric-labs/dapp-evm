@@ -1,8 +1,4 @@
 import { M } from '@endo/patterns';
-import {
-  EmptyProposalShape,
-  InvitationShape,
-} from '@agoric/zoe/src/typeGuards';
 import { E } from '@endo/far';
 import { prepareChainHubAdmin } from '@agoric/orchestration/src/exos/chain-hub-admin.js';
 import { AnyNatAmountShape } from '@agoric/orchestration/src/typeGuards.js';
@@ -49,12 +45,6 @@ export const contract = async (
   { chainHub, orchestrateAll, vowTools, zoeTools }
 ) => {
   console.log('Inside Contract');
-
-  console.log('Channel Info Agoric:');
-  console.log(privateArgs.chainInfo.agoric.connections);
-
-  console.log('Channel Info Axelar:');
-  console.log(privateArgs.chainInfo.axelar.connections);
 
   console.log('Registering Chain and Assets....');
   registerChainsAndAssets(
@@ -106,7 +96,7 @@ export const contract = async (
   const publicFacet = zone.exo(
     'Send PF',
     M.interface('Send PF', {
-      gmpInvitation: M.callWhen().returns(InvitationShape),
+      gmpInvitation: M.callWhen().returns(M.any()),
       createAndMonitorLCA: M.callWhen().returns(M.any()),
     }),
     {
@@ -122,8 +112,7 @@ export const contract = async (
         return zcf.makeInvitation(
           createAndMonitorLCA,
           'makeAccount',
-          undefined,
-          EmptyProposalShape
+          undefined
         );
       },
     }
