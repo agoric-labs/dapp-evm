@@ -104,23 +104,15 @@ agoric run multichain-testing/src/register-interchain-bank-assets.builder.js --a
 
 This command will create some bundle files. Copy them to this project’s root folder.
 
-#### 2. Register AUSDC
+#### 2. Register Token
 
 After copying the files, run:
 
 ```bash
-yarn register:ausdc
+yarn register:token
 ```
 
-#### 3. Register WAVAX
-
-After generating and copying the files for WAVAX, run:
-
-```bash
-yarn register:wavax
-```
-
-#### 4. Verification
+#### 3. Verification
 
 To verify if registration was successful, go to [VStorage](https://toliaqat.github.io/vstorage/?path=published.agoricNames.brand&endpoint=http%3A%2F%2Flocalhost%3A26657&height=null) and check if `AUSDC` and `WAVAX` is present under `published.agoricNames.brand` and `published.agoricNames.vbankAsset`.
 
