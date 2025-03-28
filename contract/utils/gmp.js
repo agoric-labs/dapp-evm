@@ -3,6 +3,7 @@
  */
 import { hexlify, arrayify, concat } from '@ethersproject/bytes';
 import { encode } from '@findeth/abi';
+import sha3 from "js-sha3";
 
 export const GMPMessageType = {
   MESSAGE_ONLY: 1,
@@ -10,6 +11,31 @@ export const GMPMessageType = {
   TOKEN_ONLY: 3,
 };
 harden(GMPMessageType);
+
+export const gmpAddresses = {
+  AXELAR_GMP:
+    "axelar1dv4u5k73pzqrxlzujxg3qp8kvc3pje7jtdvu72npnt5zhq05ejcsn5qme5",
+  AXELAR_GAS: "axelar1zl3rxpp70lmte2xr6c4lgske2fyuj3hupcsvcd",
+  OSMOSIS_RECEIVER: "osmo1yh3ra8eage5xtr9a3m5utg6mx0pmqreytudaqj",
+};
+
+const uint8ArrayToHex = (uint8Array) => {
+  return `0x${Array.from(uint8Array)
+    .map((byte) => byte.toString(16).padStart(2, "0"))
+    .join("")}`;
+};
+
+export const encodeCallData = (functionSignature, paramTypes, params) => {
+  const functionHash = sha3.keccak256.digest(functionSignature);
+
+  return uint8ArrayToHex(
+    Uint8Array.from([
+      ...Uint8Array.from(functionHash.slice(0, 4)),
+      ...encode(paramTypes, params),
+    ])
+  );
+};
+
 
 /**
  * Builds a GMP payload for contract invocation
