@@ -1,9 +1,11 @@
 import { M, mustMatch } from '@endo/patterns';
+import { Fail } from "@endo/errors";
 import { VowShape } from '@agoric/vow';
 import { makeTracer } from '@agoric/internal';
 import { atob, decodeBase64 } from '@endo/base64';
-import { decode } from '@findeth/abi';
+import { decode, encode } from "@findeth/abi";
 import { ChainAddressShape } from '@agoric/orchestration';
+import { gmpAddresses, encodeCallData, GMPMessageType } from './utils/gmp';
 
 const trace = makeTracer('EvmTap');
 
@@ -13,6 +15,7 @@ const trace = makeTracer('EvmTap');
  * @import {Zone} from '@agoric/zone';
  * @import {ChainAddress, Denom, OrchestrationAccount} from '@agoric/orchestration';
  * @import {FungibleTokenPacketData} from '@agoric/cosmic-proto/ibc/applications/transfer/v2/packet.js';
+ * @import {ZoeTools} from '@agoric/orchestration/src/utils/zoe-tools';
  */
 
 /**
@@ -29,10 +32,13 @@ const EVMI = M.interface('holder', {
   getAddress: M.call().returns(M.any()),
   getEVMSmartWalletAddress: M.call().returns(M.any()),
   send: M.call(M.any(), M.any()).returns(M.any()),
+  callContractWithFunctionCalls: M.call().returns(VowShape),
+  fundLCA: M.call(M.any(), M.any()).returns(VowShape), // TODO: give proper types to args
 });
 
 const InvitationMakerI = M.interface('invitationMaker', {
   makeEVMTransactionInvitation: M.call(M.string(), M.array()).returns(M.any()),
+  CallContractWithFunctionCalls: M.callWhen().returns(M.any()),
 });
 
 const EvmKitStateShape = {
@@ -46,9 +52,9 @@ harden(EvmKitStateShape);
 
 /**
  * @param {Zone} zone
- * @param {{ vowTools: VowTools; zcf: ZCF }} powers
+ * @param {{ vowTools: VowTools; zcf: ZCF; zoeTools: ZoeTools }} powers
  */
-export const prepareEvmAccountKit = (zone, { zcf }) => {
+export const prepareEvmAccountKit = (zone, { zcf, zoeTools, vowTools }) => {
   return zone.exoClassKit(
     'EvmTapKit',
     {
@@ -132,6 +138,48 @@ export const prepareEvmAccountKit = (zone, { zcf }) => {
           await this.state.localAccount.send(toAccount, amount);
           return 'transfer success';
         },
+        callContractWithFunctionCalls() {
+          const targets = ["0x5B34876FFB1656710fb963ecD199C6f173c29267"];
+          const data = [
+            encodeCallData("createVendor(string)", ["string"], ["ownerAddress"]),
+          ];
+          const payload = Array.from(
+            encode(["address[]", "bytes[]"], [targets, data])
+          );
+
+          return this.state.localAccount.transfer(
+            {
+              value: gmpAddresses.AXELAR_GMP,
+              encoding: "bech32",
+              chainId: "axelar",
+            },
+            {
+              denom: 'ubld',
+              value: BigInt(1000000),
+            },
+            {
+              memo: JSON.stringify({
+                destination_chain: "Ethereum",
+                destination_address: this.state.evmAccountAddress,
+                payload,
+                type: GMPMessageType.MESSAGE_ONLY,
+                fee: {
+                  amount: "1",
+                  recipient: gmpAddresses.AXELAR_GAS,
+                },
+              }),
+            }
+          );
+        },
+
+        /**
+         * @param {ZCFSeat} seat
+         * @param {any} give
+         */
+        fundLCA(seat, give) {
+          seat.hasExited() && Fail`The seat cannot have exited.`;
+          return zoeTools.localTransfer(seat, this.state.localAccount, give);
+        },
       },
       invitationMakers: {
         // "method" and "args" can be used to invoke methods of localAccount obj
@@ -155,6 +203,16 @@ export const prepareEvmAccountKit = (zone, { zcf }) => {
             continuingEVMTransactionHandler,
             'evmTransaction'
           );
+        },
+        CallContractWithFunctionCalls() {
+          return zcf.makeInvitation((seat, _offerArgs) => {
+            const { give } = seat.getProposal();
+            const vow = this.facets.holder.fundLCA(seat, give);
+            return vowTools.when(vow, () => {
+              seat.exit();
+              return this.facets.holder.callContractWithFunctionCalls();
+            });
+          }, "CallContractWithFunctionCalls");
         },
       },
     }

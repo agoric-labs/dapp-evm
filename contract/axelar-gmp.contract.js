@@ -21,7 +21,7 @@ export const SingleNatAmountRecord = M.and(
   M.recordOf(M.string(), AnyNatAmountShape, {
     numPropertiesLimit: 1,
   }),
-  M.not(harden({}))
+  M.not(harden({})),
 );
 harden(SingleNatAmountRecord);
 
@@ -42,7 +42,7 @@ export const contract = async (
   zcf,
   privateArgs,
   zone,
-  { chainHub, orchestrateAll, vowTools, zoeTools }
+  { chainHub, orchestrateAll, vowTools, zoeTools, zcfTools, baggage },
 ) => {
   console.log('Inside Contract');
 
@@ -51,12 +51,13 @@ export const contract = async (
     chainHub,
     zcf.getTerms().brands,
     privateArgs.chainInfo,
-    privateArgs.assetInfo
+    privateArgs.assetInfo,
   );
 
   const makeEvmAccountKit = prepareEvmAccountKit(zone.subZone('evmTap'), {
     vowTools,
     zcf,
+    zoeTools,
   });
 
   const creatorFacet = prepareChainHubAdmin(zone, chainHub);
@@ -91,6 +92,10 @@ export const contract = async (
     makeEvmAccountKit,
     log,
     chainHub,
+    zoeTools,
+    baggage,
+    zcfTools,
+    zone,
   });
 
   const publicFacet = zone.exo(
@@ -105,7 +110,7 @@ export const contract = async (
           sendGmp,
           'send',
           undefined,
-          M.splitRecord({ give: SingleNatAmountRecord })
+          M.splitRecord({ give: SingleNatAmountRecord }),
         );
       },
       createAndMonitorLCA() {
@@ -122,5 +127,5 @@ export const contract = async (
 };
 harden(contract);
 
-export const start = withOrchestration(contract);
+export const start = withOrchestration(contract, { publishAccountInfo: true });
 harden(start);
