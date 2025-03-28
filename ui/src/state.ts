@@ -12,4 +12,5 @@ export const useAppStore = create<AppState>((set) => ({
   type: 3,
   transactionUrl: null,
   tab: 1,
+  currentOffers: null,
 }));
