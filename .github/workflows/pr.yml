@@ -1,0 +1,46 @@
+name: CI
+
+on:
+  pull_request:
+  workflow_dispatch:
+    inputs:
+      branch:
+        description: 'Branch to clone from agoric-to-axelar-local'
+        required: false
+        default: 'main'
+
+jobs:
+  clone-build-start:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout this repo
+        uses: actions/checkout@v4
+
+      - name: Set branch name
+        id: set-branch
+        run: |
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+            echo "branch=${{ github.event.inputs.branch }}" >> $GITHUB_OUTPUT
+          else
+            echo "branch=main" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Clone agoric-to-axelar-local
+        run: |
+          git clone --branch "${{ steps.set-branch.outputs.branch }}" https://github.com/agoric-labs/agoric-to-axelar-local.git
+
+      - name: Install dependencies
+        run: |
+          cd agoric-to-axelar-local
+          npm install
+
+      - name: Build project
+        run: |
+          cd agoric-to-axelar-local
+          npm run build
+
+      - name: Start Chains and set Relayer
+        run: |
+          cd agoric-to-axelar-local/packages/axelar-local-dev-cosmos
+          npm run start
