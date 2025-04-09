@@ -7,6 +7,8 @@ eval-register-interchain-bank-assets-permit.json
 eval-register-interchain-bank-assets-plan.json
 eval-register-interchain-bank-assets.js
 
+bundles/
+
 .env
 
 # Hardhat files

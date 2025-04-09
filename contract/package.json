@@ -9,13 +9,20 @@
     "@endo/ses-ava": "^1.2.9",
     "agoric": "^0.22.0-u17.1"
   },
+  "scripts": {
+    "test": "ava"
+  },
   "dependencies": {
+    "@agoric/boot": "^0.1.1-dev-9f8a76e.0",
+    "@agoric/cosmic-swingset": "0.41.4-dev-0e6a9f4.0",
     "@agoric/internal": "^0.4.0-u19.1",
     "@agoric/orchestration": "^0.2.0-u19.1",
+    "@agoric/swingset-vat": "^0.33.0-u19.2",
+    "@agoric/telemetry": "^0.6.3-u19.2",
     "@agoric/vat-data": "^0.5.3-u19.2",
     "@agoric/vats": "^0.16.0-u17.1",
     "@agoric/vow": "^0.2.0-u17.1",
-    "@agoric/zoe": "^0.26.3-u17.1",
+    "@agoric/zoe": "0.26.3-dev-4841c87.0",
     "@agoric/zone": "^0.3.0-u17.1",
     "@endo/base64": "^1.0.9",
     "@endo/errors": "^1.2.9",
@@ -23,7 +30,28 @@
     "@endo/patterns": "^1.4.8",
     "@ethersproject/bytes": "^5.8.0",
     "@findeth/abi": "^0.7.1",
-    "js-sha3": "^0.9.3"
+    "ava": "^6.2.0",
+    "ethers": "5.7.2",
+    "js-sha3": "^0.9.3",
+    "node-fetch-cache": "^5.0.2"
+  },
+  "ava": {
+    "extensions": {
+      "js": true,
+      "ts": "module"
+    },
+    "files": [
+      "test/**/*.test.*"
+    ],
+    "nodeArguments": [
+      "--loader=ts-blank-space/register",
+      "--no-warnings"
+    ],
+    "require": [
+      "@endo/init/debug.js"
+    ],
+    "timeout": "20m",
+    "workerThreads": false
   },
   "packageManager": "yarn@1.22.22+sha512.a6b2f7906b721bba3d67d4aff083df04dad64c399707841b7acf00f6b133b7ac24255f2652fa22ae3534329dc6180534e98d17432037ff6fd140556e2bb3137e"
 }
