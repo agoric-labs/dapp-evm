@@ -1,3 +1,4 @@
+// @ts-check
 import { Fail, makeError, q } from '@endo/errors';
 import { NonNullish } from '@agoric/internal';
 import { denomHash } from '@agoric/orchestration/src/utils/denomHash.js';
@@ -7,6 +8,7 @@ import { gmpAddresses, GMPMessageType } from './utils/gmp.js';
  * @import {GuestInterface, GuestOf} from '@agoric/async-flow';
  * @import {Orchestrator, OrchestrationFlow} from '@agoric/orchestration';
  * @import {MakeEvmAccountKit} from './evm-account-kit.js';
+ * @import {MakePortfolioHolder} from '@agoric/orchestration/src/exos/portfolio-holder-kit.js';
  * @import {ChainHub} from '@agoric/orchestration/src/exos/chain-hub.js';
  * @import {Vow} from '@agoric/vow';
  * @import {ZoeTools} from '@agoric/orchestration/src/utils/zoe-tools.js';
@@ -17,6 +19,7 @@ import { gmpAddresses, GMPMessageType } from './utils/gmp.js';
  * @param {Orchestrator} orch
  * @param {{
  *   makeEvmAccountKit: MakeEvmAccountKit;
+ *   makePortfolioHolder: MakePortfolioHolder;
  *   chainHub: GuestInterface<ChainHub>;
  *   log: GuestOf<(msg: string) => Vow<void>>;
  *   zoeTools: ZoeTools;
@@ -55,12 +58,16 @@ export const createAndMonitorLCA = async (
   })}`;
 
   // Every time the `localAccount` receives `remoteDenom` over IBC, delegate it.
+  const assets = await agoric.getVBankAssetInfo();
+  const info = await remoteChain.getChainInfo();
   const evmAccountKit = makeEvmAccountKit({
     localAccount,
     localChainAddress,
     sourceChannel: transferChannel.counterPartyChannelId,
     remoteDenom,
     localDenom,
+    assets,
+    remoteChainInfo: info,
   });
   void log('tap created successfully');
   // XXX consider storing appRegistration, so we can .revoke() or .updateTargetApp()
@@ -68,20 +75,18 @@ export const createAndMonitorLCA = async (
   await localAccount.monitorTransfers(evmAccountKit.tap);
   void log('Monitoring transfers setup successfully');
 
-  
-  const assets = await agoric.getVBankAssetInfo();
-
   const { give } = seat.getProposal();
   const [[_kw, amt]] = Object.entries(give);
 
   const { denom } = NonNullish(
-    assets.find(a => a.brand === amt.brand),
-    `${amt.brand} not registered in vbank`,
+    assets.find((a) => a.brand === amt.brand),
+    `${amt.brand} not registered in vbank`
   );
 
   await zoeTools.localTransfer(seat, localAccount, give);
 
-  const WalletFactoryContractAddress = '0x5B34876FFB1656710fb963ecD199C6f173c29267';
+  const WalletFactoryContractAddress =
+    '0x5B34876FFB1656710fb963ecD199C6f173c29267';
   const memo = {
     destination_chain: 'Ethereum',
     destination_address: WalletFactoryContractAddress,
@@ -104,7 +109,7 @@ export const createAndMonitorLCA = async (
         denom,
         value: amt.value,
       },
-      { memo: JSON.stringify(memo) },
+      { memo: JSON.stringify(memo) }
     );
   } catch (e) {
     await zoeTools.withdrawToSeat(localAccount, seat, give);
