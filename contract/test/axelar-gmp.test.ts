@@ -87,6 +87,23 @@ test.before(async t => {
   t.context = await makeTestContext(t);
 
   const { evalProposal, buildProposal } = t.context;
+  // Registering AXL asset in issuers
+  await evalProposal(
+    buildProposal(
+      "../test/asset-builder/register-interchain-bank-assets.builder.js",
+      [
+        "--assets",
+        JSON.stringify([
+          {
+            denom:
+              "ibc/2CC0B1B7A981ACC74854717F221008484603BB8360E81B262411B0D830EDE9B0",
+            issuerName: "AXL",
+            decimalPlaces: 6,
+          },
+        ]),
+      ]
+    )
+  );
 
   await evalProposal(
     buildProposal('../proposal/init-axelar-gmp.js', [
@@ -104,6 +121,15 @@ test.before(async t => {
             brandKey: 'BLD',
             baseName: 'agoric',
             chainName: 'agoric',
+          },
+        ],
+        [
+          'ibc/2CC0B1B7A981ACC74854717F221008484603BB8360E81B262411B0D830EDE9B0',
+          {
+            baseDenom: 'uaxl',
+            baseName: 'axelar',
+            chainName: 'agoric',
+            brandKey: 'AXL',
           },
         ],
       ]),
