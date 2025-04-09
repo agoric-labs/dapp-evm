@@ -157,3 +157,55 @@ If the transactions are successful, you can verify them on the respective block 
 🔹 **Axelar Scan** – Verify the transaction for the GMP wallet:  
 **`axelar1dv4u5k73pzqrxlzujxg3qp8kvc3pje7jtdvu72npnt5zhq05ejcsn5qme5`**
 🔗 [View on AxelarScan](https://testnet.axelarscan.io/account/axelar1dv4u5k73pzqrxlzujxg3qp8kvc3pje7jtdvu72npnt5zhq05ejcsn5qme5)
+
+## Testing with Axelar Local Development Environment
+
+Follow these steps to set up and test the local Agoric-to-Axelar bridge environment
+
+### 1. Clone the Axelar Local Dev Environment
+
+```
+git clone https://github.com/agoric-labs/agoric-to-axelar-local.git
+cd agoric-to-axelar-local
+
+```
+
+### 2. Install Dependencies and Build the Project
+
+```
+npm install
+npm run build
+
+```
+
+### 3. Start the Environment
+
+```
+cd packages/axelar-local-dev-cosmos
+npm run start
+
+```
+
+This starts the local Agoric chain, a local Axelar chain, and sets up the relayer between them.
+
+### 4. Run the Dapp UI (from dapp-evm)
+
+```
+cd path/to/dapp-evm
+yarn start:ui
+
+```
+
+Then, use the Make Account option in the UI, which creates a Local Chain Account (LCA) on the Agoric chain and deploys an EVM Smart Wallet on the Axelar-connected EVM chain.
+
+### 5. Start the Relay Script
+
+Go back to the agoric-to-axelar-local repo root:
+
+```
+cd packages/axelar-local-dev-cosmos
+npm run relay
+
+```
+
+This runs the relay service to enable communication between the chains. It helps receive responses from the EVM smart contract, and in our case, it returns the EVM Smart Wallet address associated with the Agoric account.

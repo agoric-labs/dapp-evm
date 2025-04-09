@@ -1,44 +1,61 @@
+// @ts-check
 import { M, mustMatch } from '@endo/patterns';
-import { Fail } from "@endo/errors";
 import { VowShape } from '@agoric/vow';
-import { makeTracer } from '@agoric/internal';
+import { makeTracer, NonNullish } from '@agoric/internal';
 import { atob, decodeBase64 } from '@endo/base64';
-import { decode, encode } from "@findeth/abi";
+import { encode, decode } from '@findeth/abi';
+import { Fail } from '@endo/errors';
 import { ChainAddressShape } from '@agoric/orchestration';
-import { gmpAddresses, encodeCallData, GMPMessageType } from './utils/gmp';
+import {
+  buildGMPPayload,
+  gmpAddresses,
+  encodeCallData,
+  GMPMessageType,
+} from './utils/gmp.js';
 
 const trace = makeTracer('EvmTap');
+const { entries } = Object;
 
 /**
  * @import {IBCChannelID, VTransferIBCEvent} from '@agoric/vats';
- * @import {VowTools} from '@agoric/vow';
+ * @import {Vow, VowTools} from '@agoric/vow';
  * @import {Zone} from '@agoric/zone';
  * @import {ChainAddress, Denom, OrchestrationAccount} from '@agoric/orchestration';
  * @import {FungibleTokenPacketData} from '@agoric/cosmic-proto/ibc/applications/transfer/v2/packet.js';
- * @import {ZoeTools} from '@agoric/orchestration/src/utils/zoe-tools';
+ * @import {ZoeTools} from '@agoric/orchestration/src/utils/zoe-tools.js';
  */
 
 /**
  * @typedef {{
- *   localAccount: ERef<OrchestrationAccount<{ chainId: 'agoric' }>>;
+ *   localAccount: OrchestrationAccount<{ chainId: 'agoric' }>;
  *   localChainAddress: ChainAddress;
  *   sourceChannel: IBCChannelID;
  *   remoteDenom: Denom;
  *   localDenom: Denom;
+ *   assets: any;
+ *   remoteChainInfo: any;
  * }} EvmTapState
+ */
+
+/**
+ * @typedef {object} ContractInvocationData
+ * @property {string} functionSelector - Function selector (4 bytes)
+ * @property {string} encodedArgs - ABI encoded arguments
+ * @property {number} deadline
+ * @property {number} nonce
  */
 
 const EVMI = M.interface('holder', {
   getAddress: M.call().returns(M.any()),
   getEVMSmartWalletAddress: M.call().returns(M.any()),
   send: M.call(M.any(), M.any()).returns(M.any()),
+  sendGmp: M.call(M.any(), M.any()).returns(M.any()),
+  fundLCA: M.call(M.any(), M.any()).returns(VowShape),
   callContractWithFunctionCalls: M.call().returns(VowShape),
-  fundLCA: M.call(M.any(), M.any()).returns(VowShape), // TODO: give proper types to args
 });
 
 const InvitationMakerI = M.interface('invitationMaker', {
   makeEVMTransactionInvitation: M.call(M.string(), M.array()).returns(M.any()),
-  CallContractWithFunctionCalls: M.callWhen().returns(M.any()),
 });
 
 const EvmKitStateShape = {
@@ -47,14 +64,24 @@ const EvmKitStateShape = {
   remoteDenom: M.string(),
   localDenom: M.string(),
   localAccount: M.remotable('OrchestrationAccount<{chainId:"agoric-3"}>'),
+  assets: M.any(),
+  remoteChainInfo: M.any(),
 };
 harden(EvmKitStateShape);
 
 /**
  * @param {Zone} zone
- * @param {{ vowTools: VowTools; zcf: ZCF; zoeTools: ZoeTools }} powers
+ * @param {{
+ *   zcf: ZCF;
+ *   vowTools: VowTools;
+ *   log: (msg: string) => Vow<void>;
+ *   zoeTools: ZoeTools;
+ * }} powers
  */
-export const prepareEvmAccountKit = (zone, { zcf, zoeTools, vowTools }) => {
+export const prepareEvmAccountKit = (
+  zone,
+  { zcf, vowTools, log, zoeTools }
+) => {
   return zone.exoClassKit(
     'EvmTapKit',
     {
@@ -74,10 +101,7 @@ export const prepareEvmAccountKit = (zone, { zcf, zoeTools, vowTools }) => {
     /** @param {EvmTapState} initialState */
     (initialState) => {
       mustMatch(initialState, EvmKitStateShape);
-      return harden({
-        evmAccountAddress: /** @type {string | undefined} */ (undefined),
-        ...initialState,
-      });
+      return harden({ evmAccountAddress: undefined, ...initialState });
     },
     {
       tap: {
@@ -98,6 +122,7 @@ export const prepareEvmAccountKit = (zone, { zcf, zoeTools, vowTools }) => {
             const payloadBytes = decodeBase64(memo.payload);
             const decoded = decode(['address'], payloadBytes);
             trace(decoded);
+
             this.state.evmAccountAddress = decoded[0];
           }
 
@@ -117,7 +142,6 @@ export const prepareEvmAccountKit = (zone, { zcf, zoeTools, vowTools }) => {
       },
       holder: {
         async getAddress() {
-          // @ts-expect-error
           const localChainAddress = await this.state.localAccount.getAddress();
           return localChainAddress.value;
         },
@@ -134,24 +158,130 @@ export const prepareEvmAccountKit = (zone, { zcf, zoeTools, vowTools }) => {
          * @returns {Promise<string>} A success message upon completion.
          */
         async send(toAccount, amount) {
-          // @ts-expect-error
           await this.state.localAccount.send(toAccount, amount);
           return 'transfer success';
         },
+
+        /**
+         * @param {ZCFSeat} seat
+         * @param {{
+         *   destinationAddress: string;
+         *   type: number;
+         *   destinationEVMChain: string;
+         *   gasAmount: number;
+         *   contractInvocationData: ContractInvocationData;
+         * }} offerArgs
+         */
+        async sendGmp(seat, offerArgs) {
+          void log('Inside sendGmp');
+          const {
+            destinationAddress,
+            type,
+            destinationEVMChain,
+            gasAmount,
+            contractInvocationData,
+          } = offerArgs;
+
+          destinationAddress != null ||
+            Fail`Destination address must be defined`;
+          destinationEVMChain != null ||
+            Fail`Destination evm address must be defined`;
+
+          const isContractInvocation = [1, 2].includes(type);
+          if (isContractInvocation) {
+            gasAmount != null || Fail`gasAmount must be defined`;
+            contractInvocationData != null ||
+              Fail`contractInvocationData is not defined`;
+
+            ['functionSelector', 'encodedArgs', 'deadline', 'nonce'].every(
+              (field) => contractInvocationData[field] != null
+            ) ||
+              Fail`Contract invocation payload is invalid or missing required fields`;
+          }
+
+          const { give } = seat.getProposal();
+
+          const [[_kw, amt]] = entries(give);
+          amt.value > 0n || Fail`IBC transfer amount must be greater than zero`;
+          console.log('_kw, amt', _kw, amt);
+
+          const payload = buildGMPPayload({
+            type,
+            evmContractAddress: destinationAddress,
+            ...contractInvocationData,
+          });
+          void log(`Payload: ${JSON.stringify(payload)}`);
+
+          const { denom } = NonNullish(
+            this.state.assets.find((a) => a.brand === amt.brand),
+            `${amt.brand} not registered in vbank`
+          );
+
+          console.log('amt and brand', amt.brand);
+
+          const { chainId } = this.state.remoteChainInfo;
+
+          const memo = {
+            destination_chain: destinationEVMChain,
+            destination_address: destinationAddress,
+            payload,
+            type,
+          };
+
+          if (type === 1 || type === 2) {
+            memo.fee = {
+              amount: String(gasAmount),
+              recipient: gmpAddresses.AXELAR_GAS,
+            };
+            void log(`Fee object ${JSON.stringify(memo.fee)}`);
+          }
+
+          void log(`Initiating IBC Transfer...`);
+          void log(`DENOM of token:${denom}`);
+
+          await this.state.localAccount.transfer(
+            {
+              value: gmpAddresses.AXELAR_GMP,
+              encoding: 'bech32',
+              chainId,
+            },
+            {
+              denom,
+              value: amt.value,
+            },
+            { memo: JSON.stringify(memo) }
+          );
+
+          seat.exit();
+          void log('sendGmp successful');
+          return 'sendGmp successful';
+        },
+        /**
+         * @param {ZCFSeat} seat
+         * @param {any} give
+         */
+        fundLCA(seat, give) {
+          seat.hasExited() && Fail`The seat cannot be exited.`;
+          return zoeTools.localTransfer(seat, this.state.localAccount, give);
+        },
         callContractWithFunctionCalls() {
-          const targets = ["0x5B34876FFB1656710fb963ecD199C6f173c29267"];
+          const targets = ['0x5B34876FFB1656710fb963ecD199C6f173c29267'];
           const data = [
-            encodeCallData("createVendor(string)", ["string"], ["ownerAddress"]),
+            encodeCallData(
+              'createVendor(string)',
+              ['string'],
+              ['ownerAddress']
+            ),
           ];
           const payload = Array.from(
-            encode(["address[]", "bytes[]"], [targets, data])
+            encode(['address[]', 'bytes[]'], [targets, data])
           );
 
           return this.state.localAccount.transfer(
             {
               value: gmpAddresses.AXELAR_GMP,
-              encoding: "bech32",
-              chainId: "axelar",
+              encoding: 'bech32',
+              chainId: 'axelar',
             },
             {
               denom: 'ubld',
@@ -159,26 +289,17 @@ export const prepareEvmAccountKit = (zone, { zcf, zoeTools, vowTools }) => {
             },
             {
               memo: JSON.stringify({
-                destination_chain: "Ethereum",
+                destination_chain: 'Ethereum',
                 destination_address: this.state.evmAccountAddress,
                 payload,
                 type: GMPMessageType.MESSAGE_ONLY,
                 fee: {
-                  amount: "1",
+                  amount: '1',
                   recipient: gmpAddresses.AXELAR_GAS,
                 },
               }),
             }
           );
-        },
-
-        /**
-         * @param {ZCFSeat} seat
-         * @param {any} give
-         */
-        fundLCA(seat, give) {
-          seat.hasExited() && Fail`The seat cannot have exited.`;
-          return zoeTools.localTransfer(seat, this.state.localAccount, give);
         },
       },
       invitationMakers: {
@@ -186,14 +307,47 @@ export const prepareEvmAccountKit = (zone, { zcf, zoeTools, vowTools }) => {
         makeEVMTransactionInvitation(method, args) {
           const continuingEVMTransactionHandler = async (seat) => {
             const { holder } = this.facets;
-            seat.exit();
             switch (method) {
-              case 'getAddress':
-                return holder.getAddress();
-              case 'getEVMSmartWalletAddress':
-                return holder.getEVMSmartWalletAddress();
-              case 'send':
-                return holder.send(args[0], args[1]);
+              case 'sendGmp': {
+                return holder.sendGmp(seat, args[0]);
+              }
+              case 'getAddress': {
+                const vow = holder.getAddress();
+                return vowTools.when(vow, (res) => {
+                  seat.exit();
+                  return res;
+                });
+              }
+              case 'getEVMSmartWalletAddress': {
+                const vow = holder.getEVMSmartWalletAddress();
+                return vowTools.when(vow, (res) => {
+                  seat.exit();
+                  return res;
+                });
+              }
+              case 'send': {
+                const vow = holder.send(args[0], args[1]);
+                return vowTools.when(vow, (res) => {
+                  seat.exit();
+                  return res;
+                });
+              }
+              case 'fundLCA': {
+                const { give } = seat.getProposal();
+                const vow = holder.fundLCA(seat, give);
+                return vowTools.when(vow, (res) => {
+                  seat.exit();
+                  return res;
+                });
+              }
+              case 'callContract': {
+                const { give } = seat.getProposal();
+                const vow = holder.fundLCA(seat, give);
+                return vowTools.when(vow, async () => {
+                  seat.exit();
+                  return holder.callContractWithFunctionCalls();
+                });
+              }
               default:
                 return 'Invalid method';
             }
@@ -203,16 +357,6 @@ export const prepareEvmAccountKit = (zone, { zcf, zoeTools, vowTools }) => {
             continuingEVMTransactionHandler,
             'evmTransaction'
           );
-        },
-        CallContractWithFunctionCalls() {
-          return zcf.makeInvitation((seat, _offerArgs) => {
-            const { give } = seat.getProposal();
-            const vow = this.facets.holder.fundLCA(seat, give);
-            return vowTools.when(vow, () => {
-              seat.exit();
-              return this.facets.holder.callContractWithFunctionCalls();
-            });
-          }, "CallContractWithFunctionCalls");
         },
       },
     }
