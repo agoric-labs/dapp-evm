@@ -1,0 +1,40 @@
+{
+  "name": "axelar-local-dev",
+  "private": true,
+  "workspaces": [
+    "packages/*"
+  ],
+  "publishConfig": {
+    "access": "public"
+  },
+  "scripts": {
+    "publish": "lerna publish from-package --yes",
+    "version": "lerna version --yes --exact --no-git-tag-version",
+    "bootstrap": "lerna bootstrap",
+    "postinstall": "lerna bootstrap",
+    "link": "lerna link",
+    "test": "lerna run test",
+    "update": "lerna update",
+    "clean": "lerna clean",
+    "start:cosmos": "lerna exec --scope=@axelar-network/axelar-local-dev-cosmos npm run start",
+    "test:core": "lerna exec --scope=@axelar-network/axelar-local-dev npm run test",
+    "test:near": "lerna exec --scope=@axelar-network/axelar-local-dev-near npm run test",
+    "test:aptos": "lerna exec --scope=@axelar-network/axelar-local-dev-aptos npm run test",
+    "test:sui": "lerna exec --scope=@axelar-network/axelar-local-dev-sui npm run test",
+    "test:cosmos": "lerna exec --scope=@axelar-network/axelar-local-dev-cosmos npm run test",
+    "test-e2e:cosmos": "lerna exec --scope=@axelar-network/axelar-local-dev-cosmos npm run test:e2e",
+    "test:multiversx": "lerna exec --scope=@axelar-network/axelar-local-dev-multiversx npm run test",
+    "build": "lerna run build",
+    "build:core": "lerna exec --scope=@axelar-network/axelar-local-dev npm run build",
+    "build:near": "lerna exec --scope=@axelar-network/axelar-local-dev-near npm run build",
+    "build:aptos": "lerna exec --scope=@axelar-network/axelar-local-dev-aptos npm run build",
+    "build:sui": "lerna exec --scope=@axelar-network/axelar-local-dev-sui npm run build",
+    "build:cosmos": "lerna exec --scope=@axelar-network/axelar-local-dev-cosmos npm run build",
+    "build:multiversx": "lerna exec --scope=@axelar-network/axelar-local-dev-multiversx npm run build"
+  },
+  "devDependencies": {
+    "lerna": "^6.6.1",
+    "lerna-update-wizard": "^1.1.2"
+  },
+  "packageManager": "yarn@1.22.22+sha512.a6b2f7906b721bba3d67d4aff083df04dad64c399707841b7acf00f6b133b7ac24255f2652fa22ae3534329dc6180534e98d17432037ff6fd140556e2bb3137e"
+}

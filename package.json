@@ -13,7 +13,8 @@
   "useWorkspaces": true,
   "workspaces": [
     "ui",
-    "evm"
+    "evm",
+    "axelar-local-dev-cosmos"
   ],
   "keywords": [],
   "author": "",
