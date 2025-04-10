@@ -16,7 +16,7 @@
     "@agoric/boot": "^0.1.1-dev-9f8a76e.0",
     "@agoric/cosmic-swingset": "0.41.4-dev-0e6a9f4.0",
     "@agoric/internal": "^0.4.0-u19.1",
-    "@agoric/orchestration": "^0.2.0-u19.1",
+    "@agoric/orchestration": "0.1.1-dev-9f21b9d.0",
     "@agoric/swingset-vat": "^0.33.0-u19.2",
     "@agoric/telemetry": "^0.6.3-u19.2",
     "@agoric/vat-data": "^0.5.3-u19.2",

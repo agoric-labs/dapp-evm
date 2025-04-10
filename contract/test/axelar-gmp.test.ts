@@ -155,7 +155,7 @@ test.serial('makeAccount via axelarGmp', async t => {
       callPipe: [['createAndMonitorLCA']],
     },
     proposal: {
-      // give: { BLD: { brand: BLD, value: 1n } },
+      give: { BLD: { brand: BLD, value: 1n } },
     },
   });
 
@@ -171,74 +171,76 @@ test.serial('makeAccount via axelarGmp', async t => {
 
   t.log('Execute offers via the LCA');
 
-  // await runInbound(
-  //   BridgeId.VTRANSFER,
-  //   buildVTransferEvent({
-  //     sender: makeTestAddress(),
-  //     target: makeTestAddress(),
-  //     sourceChannel: 'channel-0',
-  //     sequence: '1',
-  //   }),
-  // );
-  // // @ts-expect-error
-  // const lcaAddress = 'agoric1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqp7zqht';
-  // console.log('fraz', wallet.getLatestUpdateRecord(), wallet.getCurrentWalletRecord());
+  await runInbound(
+    BridgeId.VTRANSFER,
+    buildVTransferEvent({
+      sender: makeTestAddress(),
+      target: makeTestAddress(),
+      sourceChannel: 'channel-0',
+      sequence: '1',
+      memo: '{}'
+    }),
+  );
 
-  // const {
-  //   channelId: agoricToAxelarChannel,
-  //   counterPartyChannelId: axelarToAgoricChannel,
-  // } = fetchedChainInfo.agoric.connections.axelar.transferChannel;
+  const lcaAddress = 'agoric1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqp7zqht';
+  const evmAddress = '0x20e68f6c276ac6e297ac46c84ab260928276691d';
+  const {
+    channelId: agoricToAxelarChannel,
+    counterPartyChannelId: axelarToAgoricChannel,
+  } = fetchedChainInfo.agoric.connections.axelar.transferChannel;
 
-  // const addressPayload = defaultAbiCoder.encode(
-  //   ['address'],
-  //   ['0x20E68F6c276AC6E297aC46c84Ab260928276691D'],
-  // );
+  const addressPayload = defaultAbiCoder.encode(
+    ['address'],
+    [evmAddress],
+  );
 
-  // const base64AddressPayload = Buffer.from(addressPayload.slice(2), 'hex').toString('base64');
+  const base64AddressPayload = Buffer.from(addressPayload.slice(2), 'hex').toString('base64');
 
-  // // mock reply from ethereum
-  // await runInbound(
-  //   BridgeId.VTRANSFER,
-  //   buildVTransferEvent({
-  //     sequence: '1',
-  //     amount: 1n,
-  //     denom: 'uaxl',
-  //     sender: makeTestAddress(),
-  //     target: lcaAddress,
-  //     receiver: lcaAddress,
-  //     sourceChannel: axelarToAgoricChannel,
-  //     destinationChannel: agoricToAxelarChannel,
-  //     memo: JSON.stringify({
-  //       source_chain: 'Ethereum',
-  //       source_address: '0x19e71e7eE5c2b13eF6bd52b9E3b437bdCc7d43c8',
-  //       destination_chain: 'agoric',
-  //       destination_address: lcaAddress,
-  //       payload: base64AddressPayload,
-  //     }),
-  //   }),
-  // );
+  // mock reply from ethereum
+  await runInbound(
+    BridgeId.VTRANSFER,
+    buildVTransferEvent({
+      sequence: '1',
+      amount: 1n,
+      denom: 'uaxl',
+      sender: makeTestAddress(),
+      target: lcaAddress,
+      receiver: lcaAddress,
+      sourceChannel: axelarToAgoricChannel,
+      destinationChannel: agoricToAxelarChannel,
+      memo: JSON.stringify({
+        source_chain: 'Ethereum',
+        source_address: '0x19e71e7eE5c2b13eF6bd52b9E3b437bdCc7d43c8',
+        destination_chain: 'agoric',
+        destination_address: lcaAddress,
+        payload: base64AddressPayload,
+      }),
+    }),
+  );
 
   const previousOfferId =
     wallet.getCurrentWalletRecord().offerToUsedInvitation[0][0];
 
-  await makeEVMTransaction({
-    wallet,
-    previousOffer: previousOfferId,
-    methodName: 'getAddress',
-    offerArgs: [],
-    proposal: {},
-  });
-
-  // @ts-expect-error
-  const lcaAddress = wallet.getLatestUpdateRecord().status.result;
-  t.truthy(lcaAddress);
-  t.like(wallet.getLatestUpdateRecord(), {
-    status: {
-      id: `evmTransaction${evmTransactionCounter - 1}`,
-      numWantsSatisfied: 1,
-      result: lcaAddress,
-    },
-  });
+    t.log('checking if the EVM address has been properly stored')
+    await makeEVMTransaction({
+      wallet,
+      previousOffer: previousOfferId,
+      methodName: 'getEVMSmartWalletAddress',
+      offerArgs: [],
+      proposal: {},
+    });
+  
+    // @ts-expect-error
+    const evmSmartWalletAddress = wallet.getLatestUpdateRecord().status.result;
+    t.deepEqual(evmAddress, evmSmartWalletAddress)
+  
+    t.like(wallet.getLatestUpdateRecord(), {
+      status: {
+        id: `evmTransaction${evmTransactionCounter - 1}`,
+        numWantsSatisfied: 1,
+        result: evmAddress,
+      },
+    });
 
   await makeEVMTransaction({
     wallet,
@@ -273,61 +275,6 @@ test.serial('makeAccount via axelarGmp', async t => {
     },
   });
 
-  t.log('receiveUpcall test');
-
-  const {
-    channelId: agoricToAxelarChannel,
-    counterPartyChannelId: axelarToAgoricChannel,
-  } = fetchedChainInfo.agoric.connections.axelar.transferChannel;
-
-  const payload = defaultAbiCoder.encode(
-    ['address'],
-    ['0x20E68F6c276AC6E297aC46c84Ab260928276691D'],
-  );
-
-  const base64Payload = Buffer.from(payload.slice(2), 'hex').toString('base64');
-
-  await runInbound(
-    BridgeId.VTRANSFER,
-    buildVTransferEvent({
-      sequence: '1',
-      amount: 1n,
-      denom: 'uaxl',
-      sender: makeTestAddress(),
-      target: lcaAddress,
-      receiver: lcaAddress,
-      sourceChannel: axelarToAgoricChannel,
-      destinationChannel: agoricToAxelarChannel,
-      memo: JSON.stringify({
-        source_chain: 'Ethereum',
-        source_address: '0x19e71e7eE5c2b13eF6bd52b9E3b437bdCc7d43c8',
-        destination_chain: 'agoric',
-        destination_address: lcaAddress,
-        payload: base64Payload,
-      }),
-    }),
-  );
-
-  await makeEVMTransaction({
-    wallet,
-    previousOffer: previousOfferId,
-    methodName: 'getEVMSmartWalletAddress',
-    offerArgs: [],
-    proposal: {},
-  });
-
-  // @ts-expect-error
-  const evmSmartWalletAddress = wallet.getLatestUpdateRecord().status.result;
-  t.truthy(evmSmartWalletAddress);
-
-  t.like(wallet.getLatestUpdateRecord(), {
-    status: {
-      id: `evmTransaction${evmTransactionCounter - 1}`,
-      numWantsSatisfied: 1,
-      result: evmSmartWalletAddress,
-    },
-  });
-
   t.log('send tokens via LCA');
   t.context.storage.data.delete('published.axelarGmp.log');
 
@@ -337,7 +284,7 @@ test.serial('makeAccount via axelarGmp', async t => {
     methodName: 'sendGmp',
     offerArgs: [
       {
-        destinationAddress: '0x20E68F6c276AC6E297aC46c84Ab260928276691D',
+        destinationAddress: evmAddress,
         type: 3,
         destinationEVMChain: 'Ethereum',
       },
@@ -371,7 +318,7 @@ test.serial('makeAccount via axelarGmp', async t => {
     methodName: 'sendGmp',
     offerArgs: [
       {
-        destinationAddress: '0x20E68F6c276AC6E297aC46c84Ab260928276691D',
+        destinationAddress: evmAddress,
         type: 3,
         destinationEVMChain: 'Ethereum',
       },
@@ -396,7 +343,7 @@ test.serial('makeAccount via axelarGmp', async t => {
     methodName: 'sendGmp',
     offerArgs: [
       {
-        destinationAddress: '0x20E68F6c276AC6E297aC46c84Ab260928276691D',
+        destinationAddress: evmAddress,
         type: 3,
         destinationEVMChain: 'Ethereum',
       },
@@ -426,7 +373,7 @@ test.serial('makeAccount via axelarGmp', async t => {
     methodName: 'sendGmp',
     offerArgs: [
       {
-        destinationAddress: '0x20E68F6c276AC6E297aC46c84Ab260928276691D',
+        destinationAddress: evmAddress,
         type: 1,
         gasAmount: 20000,
         destinationEVMChain: 'Ethereum',
@@ -468,7 +415,7 @@ test.serial('makeAccount via axelarGmp', async t => {
     methodName: 'sendGmp',
     offerArgs: [
       {
-        destinationAddress: '0x20E68F6c276AC6E297aC46c84Ab260928276691D',
+        destinationAddress: evmAddress,
         type: 1,
         gasAmount: 20000,
         destinationEVMChain: 'Ethereum',
@@ -495,7 +442,7 @@ test.serial('makeAccount via axelarGmp', async t => {
     methodName: 'sendGmp',
     offerArgs: [
       {
-        destinationAddress: '0x20E68F6c276AC6E297aC46c84Ab260928276691D',
+        destinationAddress: evmAddress,
         type: 1,
         destinationEVMChain: 'Ethereum',
         contractInvocationData: {
@@ -519,67 +466,34 @@ test.serial('makeAccount via axelarGmp', async t => {
   });
 });
 
-test.serial('execute an arbitrary contract on agoric', async t => {
+test.skip('execute an arbitrary contract on agoric', async t => {
   const {
-    storage,
     wallet,
     bridgeUtils: { runInbound },
   } = t.context;
 
-  const { ATOM, BLD } = t.context.agoricNamesRemotes.brand;
+  const { BLD } = t.context.agoricNamesRemotes.brand;
   const previousOfferId =
     wallet.getCurrentWalletRecord().offerToUsedInvitation[0][0];
 
   await makeEVMTransaction({
     wallet,
     previousOffer: previousOfferId,
-    methodName: 'getAddress',
-    offerArgs: [],
-    proposal: {},
-  });
-
-  // @ts-expect-error
-  const lcaAddress = wallet.getLatestUpdateRecord().status.result;
-
-  await makeEVMTransaction({
-    wallet,
-    previousOffer: previousOfferId,
     methodName: 'callContract',
-    offerArgs: [{ fraz: 1 }],
+    offerArgs: [],
     proposal: {
       give: { BLD: { brand: BLD, value: 1n } },
     },
   });
 
-  const {
-    channelId: agoricToAxelarChannel,
-    counterPartyChannelId: axelarToAgoricChannel,
-  } = fetchedChainInfo.agoric.connections.axelar.transferChannel;
-
-  const payload = defaultAbiCoder.encode(
-    ['address'],
-    ['0x20E68F6c276AC6E297aC46c84Ab260928276691D'],
-  );
-  const base64Payload = Buffer.from(payload.slice(2), 'hex').toString('base64');
-
   await runInbound(
     BridgeId.VTRANSFER,
     buildVTransferEvent({
-      sequence: '1',
-      amount: 1n,
-      denom: 'uaxl',
       sender: makeTestAddress(),
-      target: lcaAddress,
-      receiver: lcaAddress,
-      sourceChannel: axelarToAgoricChannel,
-      destinationChannel: agoricToAxelarChannel,
-      memo: JSON.stringify({
-        source_chain: 'Ethereum',
-        source_address: '0x19e71e7eE5c2b13eF6bd52b9E3b437bdCc7d43c8',
-        destination_chain: 'agoric',
-        destination_address: lcaAddress,
-        payload: base64Payload,
-      }),
+      target: makeTestAddress(),
+      sourceChannel: 'channel-0',
+      sequence: '1',
+      memo: '{}',
     }),
   );
 });

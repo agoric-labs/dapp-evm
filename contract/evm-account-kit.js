@@ -122,7 +122,7 @@ export const prepareEvmAccountKit = (
             const payloadBytes = decodeBase64(memo.payload);
             const decoded = decode(['address'], payloadBytes);
             trace(decoded);
-
+            // TODO: do not do this again if already set
             this.state.evmAccountAddress = decoded[0];
           }
 
@@ -342,10 +342,12 @@ export const prepareEvmAccountKit = (
               }
               case 'callContract': {
                 const { give } = seat.getProposal();
-                const vow = holder.fundLCA(seat, give);
-                return vowTools.when(vow, async () => {
+                const fundVow = holder.fundLCA(seat, give);
+                await vowTools.when(fundVow);
+                const contractCallVow = await holder.callContractWithFunctionCalls();
+                return vowTools.when(contractCallVow, (res) => {
                   seat.exit();
-                  return holder.callContractWithFunctionCalls();
+                  return res;
                 });
               }
               default:
