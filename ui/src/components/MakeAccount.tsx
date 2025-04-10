@@ -85,7 +85,8 @@ export const MakeAccount = () => {
       invitationSpec: {
         source: 'continuing',
         previousOffer: latestInvitation[0],
-        invitationMakerName: 'CallContractWithFunctionCalls',
+        invitationMakerName: 'makeEVMTransactionInvitation',
+        invitationArgs: harden(['callContract', []]),
       },
       offerArgs: {},
       proposal: { give },
