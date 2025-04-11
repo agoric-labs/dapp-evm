@@ -13,7 +13,8 @@
   "useWorkspaces": true,
   "workspaces": [
     "ui",
-    "evm"
+    "evm",
+    "scripts"
   ],
   "keywords": [],
   "author": "",
