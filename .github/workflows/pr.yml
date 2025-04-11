@@ -1,4 +1,4 @@
-name: CI
+name: Axelar-GMP Tests
 
 on:
   pull_request:
@@ -24,10 +24,15 @@ jobs:
 
       - name: Install docker-compose
         run: |
-          sudo curl -L "https://github.com/docker/compose/releases/download/1.29.2/docker-compose-$(uname -s)-$(uname -m)" \
+          sudo curl -L "https://github.com/docker/compose/releases/download/v2.32.4/docker-compose-$(uname -s)-$(uname -m)" \
             -o /usr/local/bin/docker-compose
           sudo chmod +x /usr/local/bin/docker-compose
           docker-compose version
+
+      - name: Set up Docker Compose
+        uses: docker/setup-compose-action@v1
+        with:
+          version: latest
 
       - name: Set branch name
         id: set-branch
@@ -96,3 +101,10 @@ jobs:
               /usr/src/upgrade-test-scripts/eval-register-interchain-bank-assets-plan.json \
               CI=true createVault=false dockerFlag=false
           '
+
+      - name: Verify AXL registration from vStorage
+        run: ./scripts/check-vstorage.mjs
+        env:
+          vStorageUrl: http://localhost/agoric-lcd/agoric/vstorage/data/published.agoricNames.vbankAsset
+          valueToFind: ibc/2CC0B1B7A981ACC74854717F221008484603BB8360E81B262411B0D830EDE9B0
+          waitInSeconds: 30
