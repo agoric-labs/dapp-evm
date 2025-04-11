@@ -15,7 +15,8 @@
   "useWorkspaces": true,
   "workspaces": [
     "ui",
-    "evm"
+    "evm",
+    "scripts"
   ],
   "prettier": {
     "semi": true,
