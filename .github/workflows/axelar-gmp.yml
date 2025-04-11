@@ -94,3 +94,6 @@ jobs:
           vStorageUrl: http://localhost/agoric-lcd/agoric/vstorage/data/published.agoricNames.instance
           valueToFind: axelarGmp
           waitInSeconds: 30
+
+      - name: Make offer for creating EVM Smart Wallet
+        run: ./scripts/make-account.mjs
