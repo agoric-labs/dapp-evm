@@ -1,5 +1,5 @@
 #! /usr/bin/env node
-
+import './lockdown.mjs';
 import { execa } from 'execa';
 
 const { script, plan, assets } = process.env;

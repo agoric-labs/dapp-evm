@@ -1,26 +1,19 @@
 #! /usr/bin/env node
+import './lockdown.mjs';
+import { fetchFromVStorage, wait } from './utils.mjs';
 
 const { vStorageUrl, valueToFind, waitInSeconds } = process.env;
 
 try {
   if (waitInSeconds) {
-    await new Promise((resolve) => setTimeout(resolve, waitInSeconds * 1000));
+    await wait(waitInSeconds);
   }
 
-  const response = await fetch(vStorageUrl);
-  const { value } = await response.json();
-
-  const rawValue = JSON.parse(value)?.values?.[0];
-  if (!rawValue) {
-    throw new Error('Missing expected data in vStorage response');
-  }
-
-  const bodyString = JSON.parse(rawValue).body;
-  const parsedData = JSON.parse(bodyString.slice(1));
+  const data = await fetchFromVStorage(vStorageUrl);
 
   let found = false;
 
-  for (const val of parsedData) {
+  for (const val of data) {
     if (val[0] === valueToFind) {
       found = true;
       break;

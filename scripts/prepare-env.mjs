@@ -1,11 +1,11 @@
 #!/usr/bin/env node
-
+import './lockdown.mjs';
 import { execa } from 'execa';
 import fs from 'fs/promises';
 
 const CONTAINER = 'agoric';
 const AGORIC_REPO = 'https://github.com/Agoric/agoric-sdk.git';
-const TEMP_DIR = 'temp-agoric-sdk';
+const TEMP_DIR = '$HOME/temp-agoric-sdk';
 const MULTICHAIN_PATH = 'multichain-testing';
 const DEST_MULTICHAIN = `/usr/src/agoric-sdk/${MULTICHAIN_PATH}`;
 const CONTRACT_FOLDER = 'contract';
