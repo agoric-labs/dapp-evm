@@ -1,5 +1,5 @@
 {
-  "name": "orchestration-contract",
+  "name": "axelar-gmp-contract",
   "private": true,
   "version": "1.0.0",
   "type": "module",
