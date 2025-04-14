@@ -1,0 +1,30 @@
+name: PR
+
+on:
+  pull_request:
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout this repo
+        uses: actions/checkout@v4
+
+      - name: Use Node.js 18
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+
+      - name: Install root dependencies
+        run: yarn install
+
+      - name: Install contract dependencies
+        run: |
+          cd contract
+          yarn install
+
+      - name: Run contract tests
+        run: |
+          cd contract
+          yarn test
