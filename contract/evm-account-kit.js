@@ -5,7 +5,7 @@ import { makeTracer, NonNullish } from '@agoric/internal';
 import { atob, decodeBase64 } from '@endo/base64';
 import { encode, decode } from '@findeth/abi';
 import { Fail } from '@endo/errors';
-import { ChainAddressShape } from '@agoric/orchestration';
+import { CosmosChainAddressShape } from '@agoric/orchestration';
 import {
   buildGMPPayload,
   gmpAddresses,
@@ -16,11 +16,28 @@ import {
 const trace = makeTracer('EvmTap');
 const { entries } = Object;
 
+const addresses = {
+  AXELAR_GMP:
+    'axelar1dv4u5k73pzqrxlzujxg3qp8kvc3pje7jtdvu72npnt5zhq05ejcsn5qme5',
+  AXELAR_GAS: 'axelar1zl3rxpp70lmte2xr6c4lgske2fyuj3hupcsvcd',
+};
+
+/**
+ * @typedef {Object} AxelarGmpMemo
+ * @property {string} source_chain - The name of the source blockchain (e.g., 'ethereum', 'avalanche').
+ * @property {string} source_address - The originating address on the source chain.
+ * @property {string} payload - The payload being passed in the message, usually a serialized string.
+ * @property {1 | 2 | 3} type - The type of message:
+ *   1 = contract call,
+ *   2 = token transfer,
+ *   3 = arbitrary payload.
+ */
+
 /**
  * @import {IBCChannelID, VTransferIBCEvent} from '@agoric/vats';
  * @import {Vow, VowTools} from '@agoric/vow';
  * @import {Zone} from '@agoric/zone';
- * @import {ChainAddress, Denom, OrchestrationAccount} from '@agoric/orchestration';
+ * @import {CosmosChainAddress, Denom, OrchestrationAccount} from '@agoric/orchestration';
  * @import {FungibleTokenPacketData} from '@agoric/cosmic-proto/ibc/applications/transfer/v2/packet.js';
  * @import {ZoeTools} from '@agoric/orchestration/src/utils/zoe-tools.js';
  */
@@ -28,7 +45,7 @@ const { entries } = Object;
 /**
  * @typedef {{
  *   localAccount: OrchestrationAccount<{ chainId: 'agoric' }>;
- *   localChainAddress: ChainAddress;
+ *   localChainAddress: CosmosChainAddress;
  *   sourceChannel: IBCChannelID;
  *   remoteDenom: Denom;
  *   localDenom: Denom;
@@ -46,8 +63,8 @@ const { entries } = Object;
  */
 
 const EVMI = M.interface('holder', {
+  getLocalAddress: M.call().returns(M.any()),
   getAddress: M.call().returns(M.any()),
-  getEVMSmartWalletAddress: M.call().returns(M.any()),
   send: M.call(M.any(), M.any()).returns(M.any()),
   sendGmp: M.call(M.any(), M.any()).returns(M.any()),
   fundLCA: M.call(M.any(), M.any()).returns(VowShape),
@@ -59,7 +76,7 @@ const InvitationMakerI = M.interface('invitationMaker', {
 });
 
 const EvmKitStateShape = {
-  localChainAddress: ChainAddressShape,
+  localChainAddress: CosmosChainAddressShape,
   sourceChannel: M.string(),
   remoteDenom: M.string(),
   localDenom: M.string(),
@@ -98,7 +115,12 @@ export const prepareEvmAccountKit = (
       holder: EVMI,
       invitationMakers: InvitationMakerI,
     },
-    /** @param {EvmTapState} initialState */
+    /**
+     * @param {EvmTapState} initialState
+     * @returns {{
+     *   evmAccountAddress: string | undefined;
+     * } & EvmTapState}
+     */
     (initialState) => {
       mustMatch(initialState, EvmKitStateShape);
       return harden({ evmAccountAddress: undefined, ...initialState });
@@ -116,6 +138,7 @@ export const prepareEvmAccountKit = (
           );
 
           trace('receiveUpcall packet data', tx);
+          /** @type {AxelarGmpMemo} */
           const memo = JSON.parse(tx.memo);
 
           if (memo.source_chain === 'Ethereum') {
@@ -141,11 +164,10 @@ export const prepareEvmAccountKit = (
         },
       },
       holder: {
-        async getAddress() {
-          const localChainAddress = await this.state.localAccount.getAddress();
-          return localChainAddress.value;
+        getLocalAddress() {
+          return this.state.localAccount.getAddress().value;
         },
-        async getEVMSmartWalletAddress() {
+        async getAddress() {
           return this.state.evmAccountAddress;
         },
 
@@ -153,7 +175,7 @@ export const prepareEvmAccountKit = (
          * Sends tokens from the local account to a specified Cosmos chain
          * address.
          *
-         * @param {import('@agoric/orchestration').ChainAddress} toAccount
+         * @param {import('@agoric/orchestration').CosmosChainAddress} toAccount
          * @param {import('@agoric/orchestration').AmountArg} amount
          * @returns {Promise<string>} A success message upon completion.
          */
@@ -231,7 +253,7 @@ export const prepareEvmAccountKit = (
           if (type === 1 || type === 2) {
             memo.fee = {
               amount: String(gasAmount),
-              recipient: gmpAddresses.AXELAR_GAS,
+              recipient: addresses.AXELAR_GAS,
             };
             void log(`Fee object ${JSON.stringify(memo.fee)}`);
           }
@@ -241,7 +263,7 @@ export const prepareEvmAccountKit = (
 
           await this.state.localAccount.transfer(
             {
-              value: gmpAddresses.AXELAR_GMP,
+              value: addresses.AXELAR_GMP,
               encoding: 'bech32',
               chainId,
             },
@@ -311,15 +333,15 @@ export const prepareEvmAccountKit = (
               case 'sendGmp': {
                 return holder.sendGmp(seat, args[0]);
               }
-              case 'getAddress': {
-                const vow = holder.getAddress();
+              case 'getLocalAddress': {
+                const vow = holder.getLocalAddress();
                 return vowTools.when(vow, (res) => {
                   seat.exit();
                   return res;
                 });
               }
-              case 'getEVMSmartWalletAddress': {
-                const vow = holder.getEVMSmartWalletAddress();
+              case 'getAddress': {
+                const vow = holder.getAddress();
                 return vowTools.when(vow, (res) => {
                   seat.exit();
                   return res;
@@ -344,7 +366,8 @@ export const prepareEvmAccountKit = (
                 const { give } = seat.getProposal();
                 const fundVow = holder.fundLCA(seat, give);
                 await vowTools.when(fundVow);
-                const contractCallVow = await holder.callContractWithFunctionCalls();
+                const contractCallVow =
+                  await holder.callContractWithFunctionCalls();
                 return vowTools.when(contractCallVow, (res) => {
                   seat.exit();
                   return res;
