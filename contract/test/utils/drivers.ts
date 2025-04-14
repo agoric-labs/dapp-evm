@@ -36,17 +36,18 @@ import type { SwingsetTestKit } from './support.js';
 export const makeWalletFactoryDriver = async (
   runUtils: RunUtils,
   storage: FakeStorageKit,
-  agoricNamesRemotes: AgoricNamesRemotes,
+  agoricNamesRemotes: AgoricNamesRemotes
 ) => {
   const { EV } = runUtils;
 
   const walletFactoryStartResult: WalletFactoryStartResult = await EV.vat(
-    'bootstrap',
+    'bootstrap'
   ).consumeItem('walletFactoryStartResult');
-  const bankManager: ERef<BankManager> =
-    await EV.vat('bootstrap').consumeItem('bankManager');
+  const bankManager: ERef<BankManager> = await EV.vat('bootstrap').consumeItem(
+    'bankManager'
+  );
   const namesByAddressAdmin = await EV.vat('bootstrap').consumeItem(
-    'namesByAddressAdmin',
+    'namesByAddressAdmin'
   );
 
   const marshaller = boardSlottingMarshaller(slotToRemotable);
@@ -54,7 +55,7 @@ export const makeWalletFactoryDriver = async (
   const makeWalletDriver = (
     walletAddress: string,
     walletPresence: SmartWallet,
-    isNew: boolean,
+    isNew: boolean
   ) => ({
     isNew,
     getAddress: () => walletAddress,
@@ -64,7 +65,7 @@ export const makeWalletFactoryDriver = async (
         harden({
           method: 'executeOffer',
           offer,
-        }),
+        })
       );
       return EV(walletPresence).handleBridgeAction(offerCapData, true);
     },
@@ -73,7 +74,7 @@ export const makeWalletFactoryDriver = async (
         harden({
           method: 'executeOffer',
           offer,
-        }),
+        })
       );
 
       return EV.sendOnly(walletPresence).handleBridgeAction(offerCapData, true);
@@ -83,14 +84,14 @@ export const makeWalletFactoryDriver = async (
         harden({
           method: 'tryExitOffer',
           offerId,
-        }),
+        })
       );
       return EV(walletPresence).handleBridgeAction(capData, true);
     },
     executeOfferMaker<M extends OfferMaker>(
       makeOffer: M,
       firstArg: Parameters<M>[1],
-      secondArg?: Parameters<M>[2],
+      secondArg?: Parameters<M>[2]
     ): Promise<void> {
       const offer = makeOffer(agoricNamesRemotes, firstArg, secondArg);
       return this.executeOffer(offer);
@@ -98,7 +99,7 @@ export const makeWalletFactoryDriver = async (
     sendOfferMaker<M extends OfferMaker>(
       makeOffer: M,
       firstArg: Parameters<M>[1],
-      secondArg?: Parameters<M>[2],
+      secondArg?: Parameters<M>[2]
     ): Promise<void> {
       const offer = makeOffer(agoricNamesRemotes, firstArg, secondArg);
       return this.sendOffer(offer);
@@ -109,7 +110,7 @@ export const makeWalletFactoryDriver = async (
         storage.data,
         `published.wallet.${walletAddress}.current`,
         (...args) => Reflect.apply(marshaller.fromCapData, marshaller, args),
-        -1,
+        -1
       ) as any;
     },
 
@@ -118,7 +119,7 @@ export const makeWalletFactoryDriver = async (
         storage.data,
         `published.wallet.${walletAddress}`,
         (...args) => Reflect.apply(marshaller.fromCapData, marshaller, args),
-        -1,
+        -1
       ) as any;
     },
   });
@@ -128,13 +129,13 @@ export const makeWalletFactoryDriver = async (
      * Skip the provisionPool for tests
      */
     async provideSmartWallet(
-      walletAddress: string,
+      walletAddress: string
     ): Promise<ReturnType<typeof makeWalletDriver>> {
       const bank = await EV(bankManager).getBankForAddress(walletAddress);
       return EV(walletFactoryStartResult.creatorFacet)
         .provideSmartWallet(walletAddress, bank, namesByAddressAdmin)
         .then(([walletPresence, isNew]) =>
-          makeWalletDriver(walletAddress, walletPresence, isNew),
+          makeWalletDriver(walletAddress, walletPresence, isNew)
         );
     },
   };
@@ -151,12 +152,12 @@ export const makePriceFeedDriver = async (
   collateralBrandKey: string,
   agoricNamesRemotes: AgoricNamesRemotes,
   walletFactoryDriver: WalletFactoryDriver,
-  oracleAddresses: string[],
+  oracleAddresses: string[]
 ) => {
   const priceFeedName = oracleBrandFeedName(collateralBrandKey, 'USD');
 
   const oracleWallets = await Promise.all(
-    oracleAddresses.map(addr => walletFactoryDriver.provideSmartWallet(addr)),
+    oracleAddresses.map((addr) => walletFactoryDriver.provideSmartWallet(addr))
   );
 
   let nonce = 0;
@@ -167,7 +168,7 @@ export const makePriceFeedDriver = async (
     nonce += 1;
     adminOfferId = `accept-${collateralBrandKey}-oracleInvitation${nonce}`;
     return Promise.all(
-      oracleWallets.map(w =>
+      oracleWallets.map((w) =>
         w.executeOffer({
           id: adminOfferId,
           invitationSpec: {
@@ -176,8 +177,8 @@ export const makePriceFeedDriver = async (
             description: 'oracle invitation',
           },
           proposal: {},
-        }),
-      ),
+        })
+      )
     );
   };
   await acceptInvitations();
@@ -187,7 +188,7 @@ export const makePriceFeedDriver = async (
   return {
     async setPrice(price: number) {
       await Promise.all(
-        oracleWallets.map(w =>
+        oracleWallets.map((w) =>
           w.executeOfferMaker(
             Offers.fluxAggregator.PushPrice,
             {
@@ -195,9 +196,9 @@ export const makePriceFeedDriver = async (
               roundId,
               unitPrice: BigInt(price * 1_000_000),
             },
-            adminOfferId,
-          ),
-        ),
+            adminOfferId
+          )
+        )
       );
       // prepare for next round
       oracleWallets.push(NonNullish(oracleWallets.shift()));
@@ -217,36 +218,37 @@ export const makeGovernanceDriver = async (
   testKit: SwingsetTestKit,
   agoricNamesRemotes: AgoricNamesRemotes,
   walletFactoryDriver: WalletFactoryDriver,
-  committeeAddresses: string[],
+  committeeAddresses: string[]
 ) => {
   const { EV } = testKit.runUtils;
   const charterMembershipId = 'charterMembership';
   const committeeMembershipId = 'committeeMembership';
 
-  const chainTimerService: ERef<TimerService> =
-    await EV.vat('bootstrap').consumeItem('chainTimerService');
+  const chainTimerService: ERef<TimerService> = await EV.vat(
+    'bootstrap'
+  ).consumeItem('chainTimerService');
 
   let invitationsAccepted = false;
 
   const smartWallets = await Promise.all(
-    committeeAddresses.map(address =>
-      walletFactoryDriver.provideSmartWallet(address),
-    ),
+    committeeAddresses.map((address) =>
+      walletFactoryDriver.provideSmartWallet(address)
+    )
   );
 
   const findInvitation = (wallet, descriptionSubstr) => {
     return wallet
       .getCurrentWalletRecord()
-      .purses[0].balance.value.find(v =>
-        v.description.startsWith(descriptionSubstr),
+      .purses[0].balance.value.find((v) =>
+        v.description.startsWith(descriptionSubstr)
       );
   };
 
-  const ecMembers = smartWallets.map(w => ({
+  const ecMembers = smartWallets.map((w) => ({
     ...w,
     acceptOutstandingCharterInvitation: async (
       charterOfferId = charterMembershipId,
-      instance = agoricNamesRemotes.instance.econCommitteeCharter,
+      instance = agoricNamesRemotes.instance.econCommitteeCharter
     ) => {
       if (!findInvitation(w, 'charter member invitation')) {
         console.log('No charter member invitation found');
@@ -264,7 +266,7 @@ export const makeGovernanceDriver = async (
     },
     acceptOutstandingCommitteeInvitation: async (
       committeeOfferId = committeeMembershipId,
-      instance = agoricNamesRemotes.instance.economicCommittee,
+      instance = agoricNamesRemotes.instance.economicCommittee
     ) => {
       const invitation = findInvitation(w, 'Voter');
       if (!invitation) {
@@ -283,10 +285,10 @@ export const makeGovernanceDriver = async (
     },
     voteOnLatestProposal: async (
       voteId = 'voteInNewLimit',
-      committeeId = committeeMembershipId,
+      committeeId = committeeMembershipId
     ) => {
       const latestQuestionRecord = testKit.readPublished(
-        'committees.Economic_Committee.latestQuestion',
+        'committees.Economic_Committee.latestQuestion'
       );
 
       const chosenPositions = [latestQuestionRecord.positions[0]];
@@ -310,10 +312,10 @@ export const makeGovernanceDriver = async (
       const purse = w
         .getCurrentWalletRecord()
         // TODO: manage brands by object identity #10167
-        .purses.find(p => p.brand.toString().includes('Invitation'));
+        .purses.find((p) => p.brand.toString().includes('Invitation'));
       const invBalance = purse?.balance as Amount<'set', InvitationDetails>;
       const invitation = invBalance.value.find(
-        v => v.description === 'oracle invitation',
+        (v) => v.description === 'oracle invitation'
       );
       return invitation;
     },
@@ -337,7 +339,7 @@ export const makeGovernanceDriver = async (
     path,
     ecMember: (typeof ecMembers)[0] | null = null,
     questionId = 'propose',
-    charterOfferId = charterMembershipId,
+    charterOfferId = charterMembershipId
   ) => {
     const now = await EV(chainTimerService).getCurrentTimestamp();
 
@@ -364,7 +366,7 @@ export const makeGovernanceDriver = async (
     methodArgs: any[],
     ecMember: (typeof ecMembers)[0] | null = null,
     questionId = 'propose',
-    charterOfferId = charterMembershipId,
+    charterOfferId = charterMembershipId
   ) => {
     const now = await EV(chainTimerService).getCurrentTimestamp();
     const deadline = SECONDS_PER_MINUTE + now.absValue;
@@ -383,10 +385,10 @@ export const makeGovernanceDriver = async (
   const enactLatestProposal = async (
     members = ecMembers,
     voteId = 'voteInNewLimit',
-    committeeId = committeeMembershipId,
+    committeeId = committeeMembershipId
   ) => {
-    const promises = members.map(member =>
-      member.voteOnLatestProposal(voteId, committeeId),
+    const promises = members.map((member) =>
+      member.voteOnLatestProposal(voteId, committeeId)
     );
     await Promise.all(promises);
   };
@@ -432,7 +434,7 @@ export const makeZoeDriver = async (testKit: SwingsetTestKit) => {
         undefined,
         undefined,
         { storageNode },
-        'probe',
+        'probe'
       );
       ({ creatorFacet, adminFacet } = startResults);
 
@@ -442,12 +444,12 @@ export const makeZoeDriver = async (testKit: SwingsetTestKit) => {
       return { creatorFacet, issuer: issuers.Ducats, brand };
     },
     async upgradeProbe(probeContractBundle) {
-      const fabricateBundleId = bundle => {
+      const fabricateBundleId = (bundle) => {
         return `b1-${bundle.endoZipBase64Sha512}`;
       };
 
       await EV(adminFacet).upgradeContract(
-        fabricateBundleId(probeContractBundle),
+        fabricateBundleId(probeContractBundle)
       );
     },
 
@@ -460,7 +462,7 @@ export const makeZoeDriver = async (testKit: SwingsetTestKit) => {
       const stagingSeat = await EV(zoe).offer(
         stagingInv,
         { give: { Ducats: value } },
-        { Ducats: payment },
+        { Ducats: payment }
       );
       const helperPayments = await EV(stagingSeat).getPayouts();
 
@@ -468,7 +470,7 @@ export const makeZoeDriver = async (testKit: SwingsetTestKit) => {
       const helperSeat = await EV(zoe).offer(
         helperInv,
         { give: { Ducats: sub(value, 1n) } },
-        { Ducats: helperPayments.Ducats },
+        { Ducats: helperPayments.Ducats }
       );
       const internalPayments = await EV(helperSeat).getPayouts();
 
@@ -476,7 +478,7 @@ export const makeZoeDriver = async (testKit: SwingsetTestKit) => {
       const internalSeat = await EV(zoe).offer(
         internalInv,
         { give: { Ducats: sub(value, 2n) } },
-        { Ducats: internalPayments.Ducats },
+        { Ducats: internalPayments.Ducats }
       );
       const leftoverPayments = await EV(internalSeat).getPayouts();
 

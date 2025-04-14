@@ -1,11 +1,12 @@
 import React from 'react';
 import { showError, showSuccess } from '../Utils';
-import { TOAST_DURATION, BRAND_CONFIG, } from '../config';
+import { TOAST_DURATION } from '../config';
 import { useAppStore } from '../state';
 import { toast } from 'react-toastify';
 
 export const MakeAccount = () => {
-  const { wallet, contractInstance, brands, currentOffers } = useAppStore.getState();
+  const { wallet, contractInstance, brands, currentOffers } =
+    useAppStore.getState();
   const BLD = {
     brandKey: 'BLD',
     decimals: 6,
@@ -17,8 +18,6 @@ export const MakeAccount = () => {
       if (!contractInstance) throw new Error('No contract instance');
       if (!brands) throw new Error('Brands not initialized');
       if (!wallet) throw new Error('Wallet not connected');
-
-
 
       const requiredBrand = brands[BLD.brandKey];
       const amountValue = BigInt(8000);
@@ -80,7 +79,7 @@ export const MakeAccount = () => {
         value: amountValue,
       },
     };
-    const args =  {
+    const args = {
       id: Date.now(),
       invitationSpec: {
         source: 'continuing',
@@ -128,7 +127,7 @@ export const MakeAccount = () => {
       if (toastId) toast.dismiss(toastId);
       useAppStore.setState({ loading: false });
     }
-  }
+  };
 
   const invitations = currentOffers?.offerToUsedInvitation.filter(
     (invitation) => invitation[1].value[0].instance === contractInstance
@@ -138,13 +137,17 @@ export const MakeAccount = () => {
   )[0];
 
   return (
-    <div className='dashboard-container'>
-      <div className='dashboard'>
-        <div className='transfer-form'>
-          <button className='invoke-button' onClick={makeOffer}>
+    <div className="dashboard-container">
+      <div className="dashboard">
+        <div className="transfer-form">
+          <button className="invoke-button" onClick={makeOffer}>
             Make Account
           </button>
-          <button className='invoke-button' onClick={makeOfferToLCA} disabled={!latestInvitation}>
+          <button
+            className="invoke-button"
+            onClick={makeOfferToLCA}
+            disabled={!latestInvitation}
+          >
             Use Account {latestInvitation ? `(${latestInvitation[0]})` : ''}
           </button>
         </div>

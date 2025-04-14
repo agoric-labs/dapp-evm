@@ -13,18 +13,19 @@ module.exports = {
   defaultNetwork: 'hardhat',
   etherscan: {
     apiKey: {
-      fuji: "snowtrace", // apiKey is not required, just set a placeholder
+      fuji: 'snowtrace', // apiKey is not required, just set a placeholder
     },
     customChains: [
       {
-        network: "fuji",
+        network: 'fuji',
         chainId: 43113,
         urls: {
-          apiURL: "https://api.routescan.io/v2/network/testnet/evm/43113/etherscan",
-          browserURL: "https://avalanche.testnet.localhost:8080"
-        }
-      }
-    ]
+          apiURL:
+            'https://api.routescan.io/v2/network/testnet/evm/43113/etherscan',
+          browserURL: 'https://avalanche.testnet.localhost:8080',
+        },
+      },
+    ],
   },
   networks: {
     hardhat: {

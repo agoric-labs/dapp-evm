@@ -7,7 +7,9 @@ config();
 
 const { GATEWAY_CONTRACT, GAS_SERVICE_CONTRACT, AAVE_POOL } = process.env;
 if (!GATEWAY_CONTRACT || !GAS_SERVICE_CONTRACT || !AAVE_POOL) {
-  throw Error('GATEWAY_CONTRACT or GAS_SERVICE_CONTRACT or AAVE_POOL is not defined');
+  throw Error(
+    'GATEWAY_CONTRACT or GAS_SERVICE_CONTRACT or AAVE_POOL is not defined'
+  );
 }
 
 console.log(`GATEWAY_CONTRACT: ${GATEWAY_CONTRACT}`);
@@ -18,6 +20,10 @@ module.exports = buildModule('AaveLendingPoolModule', (m) => {
   const gateway = m.getParameter('_gateway', GATEWAY_CONTRACT);
   const gasService = m.getParameter('_gasReceiver', GAS_SERVICE_CONTRACT);
   const aavePool = m.getParameter('_aaveLendingPool', AAVE_POOL);
-  const DepositOnAaveLendingPool = m.contract('DepositOnAaveLendingPool', [gateway, gasService, aavePool]);
+  const DepositOnAaveLendingPool = m.contract('DepositOnAaveLendingPool', [
+    gateway,
+    gasService,
+    aavePool,
+  ]);
   return { DepositOnAaveLendingPool };
 });

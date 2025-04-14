@@ -7,7 +7,7 @@ export const Tabs = () => {
   }));
 
   return (
-    <div className='tabs'>
+    <div className="tabs">
       <button
         className={`tab-button ${tab === 1 ? 'active' : ''}`}
         onClick={() =>
@@ -20,7 +20,8 @@ export const Tabs = () => {
             error: undefined,
             tab: 1,
           })
-        }>
+        }
+      >
         Token Transfer
       </button>
       <button
@@ -35,7 +36,8 @@ export const Tabs = () => {
             error: undefined,
             tab: 2,
           })
-        }>
+        }
+      >
         Contract Invocation
       </button>
       <button
@@ -44,7 +46,8 @@ export const Tabs = () => {
           useAppStore.setState({
             tab: 3,
           })
-        }>
+        }
+      >
         Make Account
       </button>
     </div>

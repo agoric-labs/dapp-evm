@@ -28,3 +28,7 @@ jobs:
         run: |
           cd contract
           yarn test
+
+      - name: Run lint check
+        run: |
+          yarn lint
