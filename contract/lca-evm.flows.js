@@ -57,7 +57,6 @@ export const createAndMonitorLCA = async (
     channelId: transferChannel.channelId,
   })}`;
 
-  // Every time the `localAccount` receives `remoteDenom` over IBC, delegate it.
   const assets = await agoric.getVBankAssetInfo();
   const info = await remoteChain.getChainInfo();
   const evmAccountKit = makeEvmAccountKit({
@@ -99,6 +98,7 @@ export const createAndMonitorLCA = async (
   };
 
   try {
+    void log('Initiating IBC transfer');
     await localAccount.transfer(
       {
         value: gmpAddresses.AXELAR_GMP,
@@ -111,6 +111,8 @@ export const createAndMonitorLCA = async (
       },
       { memo: JSON.stringify(memo) }
     );
+
+    void log('Done');
   } catch (e) {
     await zoeTools.withdrawToSeat(localAccount, seat, give);
     const errorMsg = `IBC Transfer failed ${q(e)}`;

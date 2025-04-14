@@ -1,15 +1,14 @@
-
 const osmosisData = {
   channelId: 'channel-10170',
   clientId: '07-tendermint-4441',
   connectionId: 'connection-3881',
-}
+};
 
 const agoricData = {
   channelId: 'channel-0',
   clientId: '07-tendermint-0',
   connectionId: 'connection-0',
-}
+};
 
 export const chainInfo = JSON.stringify({
   agoric: {
@@ -114,8 +113,8 @@ export const chainInfo = JSON.stringify({
           version: 'ics20-1',
         },
       },
-    }
-  }
+    },
+  },
 });
 
 /**

@@ -112,7 +112,7 @@ export const icaMocks = {
    */
   channelOpenAck: (
     obj: IBCMethod<'startChannelOpenInit'>,
-    bech32Prefix: string = 'cosmos',
+    bech32Prefix: string = 'cosmos'
   ): IBCEvent<'channelOpenAck'> => {
     // Fake a channel IDs from port suffixes. _Ports have no relation to channels, and hosts
     // and controllers will likely have different channel IDs for the same channel._

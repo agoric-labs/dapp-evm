@@ -7,7 +7,9 @@
     "deploy:contract": "bash deploy.sh startAxelarGmp-plan.json",
     "start:ui": "cd ui && yarn dev",
     "start:relayer": "cd hermes && bash run-relayer.sh",
-    "register:token": "bash deploy.sh eval-register-interchain-bank-assets-plan.json"
+    "register:token": "bash deploy.sh eval-register-interchain-bank-assets-plan.json",
+    "lint": "prettier . --check",
+    "lint:fix": "prettier . --write"
   },
   "private": true,
   "useWorkspaces": true,
@@ -15,6 +17,11 @@
     "ui",
     "evm"
   ],
+  "prettier": {
+    "semi": true,
+    "singleQuote": true,
+    "printWidth": 80
+  },
   "keywords": [],
   "author": "",
   "license": "ISC",

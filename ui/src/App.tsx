@@ -70,7 +70,6 @@ const connectWallet = async () => {
 };
 
 function App() {
-
   const { wallet, loading, tab } = useAppStore((state) => ({
     wallet: state.wallet,
     balance: state.balance,
@@ -82,23 +81,23 @@ function App() {
     tab: state.tab,
     currentOffers: state.currentOffers,
   }));
-  
+
   useEffect(() => {
     setup(wallet?.address);
   }, [wallet]);
 
   return (
-    <div className='container'>
-      <div className='view-source'>
-        <a href='https://github.com/agoric-labs/dapp-evm' target='_blank'>
-          <img src={gituhbLogo} className='github-logo' alt='Source Code' />
+    <div className="container">
+      <div className="view-source">
+        <a href="https://github.com/agoric-labs/dapp-evm" target="_blank">
+          <img src={gituhbLogo} className="github-logo" alt="Source Code" />
           Fork me on GitHub
         </a>
       </div>
 
       <ToastContainer
         aria-label
-        position='bottom-right'
+        position="bottom-right"
         hideProgressBar={false}
         newestOnTop={false}
         closeButton={false}
@@ -107,24 +106,26 @@ function App() {
         rtl={false}
         pauseOnFocusLoss
         pauseOnHover
-        theme='colored'></ToastContainer>
+        theme="colored"
+      ></ToastContainer>
 
       <Logo />
 
       {!wallet ? (
         <>
           <button
-            className='connect-button'
+            className="connect-button"
             onClick={connectWallet}
-            disabled={loading}>
+            disabled={loading}
+          >
             {loading ? 'Connecting...' : 'Connect Wallet'}
           </button>
         </>
       ) : (
         <>
-          <div className='main-container'>
+          <div className="main-container">
             <Tabs />
-            <div className='content'>
+            <div className="content">
               <WalletStatus address={wallet?.address} />
               {(tab === 1 || tab === 2) && <AgoricContractForm />}
               {tab === 3 && <MakeAccount />}
