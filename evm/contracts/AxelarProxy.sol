@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: Apache-2.0
-pragma solidity ^0.8.28;
+pragma solidity ^0.8.20;
 
-import {AxelarExecutableWithToken} from "@axelar-network/axelar-gmp-sdk-solidity/contracts/executable/AxelarExecutableWithToken.sol";
+import { AxelarExecutable } from "@axelar-network/axelar-gmp-sdk-solidity/contracts/executable/AxelarExecutable.sol";
 import {Address} from "@openzeppelin/contracts/utils/Address.sol";
 import {Owned} from "solmate/src/auth/Owned.sol";
 import {IAxelarGasService} from "@axelar-network/axelar-gmp-sdk-solidity/contracts/interfaces/IAxelarGasService.sol";
@@ -15,7 +15,7 @@ import {IERC20} from "@axelar-network/axelar-gmp-sdk-solidity/contracts/interfac
  * @author crispymangoes, 0xEinCodes
  * NOTE: AxelarProxy accepts different types of msgIds. logicCalls && transferrance of ownership calls. This is where the cellars on a target chain would have to have their owners changed to the new AxelarProxy during an upgrade.
  */
-contract AxelarProxy is AxelarExecutableWithToken {
+contract AxelarProxy is AxelarExecutable {
     IAxelarGasService public immutable gasService;
     using Address for address;
 
@@ -50,7 +50,7 @@ contract AxelarProxy is AxelarExecutableWithToken {
     constructor(
         address gateway_,
         address gasReceiver_
-    ) AxelarExecutableWithToken(gateway_) {
+    ) AxelarExecutable(gateway_) {
         gasService = IAxelarGasService(gasReceiver_);
     }
 
@@ -61,7 +61,6 @@ contract AxelarProxy is AxelarExecutableWithToken {
      *      See `AxelarExecutable.sol`.
      */
     function _execute(
-        bytes32 commandId,
         string calldata sourceChain,
         string calldata sourceAddress,
         bytes calldata payload
@@ -106,7 +105,6 @@ contract AxelarProxy is AxelarExecutableWithToken {
      * @notice This contract is not setup to handle ERC20 tokens, so execution with token calls will revert.
      */
     function _executeWithToken(
-        bytes32 commandId,
         string calldata sourceChain,
         string calldata sourceAddress,
         bytes calldata payload,
@@ -114,7 +112,7 @@ contract AxelarProxy is AxelarExecutableWithToken {
         uint256 amount
     ) internal override {
         address destinationAddress = abi.decode(payload, (address));
-        address tokenAddress = gatewayWithToken().tokenAddresses(tokenSymbol);
+        address tokenAddress = gateway.tokenAddresses(tokenSymbol);
 
         IERC20(tokenAddress).transfer(destinationAddress, amount);
     }
