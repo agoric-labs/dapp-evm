@@ -62,7 +62,6 @@ const EVMI = M.interface('holder', {
   send: M.call(M.any(), M.any()).returns(M.any()),
   sendGmp: M.call(M.any(), M.any()).returns(M.any()),
   fundLCA: M.call(M.any(), M.any()).returns(VowShape),
-  callContractWithFunctionCalls: M.call().returns(VowShape),
 });
 
 const InvitationMakerI = M.interface('invitationMaker', {
@@ -212,8 +211,8 @@ export const prepareEvmAccountKit = (
             contractInvocationData != null ||
               Fail`contractInvocationData is not defined`;
 
-            ['functionSelector', 'encodedArgs', 'deadline', 'nonce'].every(
-              (field) => contractInvocationData[field] != null,
+            ['functionSelector', 'argType', 'argValue'].every(
+              (field) => contractInvocationData[field] != null
             ) ||
               Fail`Contract invocation payload is invalid or missing required fields`;
           }

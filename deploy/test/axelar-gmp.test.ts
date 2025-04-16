@@ -4,7 +4,6 @@ import { makeTestAddress } from '@agoric/orchestration/tools/make-test-address.j
 import { BridgeId } from '@agoric/internal';
 import fetchedChainInfo from '../utils/fetched-chain-info.js';
 import { defaultAbiCoder } from '@ethersproject/abi';
-import { utils } from 'ethers';
 import { eventLoopIteration } from '@agoric/internal/src/testing-utils.js';
 import type { ContinuingInvitationSpec } from '@agoric/smart-wallet/src/invitations.js';
 import type { ExecutionContext, TestFn } from 'ava';
@@ -363,9 +362,6 @@ test.serial('make contract calls using lca', async (t) => {
   const { wallet, storage } = t.context;
   const { BLD } = t.context.agoricNamesRemotes.brand;
 
-  const newCountValue = 234;
-  const encodedArgs = defaultAbiCoder.encode(['uint256'], [newCountValue]);
-
   await makeEVMTransaction({
     wallet,
     previousOffer,
@@ -377,10 +373,9 @@ test.serial('make contract calls using lca', async (t) => {
         gasAmount: 20000,
         destinationEVMChain: 'Ethereum',
         contractInvocationData: {
-          functionSelector: utils.id('setCount(uint256)').slice(0, 10),
-          deadline: 5000,
-          nonce: 7,
-          encodedArgs,
+          functionSelector: 'setCount(uint256)',
+          argType: 'uint256',
+          argValue: 234,
         },
       },
     ],
@@ -394,7 +389,7 @@ test.serial('make contract calls using lca', async (t) => {
 
   t.deepEqual(getLogged(), [
     'Inside sendGmp',
-    'Payload: [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,32,230,143,108,39,106,198,226,151,172,70,200,74,178,96,146,130,118,105,29,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,7,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,19,136,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,160,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,36,209,78,98,184,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,234,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]',
+    'Payload: [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,64,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,128,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,32,230,143,108,39,106,198,226,151,172,70,200,74,178,96,146,130,118,105,29,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,32,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,36,209,78,98,184,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,234,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]',
     'Fee object {"amount":"20000","recipient":"axelar1zl3rxpp70lmte2xr6c4lgske2fyuj3hupcsvcd"}',
     'Initiating IBC Transfer...',
     'DENOM of token:ubld',
@@ -445,10 +440,9 @@ test.serial('make contract calls using lca', async (t) => {
           type: 1,
           destinationEVMChain: 'Ethereum',
           contractInvocationData: {
-            functionSelector: utils.id('setCount(uint256)').slice(0, 10),
-            deadline: 5000,
-            nonce: 7,
-            encodedArgs,
+            functionSelector: 'setCount(uint256)',
+            argType: 'uint256',
+            argValue: 234,
           },
         },
       ],
@@ -460,41 +454,4 @@ test.serial('make contract calls using lca', async (t) => {
       message: /gasAmount must be defined/,
     },
   );
-});
-
-test('execute an arbitrary contract on agoric', async (t) => {
-  const {
-    wallet,
-    bridgeUtils: { runInbound },
-  } = t.context;
-
-  const { BLD } = t.context.agoricNamesRemotes.brand;
-
-  await makeEVMTransaction({
-    wallet,
-    previousOffer,
-    methodName: 'callContract',
-    offerArgs: [],
-    proposal: {
-      give: { BLD: { brand: BLD, value: 1n } },
-    },
-  });
-
-  await runInbound(
-    BridgeId.VTRANSFER,
-    buildVTransferEvent({
-      sender: makeTestAddress(),
-      target: makeTestAddress(),
-      sourceChannel: 'channel-0',
-      sequence: '2',
-      memo: '{}',
-    }),
-  );
-
-  t.like(wallet.getLatestUpdateRecord(), {
-    status: {
-      id: `evmTransaction${evmTransactionCounter - 1}`,
-      result: 'transfer success',
-    },
-  });
 });
