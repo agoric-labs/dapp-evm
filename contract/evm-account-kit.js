@@ -3,15 +3,10 @@ import { M, mustMatch } from '@endo/patterns';
 import { VowShape } from '@agoric/vow';
 import { makeTracer, NonNullish } from '@agoric/internal';
 import { atob, decodeBase64 } from '@endo/base64';
-import { encode, decode } from '@findeth/abi';
+import { decode } from '@findeth/abi';
 import { Fail } from '@endo/errors';
 import { ChainAddressShape } from '@agoric/orchestration';
-import {
-  buildGMPPayload,
-  gmpAddresses,
-  encodeCallData,
-  GMPMessageType,
-} from './utils/gmp.js';
+import { buildGMPPayload } from './utils/gmp.js';
 
 const trace = makeTracer('EvmTap');
 const { entries } = Object;
@@ -56,10 +51,9 @@ const addresses = {
 
 /**
  * @typedef {object} ContractInvocationData
- * @property {string} functionSelector - Function selector (4 bytes)
- * @property {string} encodedArgs - ABI encoded arguments
- * @property {number} deadline
- * @property {number} nonce
+ * @property {string} functionSelector
+ * @property {string} argType
+ * @property {string} argValue
  */
 
 const EVMI = M.interface('holder', {
@@ -147,7 +141,7 @@ export const prepareEvmAccountKit = (
           if (memo.source_chain === 'Ethereum') {
             const payloadBytes = decodeBase64(memo.payload);
             const decoded = decode(['address'], payloadBytes);
-            trace(decoded);
+            trace('receiveUpcall Decoded:', decoded);
             // TODO: do not do this again if already set
             this.state.evmAccountAddress = decoded[0];
           }
@@ -289,54 +283,6 @@ export const prepareEvmAccountKit = (
           seat.hasExited() && Fail`The seat cannot be exited.`;
           return zoeTools.localTransfer(seat, this.state.localAccount, give);
         },
-        callContractWithFunctionCalls() {
-          const targets = ['0x5B34876FFB1656710fb963ecD199C6f173c29267'];
-          const data = [
-            encodeCallData(
-              'createVendor(string)',
-              ['string'],
-              ['ownerAddress'],
-            ),
-          ];
-          const payload = Array.from(
-            encode(['address[]', 'bytes[]'], [targets, data]),
-          );
-
-          const { vow, resolver } = vowTools.makeVowKit();
-
-          void (async () => {
-            try {
-              await this.state.localAccount.transfer(
-                {
-                  value: gmpAddresses.AXELAR_GMP,
-                  encoding: 'bech32',
-                  chainId: 'axelar',
-                },
-                {
-                  denom: 'ubld',
-                  value: BigInt(1000000),
-                },
-                {
-                  memo: JSON.stringify({
-                    destination_chain: 'Ethereum',
-                    destination_address: this.state.evmAccountAddress,
-                    payload,
-                    type: GMPMessageType.MESSAGE_ONLY,
-                    fee: {
-                      amount: '1',
-                      recipient: gmpAddresses.AXELAR_GAS,
-                    },
-                  }),
-                },
-              );
-              resolver.resolve(`transfer success`);
-            } catch (err) {
-              resolver.reject(Error(`transfer failed: ${err.message}`));
-            }
-          })();
-
-          return vow;
-        },
       },
       invitationMakers: {
         // "method" and "args" can be used to invoke methods of localAccount obj
@@ -345,6 +291,8 @@ export const prepareEvmAccountKit = (
             const { holder } = this.facets;
             switch (method) {
               case 'sendGmp': {
+                const { give } = seat.getProposal();
+                await vowTools.when(holder.fundLCA(seat, give));
                 return holder.sendGmp(seat, args[0]);
               }
               case 'getLocalAddress': {
@@ -375,17 +323,6 @@ export const prepareEvmAccountKit = (
                   seat.exit();
                   return res;
                 });
-              }
-              case 'callContract': {
-                const { give } = seat.getProposal();
-                await vowTools.when(holder.fundLCA(seat, give));
-                return vowTools.when(
-                  holder.callContractWithFunctionCalls(),
-                  (res) => {
-                    seat.exit();
-                    return res;
-                  },
-                );
               }
               default:
                 return 'Invalid method';
