@@ -105,7 +105,7 @@ copyFilesToContainer() {
     fi
 
     local targetDir="/usr/src/"
-    local containerID=$(docker ps -q | head -n 1)
+    local containerID=agoric
 
     echo "Copying script file..."
     docker cp "$script" "$containerID":"$targetDir"
@@ -128,7 +128,7 @@ copyFilesToContainer() {
 execCmd() {
     local cmd="$1"
     if $dockerFlag; then
-        local containerID=$(docker ps -q | head -n 1)
+        local containerID=agoric
         docker exec -it "$containerID" bash -c "$cmd"
     else
         bash -c "$cmd"

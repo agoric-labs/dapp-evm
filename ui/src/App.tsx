@@ -20,8 +20,8 @@ import { MakeAccount } from './components/MakeAccount';
 import { CurrentOffer } from './interfaces/interfaces';
 
 const ENDPOINTS = {
-  RPC: 'http://localhost:26657',
-  API: 'http://localhost:1317',
+  RPC: 'http://localhost/agoric-rpc',
+  API: 'http://localhost/agoric-lcd',
 };
 
 const watcher = makeAgoricChainStorageWatcher(ENDPOINTS.API, 'agoriclocal');

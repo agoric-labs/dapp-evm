@@ -463,19 +463,17 @@ test.serial('make contract calls using lca', async (t) => {
   );
 });
 
-test.skip('execute an arbitrary contract on agoric', async (t) => {
+test('execute an arbitrary contract on agoric', async (t) => {
   const {
     wallet,
     bridgeUtils: { runInbound },
   } = t.context;
 
   const { BLD } = t.context.agoricNamesRemotes.brand;
-  const previousOfferId =
-    wallet.getCurrentWalletRecord().offerToUsedInvitation[0][0];
 
   await makeEVMTransaction({
     wallet,
-    previousOffer: previousOfferId,
+    previousOffer,
     methodName: 'callContract',
     offerArgs: [],
     proposal: {
@@ -489,8 +487,15 @@ test.skip('execute an arbitrary contract on agoric', async (t) => {
       sender: makeTestAddress(),
       target: makeTestAddress(),
       sourceChannel: 'channel-0',
-      sequence: '1',
+      sequence: '2',
       memo: '{}',
     })
   );
+
+  t.like(wallet.getLatestUpdateRecord(), {
+    status: {
+      id: `evmTransaction${evmTransactionCounter - 1}`,
+      result: 'transfer success',
+    },
+  });
 });
