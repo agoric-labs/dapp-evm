@@ -2,6 +2,16 @@
   "name": "integration",
   "version": "1.0.0",
   "type": "module",
+  "scripts": {
+    "prepare-env": "CONTRACT_FOLDER=../contract DEPLOY_SH_LOCAL=../deploy/deploy.sh node scripts/prepare-env.mjs",
+    "register:token": "script=scripts/register-interchain-bank-assets.builder.js plan=scripts/eval-register-interchain-bank-assets-plan.json assets='[{\"denom\":\"ibc/2CC0B1B7A981ACC74854717F221008484603BB8360E81B262411B0D830EDE9B0\",\"issuerName\":\"AXL\",\"decimalPlaces\":6}]' node scripts/deploy-contract.mjs",
+    "check-token": "vStorageUrl=http://localhost/agoric-lcd/agoric/vstorage/data/published.agoricNames.vbankAsset valueToFind=ibc/2CC0B1B7A981ACC74854717F221008484603BB8360E81B262411B0D830EDE9B0 waitInSeconds=30 node scripts/check-vstorage.mjs",
+    "deploy:contract": "script=scripts/init-axelar-gmp.js plan=scripts/startAxelarGmp-plan.json node scripts/deploy-contract.mjs",
+    "check-axelar-gmp": "vStorageUrl=http://localhost/agoric-lcd/agoric/vstorage/data/published.agoricNames.instance valueToFind=axelarGmp waitInSeconds=30 node scripts/check-vstorage.mjs",
+    "make-account": "makeAccount=true node scripts/make-account.mjs",
+    "evm-address": "node scripts/make-account.mjs",
+    "send-gmp": "node scripts/gmp-via-lca.mjs"
+  },
   "devDependencies": {
     "@agoric/client-utils": "^0.2.0-u19.2",
     "@agoric/internal": "^0.4.0-u19.2",

@@ -39,7 +39,7 @@ export const encodeCallData = (functionSignature, paramTypes, params) => {
  *
  * @param {object} params Contract invocation parameters
  * @param {number} params.type GMP message type
- * @param {string} params.evmContractAddress Target contract address
+ * @param {array} params.targets Target contract address
  * @param {string} params.functionSelector
  * @param {string} params.argType
  * @param {string} params.argValue
@@ -48,7 +48,7 @@ export const encodeCallData = (functionSignature, paramTypes, params) => {
  */
 export const buildGMPPayload = ({
   type,
-  evmContractAddress,
+  targets,
   functionSelector,
   argType,
   argValue,
@@ -58,11 +58,7 @@ export const buildGMPPayload = ({
   }
 
   const data = [encodeCallData(functionSelector, [argType], [argValue])];
-  const payload = Array.from(
-    encode(['address[]', 'bytes[]'], [[evmContractAddress], data])
-  );
-
-  return payload;
+  return Array.from(encode(['address[]', 'bytes[]'], [targets, data]));
 };
 
 /**
