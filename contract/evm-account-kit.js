@@ -302,29 +302,40 @@ export const prepareEvmAccountKit = (
             encode(['address[]', 'bytes[]'], [targets, data])
           );
 
-          return this.state.localAccount.transfer(
-            {
-              value: gmpAddresses.AXELAR_GMP,
-              encoding: 'bech32',
-              chainId: 'axelar',
-            },
-            {
-              denom: 'ubld',
-              value: BigInt(1000000),
-            },
-            {
-              memo: JSON.stringify({
-                destination_chain: 'Ethereum',
-                destination_address: this.state.evmAccountAddress,
-                payload,
-                type: GMPMessageType.MESSAGE_ONLY,
-                fee: {
-                  amount: '1',
-                  recipient: gmpAddresses.AXELAR_GAS,
+          const { vow, resolver } = vowTools.makeVowKit();
+
+          void (async () => {
+            try {
+              await this.state.localAccount.transfer(
+                {
+                  value: gmpAddresses.AXELAR_GMP,
+                  encoding: 'bech32',
+                  chainId: 'axelar',
                 },
-              }),
+                {
+                  denom: 'ubld',
+                  value: BigInt(1000000),
+                },
+                {
+                  memo: JSON.stringify({
+                    destination_chain: 'Ethereum',
+                    destination_address: this.state.evmAccountAddress,
+                    payload,
+                    type: GMPMessageType.MESSAGE_ONLY,
+                    fee: {
+                      amount: '1',
+                      recipient: gmpAddresses.AXELAR_GAS,
+                    },
+                  }),
+                }
+              );
+              resolver.resolve(`transfer success`);
+            } catch (err) {
+              resolver.reject(Error(`transfer failed: ${err.message}`));
             }
-          );
+          })();
+
+          return vow;
         },
       },
       invitationMakers: {
@@ -367,14 +378,14 @@ export const prepareEvmAccountKit = (
               }
               case 'callContract': {
                 const { give } = seat.getProposal();
-                const fundVow = holder.fundLCA(seat, give);
-                await vowTools.when(fundVow);
-                const contractCallVow =
-                  await holder.callContractWithFunctionCalls();
-                return vowTools.when(contractCallVow, (res) => {
-                  seat.exit();
-                  return res;
-                });
+                await vowTools.when(holder.fundLCA(seat, give));
+                return vowTools.when(
+                  holder.callContractWithFunctionCalls(),
+                  (res) => {
+                    seat.exit();
+                    return res;
+                  }
+                );
               }
               default:
                 return 'Invalid method';
