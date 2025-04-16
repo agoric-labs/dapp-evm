@@ -26,3 +26,4 @@ evm/coverage.json
 # Hardhat Ignition default folder for deployments against a local node
 evm/ignition/deployments
 .qodo
+offer.json

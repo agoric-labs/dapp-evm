@@ -123,7 +123,10 @@ export const prepareEvmAccountKit = (
      */
     (initialState) => {
       mustMatch(initialState, EvmKitStateShape);
-      return harden({ evmAccountAddress: undefined, ...initialState });
+      return harden({
+        evmAccountAddress: /** @type {string | undefined} */ (undefined),
+        ...initialState,
+      });
     },
     {
       tap: {

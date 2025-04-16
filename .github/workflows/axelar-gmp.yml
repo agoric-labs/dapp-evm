@@ -1,0 +1,119 @@
+name: Axelar GMP tests
+
+on:
+  pull_request:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+    inputs:
+      branch:
+        description: 'Branch to clone from agoric-to-axelar-local'
+        required: false
+        default: 'main'
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.head_ref }}
+  cancel-in-progress: true
+
+jobs:
+  axelar-gmp:
+    runs-on: ubuntu-latest
+    env:
+      HOME: /home/runner/work
+
+    steps:
+      - name: Checkout this repo
+        uses: actions/checkout@v4
+
+      - name: Use Node.js 18
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+
+      - name: Install dependencies
+        run: yarn install
+
+      - name: Install Docker Compose
+        run: |
+          sudo curl -L "https://github.com/docker/compose/releases/latest/download/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose
+          sudo chmod +x /usr/local/bin/docker-compose
+          docker-compose --version
+
+      - name: Setup Rust
+        run: |
+          curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y
+          source $HOME/.cargo/env
+          rustup default stable
+
+      - name: Determine branch name
+        id: set-branch
+        run: |
+          echo "branch=${{ github.event.inputs.branch || 'main' }}" >> "$GITHUB_OUTPUT"
+
+      - name: Clone agoric-to-axelar-local
+        run: |
+          git clone --branch "${{ steps.set-branch.outputs.branch }}" \
+            https://github.com/agoric-labs/agoric-to-axelar-local.git \
+            "$HOME/agoric-to-axelar-local"
+
+      - name: Install agoric-to-axelar-local dependencies
+        working-directory: ${{ env.HOME }}/agoric-to-axelar-local
+        run: npm install
+
+      - name: Build agoric-to-axelar-local
+        working-directory: ${{ env.HOME }}/agoric-to-axelar-local
+        run: npm run build
+
+      - name: Start Chains and set Relayer
+        working-directory: ${{ env.HOME }}/agoric-to-axelar-local
+        run: |
+          cd packages/axelar-local-dev-cosmos
+          npm run start
+
+      - name: Prepare Env
+        run: ./scripts/prepare-env.mjs
+
+      - name: Register AXL in vbankAssets
+        run: ./scripts/deploy-contract.mjs
+        env:
+          script: /usr/src/agoric-sdk/multichain-testing/src/register-interchain-bank-assets.builder.js
+          plan: /usr/src/upgrade-test-scripts/eval-register-interchain-bank-assets-plan.json
+          assets: '[{"denom":"ibc/2CC0B1B7A981ACC74854717F221008484603BB8360E81B262411B0D830EDE9B0","issuerName":"AXL","decimalPlaces":6}]'
+
+      - name: Verify AXL registration from vStorage
+        run: ./scripts/check-vstorage.mjs
+        env:
+          vStorageUrl: http://localhost/agoric-lcd/agoric/vstorage/data/published.agoricNames.vbankAsset
+          valueToFind: ibc/2CC0B1B7A981ACC74854717F221008484603BB8360E81B262411B0D830EDE9B0
+          waitInSeconds: 30
+
+      - name: Deploy Axelar GMP contract
+        run: ./scripts/deploy-contract.mjs
+        env:
+          script: /usr/src/upgrade-test-scripts/contract/proposal/init-axelar-gmp.js
+          plan: /usr/src/upgrade-test-scripts/startAxelarGmp-plan.json
+
+      - name: Verify Axelar GMP contract installation from vStorage
+        run: ./scripts/check-vstorage.mjs
+        env:
+          vStorageUrl: http://localhost/agoric-lcd/agoric/vstorage/data/published.agoricNames.instance
+          valueToFind: axelarGmp
+          waitInSeconds: 30
+
+      - name: Make offer for creating EVM Smart Wallet
+        run: ./scripts/make-account.mjs
+        env:
+          makeAccount: true
+
+      - name: Relay data from EVM chain
+        working-directory: ${{ env.HOME }}/agoric-to-axelar-local
+        run: |
+          cd packages/axelar-local-dev-cosmos
+          npm run relay &
+          sleep 60
+
+      - name: Get EVM Smart wallet address
+        run: ./scripts/make-account.mjs
+        env:
+          waitInSeconds: 30
