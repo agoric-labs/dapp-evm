@@ -9,7 +9,28 @@ if (!PRIVATE_KEY) {
 
 /** @type import('hardhat/config').HardhatUserConfig */
 module.exports = {
-  solidity: '0.8.28',
+  solidity: {
+    compilers: [
+      {
+        version: '0.8.20',
+        settings: {
+          optimizer: {
+            enabled: true,
+            runs: 200,
+          },
+        },
+      },
+      {
+        version: '0.8.9',
+        settings: {
+          optimizer: {
+            enabled: true,
+            runs: 200,
+          },
+        },
+      },
+    ],
+  },
   defaultNetwork: 'hardhat',
   etherscan: {
     apiKey: {

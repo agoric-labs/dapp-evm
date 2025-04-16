@@ -1,7 +1,7 @@
 //SPDX-License-Identifier: MIT
-pragma solidity ^0.8.0;
+pragma solidity ^0.8.20;
 
-import { AxelarExecutableWithToken } from '@axelar-network/axelar-gmp-sdk-solidity/contracts/executable/AxelarExecutableWithToken.sol';
+import { AxelarExecutable } from "@axelar-network/axelar-gmp-sdk-solidity/contracts/executable/AxelarExecutable.sol";
 import { IERC20 } from '@axelar-network/axelar-gmp-sdk-solidity/contracts/interfaces/IERC20.sol';
 import { IAxelarGasService } from '@axelar-network/axelar-gmp-sdk-solidity/contracts/interfaces/IAxelarGasService.sol';
 import "@aave/core-v3/contracts/interfaces/IPool.sol";
@@ -10,13 +10,13 @@ import "@aave/core-v3/contracts/interfaces/IPool.sol";
  * @title Deposit on Aave Lending Pool
  * @notice Send a token along with an Axelar GMP message between two blockchains
  */
-contract DepositOnAaveLendingPool is AxelarExecutableWithToken {
+contract DepositOnAaveLendingPool is AxelarExecutable {
     IAxelarGasService public immutable gasService;
     address public immutable aaveLendingPool; // Aave V3 Lending Pool Address
 
 
-    event Executed(bytes32 commandId, string sourceChain, string sourceAddress, bytes payload);
-    event ExecutedWithToken(bytes32 commandId, string sourceChain, string sourceAddress, bytes payload, string tokenSymbol, uint256 amount);
+    event Executed(string sourceChain, string sourceAddress, bytes payload);
+    event ExecutedWithToken(string sourceChain, string sourceAddress, bytes payload, string tokenSymbol, uint256 amount);
     event ExecutedWithTokenAddress(address tokenAddress, uint256 amount);
 
     /**
@@ -24,19 +24,18 @@ contract DepositOnAaveLendingPool is AxelarExecutableWithToken {
      * @param _gateway address of axl gateway on deployed chain
      * @param _gasReceiver address of axl gas service on deployed chain
      */
-    constructor(address _gateway, address _gasReceiver, address _aaveLendingPool) AxelarExecutableWithToken(_gateway) {
+    constructor(address _gateway, address _gasReceiver, address _aaveLendingPool) AxelarExecutable(_gateway) {
         gasService = IAxelarGasService(_gasReceiver);
         aaveLendingPool = _aaveLendingPool;
 
     }
 
     function _execute(
-        bytes32 commandId,
         string calldata sourceChain,
         string calldata sourceAddress,
         bytes calldata payload
     ) internal override {
-        emit Executed(commandId, sourceChain, sourceAddress, payload);
+        emit Executed( sourceChain, sourceAddress, payload);
     }
 
     /**
@@ -68,7 +67,7 @@ contract DepositOnAaveLendingPool is AxelarExecutableWithToken {
         uint256 amount
     ) public {
         require(amount > 0, "Deposit amount must be greater than zero");
-        address tokenAddress = gatewayWithToken().tokenAddresses(tokenSymbol);
+        address tokenAddress = gateway.tokenAddresses(tokenSymbol);
 
         IERC20(tokenAddress).transferFrom(msg.sender, address(this), amount); // Transfer tokens from user
         IERC20(tokenAddress).approve(aaveLendingPool, amount); // Approve Aave Pool
@@ -86,7 +85,6 @@ contract DepositOnAaveLendingPool is AxelarExecutableWithToken {
      * @param amount amount of tokens sent from src chain
      */
     function _executeWithToken(
-        bytes32 commandId,
         string calldata sourceChain,
         string calldata sourceAddress,
         bytes calldata payload,
@@ -94,7 +92,7 @@ contract DepositOnAaveLendingPool is AxelarExecutableWithToken {
         uint256 amount
     ) internal override {
         address recipient = abi.decode(payload, (address));
-        address tokenAddress = gatewayWithToken().tokenAddresses(tokenSymbol);
+        address tokenAddress = gateway.tokenAddresses(tokenSymbol);
 
         require(amount > 0, "Deposit amount must be greater than zero");
 
@@ -103,7 +101,7 @@ contract DepositOnAaveLendingPool is AxelarExecutableWithToken {
 
         IPool(aaveLendingPool).supply(tokenAddress, amount, recipient, 0); // Deposit into Aave
 
-        emit ExecutedWithToken(commandId, sourceChain, sourceAddress, payload, tokenSymbol, amount);
+        emit ExecutedWithToken(sourceChain, sourceAddress, payload, tokenSymbol, amount);
    
     }
 }
