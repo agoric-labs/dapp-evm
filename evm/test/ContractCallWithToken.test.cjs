@@ -1,9 +1,9 @@
-const { expect } = require("chai");
-const { ethers, network } = require("hardhat");
+const { expect } = require('chai');
+const { ethers, network } = require('hardhat');
 
 const abiCoder = new ethers.AbiCoder();
 
-describe("CallContractWithToken", function () {
+describe('CallContractWithToken', function () {
   let contract, owner, addr1, addr2, gasServiceMock, gatewayMock, tokenDeployer;
 
   const approveMessage = async (
@@ -14,13 +14,13 @@ describe("CallContractWithToken", function () {
     payloadHash
   ) => {
     const params = abiCoder.encode(
-      ["string", "string", "address", "bytes32"],
+      ['string', 'string', 'address', 'bytes32'],
       [from, sourceAddress, targetAddress, payloadHash]
     );
     const data = ethers.getBytes(
       abiCoder.encode(
-        ["uint256", "bytes32[]", "string[]", "bytes[]"],
-        [network.config.chainId, [commandId], ["approveContractCall"], [params]]
+        ['uint256', 'bytes32[]', 'string[]', 'bytes[]'],
+        [network.config.chainId, [commandId], ['approveContractCall'], [params]]
       )
     );
     const wallet = owner;
@@ -28,10 +28,10 @@ describe("CallContractWithToken", function () {
       ethers.getBytes(ethers.keccak256(data))
     );
     const signData = abiCoder.encode(
-      ["address[]", "uint256[]", "uint256", "bytes[]"],
+      ['address[]', 'uint256[]', 'uint256', 'bytes[]'],
       [[wallet.address], [1], 1, [signature]]
     );
-    const input = abiCoder.encode(["bytes", "bytes"], [data, signData]);
+    const input = abiCoder.encode(['bytes', 'bytes'], [data, signData]);
     const response = await gatewayMock
       .connect(owner)
       .execute(input, { gasLimit: BigInt(8e6) });
@@ -55,43 +55,43 @@ describe("CallContractWithToken", function () {
     [owner, addr1, addr2] = await ethers.getSigners();
 
     // Mock AxelarGasService and AxelarGateway
-    const GasServiceMock = await ethers.getContractFactory("AxelarGasService");
+    const GasServiceMock = await ethers.getContractFactory('AxelarGasService');
     gasServiceMock = await GasServiceMock.deploy(owner.address);
 
-    const TokenDeployer = await ethers.getContractFactory("TokenDeployer");
+    const TokenDeployer = await ethers.getContractFactory('TokenDeployer');
     tokenDeployer = await TokenDeployer.deploy();
 
-    const Auth = await ethers.getContractFactory("AxelarAuthWeighted");
+    const Auth = await ethers.getContractFactory('AxelarAuthWeighted');
     auth = await Auth.deploy([
       abiCoder.encode(
-        ["address[]", "uint256[]", "uint256"],
+        ['address[]', 'uint256[]', 'uint256'],
         [[owner.address], [1], 1]
       ),
     ]);
 
-    const GatewayMock = await ethers.getContractFactory("AxelarGateway");
+    const GatewayMock = await ethers.getContractFactory('AxelarGateway');
     gatewayMock = await GatewayMock.deploy(auth.target, tokenDeployer.target);
 
     // Deploy CallContractWithToken
-    const Contract = await ethers.getContractFactory("Factory");
+    const Contract = await ethers.getContractFactory('Factory');
     contract = await Contract.deploy(
       gatewayMock.target,
       gasServiceMock.target,
-      "Ethereum"
+      'Ethereum'
     );
   });
 
-  it("should create a new Wallet object using the Factory contract", async function () {
+  it('should create a new Wallet object using the Factory contract', async function () {
     [owner, addr1, addr2] = await ethers.getSigners();
-    const walletName = "MyWallet";
+    const walletName = 'MyWallet';
     const walletOwner = addr1.address;
 
     // Call the Factory contract to create a new Wallet
     const commandId = getCommandId();
-    const from = "agoric";
-    const sourceAddress = "0x1234567890123456789012345678901234567890";
+    const from = 'agoric';
+    const sourceAddress = '0x1234567890123456789012345678901234567890';
     const payload = abiCoder.encode(
-      ["string", "address"],
+      ['string', 'address'],
       [walletName, walletOwner]
     );
     const options = {};
@@ -113,15 +113,15 @@ describe("CallContractWithToken", function () {
     );
 
     // Address created is deterministic
-    const expectedAddress = "0x856e4424f806D16E8CBC702B3c0F2ede5468eae5";
+    const expectedAddress = '0x856e4424f806D16E8CBC702B3c0F2ede5468eae5';
     const expectedPayload = encodeVersionedPayload(
-      "0x00",
-      abiCoder.encode(["address"], [expectedAddress])
+      '0x00',
+      abiCoder.encode(['address'], [expectedAddress])
     );
     const expectedPayloadHash = ethers.keccak256(expectedPayload);
 
     await expect(tx)
-      .to.emit(gatewayMock, "ContractCall")
+      .to.emit(gatewayMock, 'ContractCall')
       .withArgs(
         contract.target,
         from,

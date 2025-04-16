@@ -29,7 +29,7 @@ module.exports = {
           },
         },
       },
-    ]
+    ],
   },
   defaultNetwork: 'hardhat',
   etherscan: {
@@ -72,5 +72,5 @@ module.exports = {
   },
   mocha: {
     timeout: 20000,
-},
+  },
 };
