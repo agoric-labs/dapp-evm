@@ -9,7 +9,7 @@ const TEMP_DIR = '$HOME/temp-agoric-sdk';
 const MULTICHAIN_PATH = 'multichain-testing';
 const DEST_MULTICHAIN = `/usr/src/agoric-sdk/${MULTICHAIN_PATH}`;
 const CONTRACT_FOLDER = 'contract';
-const DEPLOY_SH_LOCAL = 'deploy.sh';
+const DEPLOY_SH_LOCAL = 'deploy/deploy.sh';
 const DEPLOY_SH_DEST = '/usr/src/upgrade-test-scripts/deploy.sh';
 
 try {

@@ -1,6 +1,6 @@
 #! /usr/bin/env node
 import './lockdown.mjs';
-import { fetchFromVStorage, wait } from '../utils.mjs';
+import { fetchFromVStorage, wait } from './utils.mjs';
 
 const { vStorageUrl, valueToFind, waitInSeconds } = process.env;
 

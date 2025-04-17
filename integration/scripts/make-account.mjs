@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-import './scripts/lockdown.mjs';
+import './lockdown.mjs';
 import { execa } from 'execa';
 import fs from 'fs/promises';
 import { prepareOffer, fetchFromVStorage, wait } from './utils.mjs';

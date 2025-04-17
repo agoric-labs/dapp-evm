@@ -8,7 +8,9 @@
   },
   "scripts": {
     "test": "ava",
-    "build": "agoric run ../contract/proposal/init-axelar-gmp.js"
+    "build": "agoric run ../contract/proposal/init-axelar-gmp.js",
+    "deploy": "bash deploy.sh startAxelarGmp-plan.json",
+    "register:token": "bash deploy.sh eval-register-interchain-bank-assets-plan.json"
   },
   "ava": {
     "extensions": {
