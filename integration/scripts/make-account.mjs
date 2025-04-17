@@ -1,8 +1,8 @@
 #!/usr/bin/env node
-import './lockdown.mjs';
+import './scripts/lockdown.mjs';
 import { execa } from 'execa';
 import fs from 'fs/promises';
-import { prepareOffer, fetchFromVStorage, wait } from '../utils.mjs';
+import { prepareOffer, fetchFromVStorage, wait } from './utils.mjs';
 
 const CONTAINER = 'agoric';
 const OFFER_FILE = 'offer.json';

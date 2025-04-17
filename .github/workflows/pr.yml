@@ -28,6 +28,11 @@ jobs:
 
       - name: Install contract dependencies
         run: |
+          cd contract
+          yarn install
+
+      - name: Install deployment dependencies
+        run: |
           cd deploy
           yarn install
 
