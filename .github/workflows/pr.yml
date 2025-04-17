@@ -41,6 +41,21 @@ jobs:
           cd deploy
           yarn test
 
+      - name: Install dependencies in solidity/
+        run: |
+          cd solidity
+          yarn install
+
+      - name: Build solidity contracts
+        run: |
+          cd solidity
+          CI=true yarn build
+
+      - name: Run tests for solidity contracts
+        run: |
+          cd solidity
+          yarn test
+
       - name: Run lint check
         run: |
           yarn lint

@@ -2,8 +2,8 @@ require('@nomicfoundation/hardhat-toolbox');
 const { config } = require('dotenv');
 config();
 
-const { PRIVATE_KEY } = process.env;
-if (!PRIVATE_KEY) {
+const { PRIVATE_KEY, CI } = process.env;
+if (!CI && !PRIVATE_KEY) {
   throw Error('PRIVATE_KEY is not added as a secret');
 }
 
