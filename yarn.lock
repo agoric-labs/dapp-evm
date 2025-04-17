@@ -50,7 +50,7 @@
     "@endo/patterns" "^1.4.8"
     "@endo/promise-kit" "^1.1.9"
 
-"@agoric/async-flow@^0.2.0-u18a.0", "@agoric/async-flow@^0.2.0-u19.2":
+"@agoric/async-flow@^0.2.0-u19.2":
   version "0.2.0-u19.2"
   resolved "https://registry.yarnpkg.com/@agoric/async-flow/-/async-flow-0.2.0-u19.2.tgz#0ca8c7db109280aa6adc2a0faddd7e792dbfb03e"
   integrity sha512-IuweqgBQRA3yufyD6TQhBgFv86X4WaaheMipEme+Bhb/kJAXetydDBXJLAWI3rRIYg0xhzBxdmgxjlZuxt7ztA==
@@ -312,7 +312,7 @@
     "@endo/promise-kit" "^1.1.9"
     "@endo/zip" "^1.0.9"
 
-"@agoric/deploy-script-support@^0.10.4-u19.1", "@agoric/deploy-script-support@^0.10.4-u19.2":
+"@agoric/deploy-script-support@^0.10.4-u19.2":
   version "0.10.4-u19.2"
   resolved "https://registry.yarnpkg.com/@agoric/deploy-script-support/-/deploy-script-support-0.10.4-u19.2.tgz#170ac3eb89870ec4a280d113dd4214633adeda84"
   integrity sha512-Anv8gWgvVdUUpRmV1h0bklbg+aBoAqEGzxeMdybop7tcZNa4niCLaBG97ZAyt+KD1dV/o6A0a62ns1OULyGUzQ==
@@ -3270,7 +3270,7 @@ aggregate-error@^4.0.0:
     clean-stack "^4.0.0"
     indent-string "^5.0.0"
 
-agoric@^0.22.0-u17.1:
+agoric@^0.22.0-u19.3:
   version "0.22.0-u19.3"
   resolved "https://registry.yarnpkg.com/agoric/-/agoric-0.22.0-u19.3.tgz#fe1df4ce3fbfe6e736c0ff9c32fe9d4ea8c7620c"
   integrity sha512-T1D88gZU+Du9UPBG2xsZuCd8GbpMQ6LwkRQWVbTYP2zVeVaLG5RTTHT5P3sdCSdbQXyMSVVJ5MjQkLPFUjVOQA==
@@ -4082,7 +4082,7 @@ escape-string-regexp@^2.0.0:
   resolved "https://registry.yarnpkg.com/escape-string-regexp/-/escape-string-regexp-2.0.0.tgz#a30304e99daa32e23b2fd20f51babd07cffca344"
   integrity sha512-UpzcLCXolUWcNu5HtVMHYdXJjArjsF9C0aNnquZYY4uW/Vu0miy5YoWvbV345HauVvcAUnpRuhMMcqTcGOY2+w==
 
-"esm@github:agoric-labs/esm#Agoric-built":
+esm@agoric-labs/esm#Agoric-built:
   version "3.2.25"
   resolved "https://codeload.github.com/agoric-labs/esm/tar.gz/3603726ad4636b2f865f463188fcaade6375638e"
 

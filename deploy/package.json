@@ -4,13 +4,11 @@
   "version": "1.0.0",
   "type": "module",
   "devDependencies": {
-    "@agoric/async-flow": "^0.2.0-u18a.0",
-    "@agoric/deploy-script-support": "^0.10.4-u19.1",
-    "@endo/ses-ava": "^1.2.9",
-    "agoric": "^0.22.0-u17.1"
+    "agoric": "^0.22.0-u19.3"
   },
   "scripts": {
-    "test": "ava"
+    "test": "ava",
+    "build": "agoric run ../contract/proposal/init-axelar-gmp.js"
   },
   "ava": {
     "extensions": {
