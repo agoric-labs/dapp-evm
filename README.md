@@ -17,17 +17,7 @@ We will set up Hermes relayer between:
 
 The Hermes relayer will facilitate IBC transfers between these chains. To proceed, install Hermes on your computer by following [this installation guide](https://hermes.informal.systems/quick-start/installation.html#install-by-downloading).
 
-#### Running the Relayer
-
-Once Hermes is installed, start the relayer:
-
-```bash
-yarn start:relayer
-```
-
-#### Verifying the Connection
-
-Wait for a success message similar to the one below:
+Once Hermes is installed, start the relayer. Wait for a success message similar to the one below:
 
 ```bash
 SUCCESS Channel {
