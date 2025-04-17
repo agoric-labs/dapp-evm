@@ -97,14 +97,14 @@ harden(EvmKitStateShape);
  */
 export const prepareEvmAccountKit = (
   zone,
-  { zcf, vowTools, log, zoeTools }
+  { zcf, vowTools, log, zoeTools },
 ) => {
   return zone.exoClassKit(
     'EvmTapKit',
     {
       tap: M.interface('EvmTap', {
         receiveUpcall: M.call(M.record()).returns(
-          M.or(VowShape, M.undefined())
+          M.or(VowShape, M.undefined()),
         ),
       }),
       transferWatcher: M.interface('TransferWatcher', {
@@ -219,7 +219,7 @@ export const prepareEvmAccountKit = (
               Fail`contractInvocationData is not defined`;
 
             ['functionSelector', 'encodedArgs', 'deadline', 'nonce'].every(
-              (field) => contractInvocationData[field] != null
+              (field) => contractInvocationData[field] != null,
             ) ||
               Fail`Contract invocation payload is invalid or missing required fields`;
           }
@@ -239,7 +239,7 @@ export const prepareEvmAccountKit = (
 
           const { denom } = NonNullish(
             this.state.assets.find((a) => a.brand === amt.brand),
-            `${amt.brand} not registered in vbank`
+            `${amt.brand} not registered in vbank`,
           );
 
           console.log('amt and brand', amt.brand);
@@ -274,7 +274,7 @@ export const prepareEvmAccountKit = (
               denom,
               value: amt.value,
             },
-            { memo: JSON.stringify(memo) }
+            { memo: JSON.stringify(memo) },
           );
 
           seat.exit();
@@ -295,11 +295,11 @@ export const prepareEvmAccountKit = (
             encodeCallData(
               'createVendor(string)',
               ['string'],
-              ['ownerAddress']
+              ['ownerAddress'],
             ),
           ];
           const payload = Array.from(
-            encode(['address[]', 'bytes[]'], [targets, data])
+            encode(['address[]', 'bytes[]'], [targets, data]),
           );
 
           const { vow, resolver } = vowTools.makeVowKit();
@@ -327,7 +327,7 @@ export const prepareEvmAccountKit = (
                       recipient: gmpAddresses.AXELAR_GAS,
                     },
                   }),
-                }
+                },
               );
               resolver.resolve(`transfer success`);
             } catch (err) {
@@ -384,7 +384,7 @@ export const prepareEvmAccountKit = (
                   (res) => {
                     seat.exit();
                     return res;
-                  }
+                  },
                 );
               }
               default:
@@ -394,11 +394,11 @@ export const prepareEvmAccountKit = (
 
           return zcf.makeInvitation(
             continuingEVMTransactionHandler,
-            'evmTransaction'
+            'evmTransaction',
           );
         },
       },
-    }
+    },
   );
 };
 

@@ -6,7 +6,7 @@ import { chainInfo, assetInfo } from '../info.js';
 /** @type {import('@agoric/deploy-script-support/src/externalTypes.js').CoreEvalBuilder} */
 export const defaultProposalBuilder = async (
   { publishRef, install },
-  options
+  options,
 ) =>
   harden({
     sourceSpec: './start-axelar-gmp.js',
@@ -37,6 +37,6 @@ export default async (homeP, endowments) => {
   const { writeCoreEval } = await makeHelpers(homeP, endowments);
 
   await writeCoreEval(startAxelarGmp.name, (utils) =>
-    defaultProposalBuilder(utils, opts)
+    defaultProposalBuilder(utils, opts),
   );
 };

@@ -23,7 +23,7 @@ const prepareOfferArguments = async (
   type: number,
   chain: keyof typeof EVM_CHAINS,
   address: string,
-  amount: number
+  amount: number,
 ): Promise<OfferArgs> => {
   const contractPayload = getPayload({ type, chain, address });
 
@@ -65,7 +65,7 @@ const createQueryParameters = (
   type: number,
   timestamp: number,
   address: string,
-  chain: string
+  chain: string,
 ): AxelarQueryParams => {
   const commonParams = {
     fromTime: timestamp,
@@ -140,7 +140,7 @@ export const AgoricContractForm = () => {
         type,
         destinationEVMChain,
         evmAddress,
-        amountToSend
+        amountToSend,
       );
 
       const amountValue = BigInt(Number(amountToSend) * 10 ** config.decimals);
@@ -177,7 +177,7 @@ export const AgoricContractForm = () => {
                 reject(new Error('Offer was rejected'));
                 break;
             }
-          }
+          },
         );
       });
 
@@ -185,7 +185,7 @@ export const AgoricContractForm = () => {
         type,
         transactionTime,
         evmAddress,
-        destinationEVMChain
+        destinationEVMChain,
       );
 
       const txURL = await getAxelarTxURL(queryParams);
@@ -238,7 +238,7 @@ export const AgoricContractForm = () => {
         setGasInfo(
           `Net amount after gas fee: ${
             (value - gas) / 1_000_000_000_000_000_000
-          }`
+          }`,
         );
       }
     }

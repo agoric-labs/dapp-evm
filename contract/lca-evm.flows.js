@@ -29,7 +29,7 @@ import { gmpAddresses, GMPMessageType } from './utils/gmp.js';
 export const createAndMonitorLCA = async (
   orch,
   { log, makeEvmAccountKit, chainHub, zoeTools },
-  seat
+  seat,
 ) => {
   void log('Inside createAndMonitorLCA');
   const [agoric, remoteChain] = await Promise.all([
@@ -48,7 +48,7 @@ export const createAndMonitorLCA = async (
   const agoricChainId = (await agoric.getChainInfo()).chainId;
   const { transferChannel } = await chainHub.getConnectionInfo(
     agoricChainId,
-    chainId
+    chainId,
   );
   assert(transferChannel.counterPartyChannelId, 'unable to find sourceChannel');
 
@@ -79,7 +79,7 @@ export const createAndMonitorLCA = async (
 
   const { denom } = NonNullish(
     assets.find((a) => a.brand === amt.brand),
-    `${amt.brand} not registered in vbank`
+    `${amt.brand} not registered in vbank`,
   );
 
   await zoeTools.localTransfer(seat, localAccount, give);
@@ -109,7 +109,7 @@ export const createAndMonitorLCA = async (
         denom,
         value: amt.value,
       },
-      { memo: JSON.stringify(memo) }
+      { memo: JSON.stringify(memo) },
     );
 
     void log('Done');

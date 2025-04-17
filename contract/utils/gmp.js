@@ -31,7 +31,7 @@ export const encodeCallData = (functionSignature, paramTypes, params) => {
     Uint8Array.from([
       ...Uint8Array.from(functionHash.slice(0, 4)),
       ...encode(paramTypes, params),
-    ])
+    ]),
   );
 };
 
@@ -70,7 +70,7 @@ export const buildGMPPayload = ({
       nonce,
       deadline,
       hexlify(concat([functionSelector, encodedArgs])),
-    ]
+    ],
   );
 
   return Array.from(arrayify(payload));

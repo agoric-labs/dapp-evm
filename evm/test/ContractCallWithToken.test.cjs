@@ -11,25 +11,30 @@ describe('CallContractWithToken', function () {
     from,
     sourceAddress,
     targetAddress,
-    payloadHash
+    payloadHash,
   ) => {
     const params = abiCoder.encode(
       ['string', 'string', 'address', 'bytes32'],
-      [from, sourceAddress, targetAddress, payloadHash]
+      [from, sourceAddress, targetAddress, payloadHash],
     );
     const data = ethers.getBytes(
       abiCoder.encode(
         ['uint256', 'bytes32[]', 'string[]', 'bytes[]'],
-        [network.config.chainId, [commandId], ['approveContractCall'], [params]]
-      )
+        [
+          network.config.chainId,
+          [commandId],
+          ['approveContractCall'],
+          [params],
+        ],
+      ),
     );
     const wallet = owner;
     const signature = await wallet.signMessage(
-      ethers.getBytes(ethers.keccak256(data))
+      ethers.getBytes(ethers.keccak256(data)),
     );
     const signData = abiCoder.encode(
       ['address[]', 'uint256[]', 'uint256', 'bytes[]'],
-      [[wallet.address], [1], 1, [signature]]
+      [[wallet.address], [1], 1, [signature]],
     );
     const input = abiCoder.encode(['bytes', 'bytes'], [data, signData]);
     const response = await gatewayMock
@@ -65,7 +70,7 @@ describe('CallContractWithToken', function () {
     auth = await Auth.deploy([
       abiCoder.encode(
         ['address[]', 'uint256[]', 'uint256'],
-        [[owner.address], [1], 1]
+        [[owner.address], [1], 1],
       ),
     ]);
 
@@ -77,7 +82,7 @@ describe('CallContractWithToken', function () {
     contract = await Contract.deploy(
       gatewayMock.target,
       gasServiceMock.target,
-      'Ethereum'
+      'Ethereum',
     );
   });
 
@@ -92,7 +97,7 @@ describe('CallContractWithToken', function () {
     const sourceAddress = '0x1234567890123456789012345678901234567890';
     const payload = abiCoder.encode(
       ['string', 'address'],
-      [walletName, walletOwner]
+      [walletName, walletOwner],
     );
     const options = {};
     const payloadHash = ethers.keccak256(payload);
@@ -102,21 +107,21 @@ describe('CallContractWithToken', function () {
       from,
       sourceAddress,
       contract.target,
-      payloadHash
+      payloadHash,
     );
     const tx = contract.execute(
       commandId,
       from,
       sourceAddress,
       payload,
-      options
+      options,
     );
 
     // Address created is deterministic
     const expectedAddress = '0x856e4424f806D16E8CBC702B3c0F2ede5468eae5';
     const expectedPayload = encodeVersionedPayload(
       '0x00',
-      abiCoder.encode(['address'], [expectedAddress])
+      abiCoder.encode(['address'], [expectedAddress]),
     );
     const expectedPayloadHash = ethers.keccak256(expectedPayload);
 
@@ -127,7 +132,7 @@ describe('CallContractWithToken', function () {
         from,
         sourceAddress,
         expectedPayloadHash,
-        expectedPayload
+        expectedPayload,
       );
   });
 });

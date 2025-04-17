@@ -17,7 +17,7 @@ export interface CurrentOffer {
           instance: unknown;
           installation: unknown;
         }>;
-      }
+      },
     ]
   >;
   purses: Array<unknown>;

@@ -8,7 +8,7 @@ config();
 const { GATEWAY_CONTRACT, GAS_SERVICE_CONTRACT, AAVE_POOL } = process.env;
 if (!GATEWAY_CONTRACT || !GAS_SERVICE_CONTRACT || !AAVE_POOL) {
   throw Error(
-    'GATEWAY_CONTRACT or GAS_SERVICE_CONTRACT or AAVE_POOL is not defined'
+    'GATEWAY_CONTRACT or GAS_SERVICE_CONTRACT or AAVE_POOL is not defined',
   );
 }
 

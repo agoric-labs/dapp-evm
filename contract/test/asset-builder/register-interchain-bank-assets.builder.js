@@ -36,7 +36,7 @@ export default async (homeP, endowments) => {
   const parseAssets = () => {
     if (typeof assets !== 'string') {
       throw Error(
-        'must provide --assets=JSON.stringify({ denom: Denom; issuerName: string; decimalPlaces: number; }[])'
+        'must provide --assets=JSON.stringify({ denom: Denom; issuerName: string; decimalPlaces: number; }[])',
       );
     }
     return JSON.parse(assets);
@@ -46,6 +46,6 @@ export default async (homeP, endowments) => {
 
   const { writeCoreEval } = await makeHelpers(homeP, endowments);
   await writeCoreEval('eval-register-interchain-bank-assets', (utils) =>
-    defaultProposalBuilder(utils, opts)
+    defaultProposalBuilder(utils, opts),
   );
 };

@@ -20,7 +20,7 @@ export const prepareOffer = async ({
 }) => {
   const { brand, instance } = await makeAgoricNames(
     vstorageKit.fromBoard,
-    vstorageKit.vstorage
+    vstorageKit.vstorage,
   );
 
   const id = `make-account-${Date.now()}`;
@@ -58,7 +58,7 @@ export const fetchFromVStorage = async (vStorageUrl) => {
 
   if (!response.ok) {
     throw new Error(
-      `Failed to fetch: ${response.status} ${response.statusText}`
+      `Failed to fetch: ${response.status} ${response.statusText}`,
     );
   }
 

@@ -72,7 +72,7 @@ export const fetchCached = NodeFetchCache.create({
 }) as unknown as typeof globalThis.fetch;
 
 type ConsumeBootrapItem = <N extends string>(
-  name: N
+  name: N,
 ) => N extends keyof EconomyBootstrapPowers['consume']
   ? EconomyBootstrapPowers['consume'][N]
   : unknown;
@@ -84,7 +84,7 @@ type ConsumeBootrapItem = <N extends string>(
 type BootstrapEV = EProxy & {
   sendOnly: (presence: unknown) => Record<string, (...args: any) => void>;
   vat: <N extends string>(
-    name: N
+    name: N,
   ) => N extends 'bootstrap'
     ? Omit<BootstrapRootObject, 'consumeItem'> & {
         // XXX not really local
@@ -95,12 +95,12 @@ type BootstrapEV = EProxy & {
 
 const makeBootstrapRunUtils = makeRunUtils as (
   controller: SwingsetController,
-  harness?: RunHarness
+  harness?: RunHarness,
 ) => Omit<RunUtils, 'EV'> & { EV: BootstrapEV };
 
 const keysToObject = <K extends PropertyKey, V>(
   keys: K[],
-  valueMaker: (key: K, i: number) => V
+  valueMaker: (key: K, i: number) => V,
 ) => {
   return Object.fromEntries(keys.map((key, i) => [key, valueMaker(key, i)]));
 };
@@ -123,7 +123,7 @@ export const keyArrayEqual = (
   t: AvaT,
   a: PropertyKey[],
   b: PropertyKey[],
-  message?: string
+  message?: string,
 ) => {
   const aobj = keysToObject(a, () => 1);
   const bobj = keysToObject(b, () => 1);
@@ -147,7 +147,7 @@ export const getNodeTestVaultsConfig = async ({
   discriminator = '',
 }) => {
   const config: SwingSetConfig & { coreProposals?: any[] } = NonNullish(
-    await loadSwingsetConfigFile(configPath)
+    await loadSwingsetConfigFile(configPath),
   );
 
   // Manager types:
@@ -165,7 +165,7 @@ export const getNodeTestVaultsConfig = async ({
   if (config.coreProposals) {
     // remove Pegasus because it relies on IBC to Golang that isn't running
     config.coreProposals = config.coreProposals.filter(
-      (v) => v !== '@agoric/pegasus/scripts/init-core.js'
+      (v) => v !== '@agoric/pegasus/scripts/init-core.js',
     );
   }
 
@@ -181,7 +181,7 @@ export const getNodeTestVaultsConfig = async ({
   await fsAmbientPromises.writeFile(
     testConfigPath,
     JSON.stringify(config),
-    'utf-8'
+    'utf-8',
   );
   return testConfigPath;
 };
@@ -201,14 +201,14 @@ interface Powers {
  */
 export const makeProposalExtractor = (
   { childProcess, fs }: Powers,
-  resolveBase = import.meta.url
+  resolveBase = import.meta.url,
 ) => {
   const importSpec = createRequire(resolveBase).resolve;
   const runPackageScript = (
     outputDir: string,
     scriptPath: string,
     env: NodeJS.ProcessEnv,
-    cliArgs: string[] = []
+    cliArgs: string[] = [],
   ) => {
     console.info('running package script:', scriptPath);
     return childProcess.execFileSync(
@@ -217,7 +217,7 @@ export const makeProposalExtractor = (
       {
         cwd: outputDir,
         env,
-      }
+      },
     );
   };
 
@@ -250,7 +250,7 @@ export const makeProposalExtractor = (
     await fsAmbientPromises.mkdir(tmpDir, { recursive: true });
 
     const built = parseProposalParts(
-      runPackageScript(tmpDir, builderPath, process.env, args).toString()
+      runPackageScript(tmpDir, builderPath, process.env, args).toString(),
     );
 
     const loadPkgFile = (fileName) =>
@@ -267,14 +267,14 @@ export const makeProposalExtractor = (
         // up manually and not worth slowing down the test execution to prevent.
         void fsAmbientPromises.rm(tmpDir, { recursive: true, force: true });
         return { json_permits: permits, js_code: code } as CoreEvalSDKType;
-      })
+      }),
     );
 
     const bundlesP = Promise.all(
       built.bundles.map(
         async (bundleFile) =>
-          loadJSON(bundleFile) as Promise<EndoZipBase64Bundle>
-      )
+          loadJSON(bundleFile) as Promise<EndoZipBase64Bundle>,
+      ),
     );
     return Promise.all([evalsP, bundlesP]).then(([evals, bundles]) => ({
       evals,
@@ -298,7 +298,7 @@ export const matchRef = (
   t: AvaT,
   ref1: unknown,
   ref2: unknown,
-  message?: string
+  message?: string,
 ) => t.is(krefOf(ref1), krefOf(ref2), message);
 
 /**
@@ -315,7 +315,7 @@ export const matchAmount = (
   amount: Amount,
   refBrand: Brand,
   refValue,
-  message?: string
+  message?: string,
 ) => {
   matchRef(t, amount.brand, refBrand);
   t.is(amount.value, refValue, message);
@@ -425,7 +425,7 @@ export const makeSwingsetTestKit = async (
     defaultManagerType = 'local' as ManagerType,
     harness = undefined as RunHarness | undefined,
     resolveBase = import.meta.url,
-  } = {}
+  } = {},
 ) => {
   const importSpec = createRequire(resolveBase).resolve;
   console.time('makeBaseSwingsetTestKit');
@@ -477,7 +477,7 @@ export const makeSwingsetTestKit = async (
 
   const shouldAckImmediately = (
     bridgeId: BridgeId,
-    method: IBCDowncallMethod
+    method: IBCDowncallMethod,
   ) => ackBehaviors?.[bridgeId]?.[method] === AckBehavior.Immediate;
 
   /**
@@ -537,7 +537,7 @@ export const makeSwingsetTestKit = async (
           obj.type,
           obj.recipient,
           obj.amount,
-          obj.denom
+          obj.denom,
         );
         break;
       }
@@ -562,7 +562,7 @@ export const makeSwingsetTestKit = async (
         // }
         const { moduleName } = obj;
         const moduleDescriptor = Object.values(VBankAccount).find(
-          ({ module }) => module === moduleName
+          ({ module }) => module === moduleName,
         );
         if (!moduleDescriptor) {
           return 'undefined';
@@ -605,7 +605,7 @@ export const makeSwingsetTestKit = async (
             }
             const handle = shouldAckImmediately(
               bridgeId,
-              'startChannelOpenInit'
+              'startChannelOpenInit',
             )
               ? inbound
               : pushInbound;
@@ -639,7 +639,7 @@ export const makeSwingsetTestKit = async (
       case `${BridgeId.VLOCALCHAIN}:VLOCALCHAIN_EXECUTE_TX`: {
         lcaSequenceNonce += 1;
         return obj.messages.map((message) =>
-          fakeLocalChainBridgeTxMsgHandler(message, lcaSequenceNonce)
+          fakeLocalChainBridgeTxMsgHandler(message, lcaSequenceNonce),
         );
       }
       default: {
@@ -674,7 +674,7 @@ export const makeSwingsetTestKit = async (
       slogSender,
       profileVats,
       debugVats,
-    }
+    },
   );
 
   console.timeLog('makeBaseSwingsetTestKit', 'buildSwingset');
@@ -691,7 +691,7 @@ export const makeSwingsetTestKit = async (
   });
 
   const evalProposal = async (
-    proposalP: ERef<Awaited<ReturnType<typeof buildProposal>>>
+    proposalP: ERef<Awaited<ReturnType<typeof buildProposal>>>,
   ) => {
     const { EV } = runUtils;
 
@@ -709,7 +709,7 @@ export const makeSwingsetTestKit = async (
     };
     log({ bridgeMessage });
     const coreEvalBridgeHandler: BridgeHandler = await EV.vat(
-      'bootstrap'
+      'bootstrap',
     ).consumeItem('coreEvalBridgeHandler');
     await EV(coreEvalBridgeHandler).fromBridge(bridgeMessage);
     log(`proposal executed`);
@@ -741,7 +741,7 @@ export const makeSwingsetTestKit = async (
   };
   const advanceTimeBy = (
     n: number,
-    unit: 'seconds' | 'minutes' | 'hours' | 'days'
+    unit: 'seconds' | 'minutes' | 'hours' | 'days',
   ) => {
     const multiplier = {
       seconds: 1,
@@ -768,7 +768,7 @@ export const makeSwingsetTestKit = async (
     setAckBehavior(
       bridgeId: BridgeId,
       method: IBCDowncallMethod,
-      behavior: AckBehaviorType
+      behavior: AckBehaviorType,
     ): void {
       if (!ackBehaviors?.[bridgeId]?.[method])
         throw Fail`ack behavior not yet configurable for ${bridgeId} ${method}`;
@@ -777,7 +777,7 @@ export const makeSwingsetTestKit = async (
     },
     lookupAckBehavior(
       bridgeId: BridgeId,
-      method: IBCDowncallMethod
+      method: IBCDowncallMethod,
     ): AckBehaviorType {
       if (!ackBehaviors?.[bridgeId]?.[method])
         throw Fail`ack behavior not yet configurable for ${bridgeId} ${method}`;
@@ -819,7 +819,7 @@ export const makeSwingsetTestKit = async (
 
     return matches.map((vat) => {
       const stmt = stable.db.prepare(
-        'SELECT incarnation FROM transcriptSpans WHERE isCurrent = 1 AND vatID = ?'
+        'SELECT incarnation FROM transcriptSpans WHERE isCurrent = 1 AND vatID = ?',
       );
       const { incarnation } = stmt.get(vat.vatID) as any;
       return { ...vat, incarnation };
@@ -918,7 +918,7 @@ export function insistManagerType(mt) {
 export const fetchCoreEvalRelease = async (
   config: { repo: string; release: string; name: string },
   artifacts = `https://github.com/${config.repo}/releases/download/${config.release}`,
-  planUrl = `${artifacts}/${config.name}-plan.json`
+  planUrl = `${artifacts}/${config.name}-plan.json`,
 ) => {
   const fetch = fetchCached;
 
@@ -938,22 +938,22 @@ export const fetchCoreEvalRelease = async (
 
       assert.equal(plan.name, config.name);
       const script = await fetch(`${artifacts}/${plan.script}`).then((r) =>
-        r.text()
+        r.text(),
       );
       const permit = await fetch(`${artifacts}/${plan.permit}`).then((r) =>
-        r.text()
+        r.text(),
       );
       const bundles: EndoZipBase64Bundle[] = await Promise.all(
         plan.bundles.map((b) =>
-          fetch(`${artifacts}/${b.bundleID}.json`).then((r) => r.json())
-        )
+          fetch(`${artifacts}/${b.bundleID}.json`).then((r) => r.json()),
+        ),
       );
 
       return { bundles, evals: [{ js_code: script, json_permits: permit }] };
     }
   } catch (error) {
     console.warn(
-      `Plan file not found at ${planUrl}. Falling back to direct artifact detection.`
+      `Plan file not found at ${planUrl}. Falling back to direct artifact detection.`,
     );
   }
 
@@ -990,20 +990,20 @@ export const fetchCoreEvalRelease = async (
     const uniqueBundleIds = [...new Set(bundleMatches)];
     if (uniqueBundleIds.length === 0) {
       throw new Error(
-        'No bundle IDs found in script. Cannot proceed without bundle information.'
+        'No bundle IDs found in script. Cannot proceed without bundle information.',
       );
     }
     const bundles: EndoZipBase64Bundle[] = await Promise.all(
       uniqueBundleIds.map((bundleId) =>
-        fetch(`${artifacts}/${bundleId}.json`).then((r) => r.json())
-      )
+        fetch(`${artifacts}/${bundleId}.json`).then((r) => r.json()),
+      ),
     );
 
     return { bundles, evals: [{ js_code: script, json_permits: permit }] };
   } catch (error) {
     console.error('Fallback approach failed:', error);
     throw new Error(
-      `Failed to fetch release artifacts for ${config.name}: ${error.message}`
+      `Failed to fetch release artifacts for ${config.name}: ${error.message}`,
     );
   }
 };

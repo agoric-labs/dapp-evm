@@ -18,7 +18,7 @@ try {
   console.log('Step 2: Check if plan file exists in container...');
   const { stdout: lsOutput } = await execa(
     `docker exec ${container} sh -c 'ls ${plan}* || echo "Missing"'`,
-    { shell: true }
+    { shell: true },
   );
   if (lsOutput.includes('Missing')) {
     throw new Error(`Plan file not found at ${plan}*`);

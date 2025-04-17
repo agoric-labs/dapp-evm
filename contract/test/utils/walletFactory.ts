@@ -9,7 +9,7 @@ import { makeWalletFactoryDriver } from './drivers.ts';
 export const makeWalletFactoryContext = async (
   t,
   configSpecifier = '@agoric/vm-config/decentral-main-vaults-config.json',
-  opts = {}
+  opts = {},
 ) => {
   const swingsetTestKit = await makeSwingsetTestKit(t.log, undefined, {
     configSpecifier,
@@ -30,7 +30,7 @@ export const makeWalletFactoryContext = async (
   const refreshAgoricNamesRemotes = () => {
     Object.assign(
       agoricNamesRemotes,
-      makeAgoricNamesRemotesFromFakeStorage(swingsetTestKit.storage)
+      makeAgoricNamesRemotesFromFakeStorage(swingsetTestKit.storage),
     );
   };
   agoricNamesRemotes.brand.ATOM || Fail`ATOM missing from agoricNames`;
@@ -52,7 +52,7 @@ export const makeWalletFactoryContext = async (
   const walletFactoryDriver = await makeWalletFactoryDriver(
     runUtils,
     storage,
-    agoricNamesRemotes
+    agoricNamesRemotes,
   );
   return {
     ...swingsetTestKit,

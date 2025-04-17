@@ -34,7 +34,7 @@ const setup = async (walletAddress: string | undefined) => {
       useAppStore.setState({
         contractInstance: instances.find(([name]) => name === 'axelarGmp')?.[1],
       });
-    }
+    },
   );
 
   const { fromEntries } = Object;
@@ -46,7 +46,7 @@ const setup = async (walletAddress: string | undefined) => {
       useAppStore.setState({
         brands: fromEntries(brands),
       });
-    }
+    },
   );
 
   watcher.watchLatest<CurrentOffer>(
@@ -59,7 +59,7 @@ const setup = async (walletAddress: string | undefined) => {
       useAppStore.setState({
         currentOffers: currentOffer,
       });
-    }
+    },
   );
 };
 

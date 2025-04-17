@@ -101,9 +101,9 @@ const getType1Payload = ({ chain }) => {
       nonce,
       deadline,
       ethers.utils.hexlify(
-        ethers.utils.concat([functionSelector, encodedArgs])
+        ethers.utils.concat([functionSelector, encodedArgs]),
       ),
-    ]
+    ],
   );
 
   return Array.from(ethers.utils.arrayify(payload));
@@ -118,7 +118,7 @@ export const getPayload = (params: PayloadParams) => {
       return getType1Payload({ chain });
     case 2:
       return Array.from(
-        ethers.utils.arrayify(abiCoder.encode(['address'], [address]))
+        ethers.utils.arrayify(abiCoder.encode(['address'], [address])),
       );
     case 3:
       return null;
@@ -143,7 +143,7 @@ export const getGasEstimate = async ({
     destinationChain,
     gasLimit,
     multiplier,
-    'aUSDC'
+    'aUSDC',
   );
   const gasAmountUSDC = parseInt(gasAmount as string) / 1e6;
   console.log(`Estimated gas fee aUSDC: ${gasAmountUSDC}`);
@@ -228,7 +228,7 @@ export const simulateContractCall = async (offerArgs: OfferArgs) => {
   // TODO: sign transaction via Keplr
   const signingClient = await SigningStargateClient.connectWithSigner(
     urls.RPC_AGORIC_DEVNET,
-    signer
+    signer,
   );
 
   console.log('Sign and Broadcast transaction...');
@@ -241,7 +241,7 @@ export const simulateContractCall = async (offerArgs: OfferArgs) => {
   const response = await signingClient.signAndBroadcast(
     senderAddress,
     ibcMessage,
-    fee
+    fee,
   );
 
   assertIsDeliverTxSuccess(response);
@@ -306,7 +306,7 @@ export const getAxelarTxURL = async ({
 
     if (!response.ok) {
       throw new Error(
-        `Axelar API Error: ${response.status} ${response.statusText}`
+        `Axelar API Error: ${response.status} ${response.statusText}`,
       );
     }
 
@@ -324,7 +324,7 @@ export const getAxelarTxURL = async ({
 
   if (!Array.isArray(data) || data.length === 0) {
     throw new Error(
-      'Invalid response: Data is not an array or is empty after 3 minutes'
+      'Invalid response: Data is not an array or is empty after 3 minutes',
     );
   }
 
@@ -333,7 +333,7 @@ export const getAxelarTxURL = async ({
   data.sort((a, b) =>
     isGmpQuery
       ? Number(b.call.blockNumber) - Number(a.call.blockNumber)
-      : Number(b.send.height) - Number(a.send.height)
+      : Number(b.send.height) - Number(a.send.height),
   );
 
   const urlSuffix = isGmpQuery ? data[0]?.call?._id : data[0]?.send?.txhash;

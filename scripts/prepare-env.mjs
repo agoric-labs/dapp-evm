@@ -25,18 +25,18 @@ try {
     {
       shell: true,
       stdio: 'inherit',
-    }
+    },
   );
 
   console.log('Removing temporary agoric-sdk folder...');
   await fs.rm(TEMP_DIR, { recursive: true, force: true });
 
   console.log(
-    'Installing dependencies for multichain-testing inside container...'
+    'Installing dependencies for multichain-testing inside container...',
   );
   await execa(
     `docker exec ${CONTAINER} bash -c "cd /usr/src/agoric-sdk && yarn install"`,
-    { shell: true, stdio: 'inherit' }
+    { shell: true, stdio: 'inherit' },
   );
 
   console.log('Copying deploy.sh into container...');
@@ -51,15 +51,15 @@ try {
     {
       shell: true,
       stdio: 'inherit',
-    }
+    },
   );
 
   console.log(
-    'Installing dependencies for contract folder inside container...'
+    'Installing dependencies for contract folder inside container...',
   );
   await execa(
     `docker exec ${CONTAINER} bash -c "cd /usr/src/upgrade-test-scripts/${CONTRACT_FOLDER} && yarn install"`,
-    { shell: true, stdio: 'inherit' }
+    { shell: true, stdio: 'inherit' },
   );
 
   console.log('Environment setup complete.');

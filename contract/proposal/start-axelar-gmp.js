@@ -62,7 +62,7 @@ export const startAxelarGmp = async (
       consume: { BLD, IST },
     },
   },
-  { options: { chainInfo, assetInfo } }
+  { options: { chainInfo, assetInfo } },
 ) => {
   trace(startAxelarGmp.name);
 
@@ -80,7 +80,7 @@ export const startAxelarGmp = async (
       timerService: chainTimerService,
       chainInfo,
       assetInfo,
-    })
+    }),
   );
 
   /** @param {() => Promise<Issuer>} p */
@@ -88,11 +88,11 @@ export const startAxelarGmp = async (
     E.when(
       p(),
       (i) => i,
-      () => undefined
+      () => undefined,
     );
 
   const axlIssuer = await safeFulfill(() =>
-    E(agoricNames).lookup('issuer', 'AXL')
+    E(agoricNames).lookup('issuer', 'AXL'),
   );
 
   // const wavaxIssuer = await safeFulfill(() =>

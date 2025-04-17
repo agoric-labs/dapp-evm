@@ -31,12 +31,11 @@ const test = anyTest as TestFn<Awaited<ReturnType<typeof makeTestContext>>>;
 const makeTestContext = async (t: ExecutionContext) => {
   const ctx = await makeWalletFactoryContext(
     t,
-    '@agoric/vm-config/decentral-itest-orchestration-config.json'
+    '@agoric/vm-config/decentral-itest-orchestration-config.json',
   );
 
-  const wallet = await ctx.walletFactoryDriver.provideSmartWallet(
-    'agoric1makeAccount'
-  );
+  const wallet =
+    await ctx.walletFactoryDriver.provideSmartWallet('agoric1makeAccount');
 
   const fullCtx = {
     ...ctx,
@@ -94,8 +93,8 @@ test.before(async (t) => {
             decimalPlaces: 6,
           },
         ]),
-      ]
-    )
+      ],
+    ),
   );
 
   await evalProposal(
@@ -126,7 +125,7 @@ test.before(async (t) => {
           },
         ],
       ]),
-    ])
+    ]),
   );
 });
 
@@ -176,7 +175,7 @@ test.serial('makeAccount via axelarGmp', async (t) => {
       sourceChannel: 'channel-0',
       sequence: '1',
       memo: '{}',
-    })
+    }),
   );
 
   t.deepEqual(getLogged(), [
@@ -227,7 +226,7 @@ test.serial('receiveUpCall test', async (t) => {
 
   const payload = defaultAbiCoder.encode(
     ['address'],
-    ['0x20E68F6c276AC6E297aC46c84Ab260928276691D']
+    ['0x20E68F6c276AC6E297aC46c84Ab260928276691D'],
   );
 
   const base64Payload = Buffer.from(payload.slice(2), 'hex').toString('base64');
@@ -249,7 +248,7 @@ test.serial('receiveUpCall test', async (t) => {
         payload: base64Payload,
         type: 1,
       } satisfies AxelarGmpMemo),
-    })
+    }),
   );
 
   await makeEVMTransaction({
@@ -356,7 +355,7 @@ test.serial('token transfers using lca', async (t) => {
         give: { BLD: { brand: BLD, value: 0n } },
       },
     }),
-    { message: /IBC transfer amount must be greater than zero/ }
+    { message: /IBC transfer amount must be greater than zero/ },
   );
 });
 
@@ -430,7 +429,7 @@ test.serial('make contract calls using lca', async (t) => {
     }),
     {
       message: /contractInvocationData is not defined/,
-    }
+    },
   );
 
   t.log('make offer without passing gas amount');
@@ -459,7 +458,7 @@ test.serial('make contract calls using lca', async (t) => {
     }),
     {
       message: /gasAmount must be defined/,
-    }
+    },
   );
 });
 
@@ -489,7 +488,7 @@ test('execute an arbitrary contract on agoric', async (t) => {
       sourceChannel: 'channel-0',
       sequence: '2',
       memo: '{}',
-    })
+    }),
   );
 
   t.like(wallet.getLatestUpdateRecord(), {

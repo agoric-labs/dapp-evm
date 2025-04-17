@@ -69,7 +69,7 @@ try {
     const invitationArgs = harden([methodName, []]);
 
     const { offerToUsedInvitation } = await fetchFromVStorage(
-      `${vStorageUrl}.current`
+      `${vStorageUrl}.current`,
     );
     const previousOffer = offerToUsedInvitation[0][0];
 

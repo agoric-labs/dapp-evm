@@ -51,7 +51,7 @@ export const MakeAccount = () => {
                 reject(new Error('Offer was rejected'));
                 break;
             }
-          }
+          },
         );
       });
 
@@ -113,7 +113,7 @@ export const MakeAccount = () => {
                 reject(new Error('Offer was rejected'));
                 break;
             }
-          }
+          },
         );
       });
 
@@ -130,10 +130,10 @@ export const MakeAccount = () => {
   };
 
   const invitations = currentOffers?.offerToUsedInvitation.filter(
-    (invitation) => invitation[1].value[0].instance === contractInstance
+    (invitation) => invitation[1].value[0].instance === contractInstance,
   );
   const latestInvitation = invitations?.sort((a, b) =>
-    b[0].localeCompare(a[0])
+    b[0].localeCompare(a[0]),
   )[0];
 
   return (
