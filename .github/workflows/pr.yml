@@ -26,14 +26,19 @@ jobs:
       - name: Install root dependencies
         run: yarn install
 
-      - name: Install contract dependencies
+      - name: Install dependencies in contract/
         run: |
           cd contract
           yarn install
 
+      - name: Install dependencies in deploy/
+        run: |
+          cd deploy
+          yarn install
+
       - name: Run contract tests
         run: |
-          cd contract
+          cd deploy
           yarn test
 
       - name: Run lint check

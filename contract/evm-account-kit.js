@@ -5,7 +5,7 @@ import { makeTracer, NonNullish } from '@agoric/internal';
 import { atob, decodeBase64 } from '@endo/base64';
 import { encode, decode } from '@findeth/abi';
 import { Fail } from '@endo/errors';
-import { CosmosChainAddressShape } from '@agoric/orchestration';
+import { ChainAddressShape } from '@agoric/orchestration';
 import {
   buildGMPPayload,
   gmpAddresses,
@@ -37,7 +37,7 @@ const addresses = {
  * @import {IBCChannelID, VTransferIBCEvent} from '@agoric/vats';
  * @import {Vow, VowTools} from '@agoric/vow';
  * @import {Zone} from '@agoric/zone';
- * @import {CosmosChainAddress, Denom, OrchestrationAccount} from '@agoric/orchestration';
+ * @import {ChainAddress, Denom, OrchestrationAccount} from '@agoric/orchestration';
  * @import {FungibleTokenPacketData} from '@agoric/cosmic-proto/ibc/applications/transfer/v2/packet.js';
  * @import {ZoeTools} from '@agoric/orchestration/src/utils/zoe-tools.js';
  */
@@ -45,7 +45,7 @@ const addresses = {
 /**
  * @typedef {{
  *   localAccount: OrchestrationAccount<{ chainId: 'agoric' }>;
- *   localChainAddress: CosmosChainAddress;
+ *   localChainAddress: ChainAddress;
  *   sourceChannel: IBCChannelID;
  *   remoteDenom: Denom;
  *   localDenom: Denom;
@@ -76,7 +76,7 @@ const InvitationMakerI = M.interface('invitationMaker', {
 });
 
 const EvmKitStateShape = {
-  localChainAddress: CosmosChainAddressShape,
+  localChainAddress: ChainAddressShape,
   sourceChannel: M.string(),
   remoteDenom: M.string(),
   localDenom: M.string(),
@@ -178,7 +178,7 @@ export const prepareEvmAccountKit = (
          * Sends tokens from the local account to a specified Cosmos chain
          * address.
          *
-         * @param {import('@agoric/orchestration').CosmosChainAddress} toAccount
+         * @param {import('@agoric/orchestration').ChainAddress} toAccount
          * @param {import('@agoric/orchestration').AmountArg} amount
          * @returns {Promise<string>} A success message upon completion.
          */

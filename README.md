@@ -17,17 +17,7 @@ We will set up Hermes relayer between:
 
 The Hermes relayer will facilitate IBC transfers between these chains. To proceed, install Hermes on your computer by following [this installation guide](https://hermes.informal.systems/quick-start/installation.html#install-by-downloading).
 
-#### Running the Relayer
-
-Once Hermes is installed, start the relayer:
-
-```bash
-yarn start:relayer
-```
-
-#### Verifying the Connection
-
-Wait for a success message similar to the one below:
+Once Hermes is installed, start the relayer. Wait for a success message similar to the one below:
 
 ```bash
 SUCCESS Channel {
@@ -102,7 +92,7 @@ agoric run multichain-testing/src/register-interchain-bank-assets.builder.js --a
 
 #### 1. Copy the Generated Files
 
-This command will create some bundle files. Copy them to this project’s root folder.
+This command will create some bundle files. Copy them to `deploy` folder in project’s root.
 
 #### 2. Register Token
 
@@ -120,23 +110,23 @@ You can also inspect local chain logs if something went wrong.
 
 ### 4. Deploy Axelar GMP Contract
 
-Next, to deploy `contract/axelar-gmp.contract.js` on the Agoric Local Chain, make sure to generate the bundles:
+Next, to deploy `contract/axelar-gmp.contract.js` on the Agoric Local Chain, make sure to build the contract:
 
 ```bash
-agoric run contract/proposal/init-axelar-gmp.js
+cd deploy && yarn build
 ```
 
-And then run the following command from the project root directory:
+And then run the following command from the `deploy` folder:
 
 ```bash
-yarn deploy:contract
+yarn deploy
 ```
 
 #### Important Note
 
 The contract deployment script is `contract/deploy.sh`. If you're making changes to the contract and redeploying to see the updates, you may sometimes encounter an issue where the script deploys an older version of the contract instead of the latest changes.
 
-If the expected changes don’t appear after deployment, try running `yarn deploy:contract` again.
+If the expected changes don’t appear after deployment, try running `yarn deploy` again.
 
 ### 5. Start the UI
 

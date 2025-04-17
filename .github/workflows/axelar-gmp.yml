@@ -71,38 +71,43 @@ jobs:
           cd packages/axelar-local-dev-cosmos
           npm run start
 
+      - name: Install dependencies in integration/
+        run: |
+          cd integration
+          yarn install
+
       - name: Prepare Env
-        run: ./scripts/prepare-env.mjs
+        run: ./integration/scripts/prepare-env.mjs
 
       - name: Register AXL in vbankAssets
-        run: ./scripts/deploy-contract.mjs
+        run: ./integration/scripts/deploy-contract.mjs
         env:
           script: /usr/src/agoric-sdk/multichain-testing/src/register-interchain-bank-assets.builder.js
           plan: /usr/src/upgrade-test-scripts/eval-register-interchain-bank-assets-plan.json
           assets: '[{"denom":"ibc/2CC0B1B7A981ACC74854717F221008484603BB8360E81B262411B0D830EDE9B0","issuerName":"AXL","decimalPlaces":6}]'
 
       - name: Verify AXL registration from vStorage
-        run: ./scripts/check-vstorage.mjs
+        run: ./integration/scripts/check-vstorage.mjs
         env:
           vStorageUrl: http://localhost/agoric-lcd/agoric/vstorage/data/published.agoricNames.vbankAsset
           valueToFind: ibc/2CC0B1B7A981ACC74854717F221008484603BB8360E81B262411B0D830EDE9B0
           waitInSeconds: 30
 
       - name: Deploy Axelar GMP contract
-        run: ./scripts/deploy-contract.mjs
+        run: ./integration/scripts/deploy-contract.mjs
         env:
           script: /usr/src/upgrade-test-scripts/contract/proposal/init-axelar-gmp.js
           plan: /usr/src/upgrade-test-scripts/startAxelarGmp-plan.json
 
       - name: Verify Axelar GMP contract installation from vStorage
-        run: ./scripts/check-vstorage.mjs
+        run: ./integration/scripts/check-vstorage.mjs
         env:
           vStorageUrl: http://localhost/agoric-lcd/agoric/vstorage/data/published.agoricNames.instance
           valueToFind: axelarGmp
           waitInSeconds: 30
 
       - name: Make offer for creating EVM Smart Wallet
-        run: ./scripts/make-account.mjs
+        run: ./integration/scripts/make-account.mjs
         env:
           makeAccount: true
 
@@ -114,6 +119,6 @@ jobs:
           sleep 60
 
       - name: Get EVM Smart wallet address
-        run: ./scripts/make-account.mjs
+        run: ./integration/scripts/make-account.mjs
         env:
           waitInSeconds: 30

@@ -1,13 +1,9 @@
 {
-  "name": "agoric-orchestration",
+  "name": "dapp-evm",
   "version": "1.0.0",
   "type": "module",
   "scripts": {
-    "make:bundles": "agoric run contract/proposal/init-axelar-gmp.js",
-    "deploy:contract": "bash deploy.sh startAxelarGmp-plan.json",
     "start:ui": "cd ui && yarn dev",
-    "start:relayer": "cd hermes && bash run-relayer.sh",
-    "register:token": "bash deploy.sh eval-register-interchain-bank-assets-plan.json",
     "lint": "prettier . --check",
     "lint:fix": "prettier . --write"
   },
@@ -24,10 +20,6 @@
   "description": "",
   "packageManager": "yarn@1.22.22+sha512.a6b2f7906b721bba3d67d4aff083df04dad64c399707841b7acf00f6b133b7ac24255f2652fa22ae3534329dc6180534e98d17432037ff6fd140556e2bb3137e",
   "devDependencies": {
-    "@agoric/client-utils": "^0.2.0-u19.2",
-    "@agoric/internal": "^0.4.0-u19.2",
-    "execa": "^9.5.2",
-    "prettier": "^3.5.3",
-    "ses": "^1.12.0"
+    "prettier": "^3.5.3"
   }
 }
