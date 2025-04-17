@@ -28,12 +28,12 @@ jobs:
 
       - name: Install contract dependencies
         run: |
-          cd contract
+          cd deploy
           yarn install
 
       - name: Run contract tests
         run: |
-          cd contract
+          cd deploy
           yarn test
 
       - name: Run lint check

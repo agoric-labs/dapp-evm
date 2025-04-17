@@ -2,6 +2,7 @@ node_modules
 startAxelarGmp.js
 startAxelarGmp-plan.json
 startAxelarGmp-permit.json
+tmp
 
 eval-register-interchain-bank-assets-permit.json
 eval-register-interchain-bank-assets-plan.json
