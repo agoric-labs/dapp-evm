@@ -1,3 +1,5 @@
+/** @typedef {import('../evm-account-kit').ContractInvocationData} ContractInvocationData */
+
 /**
  * @file utils/gmp.js GMP payload construction utilities
  */
@@ -40,25 +42,44 @@ export const encodeCallData = (functionSignature, paramTypes, params) => {
  * @param {object} params Contract invocation parameters
  * @param {number} params.type GMP message type
  * @param {array} params.targets Target contract address
- * @param {string} params.functionSelector
- * @param {string} params.argType
- * @param {string} params.argValue
+ * @param {ContractInvocationData} params.contractInvocationData
  * @returns {number[] | null} Encoded payload as number array, or null for a
  *   pure token transfer
  */
-export const buildGMPPayload = ({
-  type,
-  targets,
-  functionSelector,
-  argType,
-  argValue,
-}) => {
+
+export const buildGMPPayload = ({ type, targets, ContractInvocationData }) => {
   if (type === GMPMessageType.TOKEN_ONLY) {
     return null;
   }
 
-  const data = [encodeCallData(functionSelector, [argType], [argValue])];
-  return Array.from(encode(['address[]', 'bytes[]'], [targets, data]));
+  if (!Array.isArray(targets) || targets.length === 0) {
+    throw new Error('At least one target address must be provided');
+  }
+
+  if (!Array.isArray(calls) || calls.length === 0) {
+    throw new Error('At least one contract call must be provided');
+  }
+
+  let callData;
+
+  if (ContractInvocationData.multicall) {
+    const encodedCalls = ContractInvocationData.calls.map(
+      ({ functionSelector, argTypes, argValues }) =>
+        hexToUint8Array(encodeCallData(functionSelector, argTypes, argValues)),
+    );
+
+    callData = encodeCallData(
+      'multicall(bytes[])',
+      ['bytes[]'],
+      [encodedCalls],
+    );
+  } else {
+    const { functionSelector, argTypes, argValues } =
+      ContractInvocationData.calls[0];
+    callData = encodeCallData(functionSelector, argTypes, argValues);
+  }
+
+  return Array.from(encode(['address[]', 'bytes[]'], [targets, [callData]]));
 };
 
 /**
