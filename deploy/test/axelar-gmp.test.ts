@@ -2,13 +2,13 @@ import { test as anyTest } from '@agoric/zoe/tools/prepare-test-env-ava.js';
 import { buildVTransferEvent } from '@agoric/orchestration/tools/ibc-mocks.js';
 import { makeTestAddress } from '@agoric/orchestration/tools/make-test-address.js';
 import { BridgeId } from '@agoric/internal';
-import fetchedChainInfo from '../utils/fetched-chain-info.js';
+import fetchedChainInfo from './utils/fetched-chain-info.js';
 import { defaultAbiCoder } from '@ethersproject/abi';
 import { eventLoopIteration } from '@agoric/internal/src/testing-utils.js';
 import type { ContinuingInvitationSpec } from '@agoric/smart-wallet/src/invitations.js';
 import type { ExecutionContext, TestFn } from 'ava';
-import { makeWalletFactoryContext } from '../utils/walletFactory.js';
-import type { SmartWalletDriver } from '../utils/drivers.js';
+import { makeWalletFactoryContext } from './utils/walletFactory.js';
+import type { SmartWalletDriver } from './utils/drivers.js';
 
 type MakeEVMTransactionParams = {
   wallet: SmartWalletDriver;
@@ -81,7 +81,7 @@ test.before(async (t) => {
   // Register AXL in vbankAssets
   await evalProposal(
     buildProposal(
-      '../asset-builder/register-interchain-bank-assets.builder.js',
+      '../test/asset-builder/register-interchain-bank-assets.builder.js',
       [
         '--assets',
         JSON.stringify([
@@ -97,7 +97,7 @@ test.before(async (t) => {
   );
 
   await evalProposal(
-    buildProposal('../../contract/proposal/init-axelar-gmp.js', [
+    buildProposal('../src/init-axelar-gmp.js', [
       '--chainInfo',
       JSON.stringify({
         agoric: fetchedChainInfo.agoric,
