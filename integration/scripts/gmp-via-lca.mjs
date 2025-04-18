@@ -56,7 +56,7 @@ try {
     source: 'continuing',
     previousOffer,
     brandName: 'BLD',
-    amount: 1n,
+    amount: 1000000n,
   });
 
   log('Writing offer to file...');
@@ -68,8 +68,8 @@ try {
   log('Executing wallet action...');
   await executeWalletAction({ CONTAINER, CONTAINER_PATH, FROM_ADDRESS });
 
-  log('Waiting 30 seconds for the GMP transaction to process...');
-  await wait(30);
+  log('Waiting 70 seconds for the GMP transaction to process...');
+  await wait(70);
 
   log('--- See response from the EVM chain ---');
 
