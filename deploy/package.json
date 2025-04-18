@@ -4,11 +4,12 @@
   "version": "1.0.0",
   "type": "module",
   "devDependencies": {
+    "@agoric/deploy-script-support": "^0.10.4-u19.2",
     "agoric": "^0.22.0-u19.3"
   },
   "scripts": {
     "test": "ava",
-    "build": "agoric run ../contract/proposal/init-axelar-gmp.js",
+    "build": "agoric run src/init-axelar-gmp.js",
     "deploy": "bash deploy.sh startAxelarGmp-plan.json",
     "register:token": "bash deploy.sh eval-register-interchain-bank-assets-plan.json"
   },
@@ -40,6 +41,7 @@
     "@agoric/xsnap": "^0.14.3-u19.2",
     "@agoric/zoe": "^0.27.0-u19.2",
     "@endo/errors": "^1.2.10",
+    "@endo/far": "^1.1.11",
     "ava": "^5.3.0",
     "ethers": "5.7.2",
     "node-fetch-cache": "^5.0.2"

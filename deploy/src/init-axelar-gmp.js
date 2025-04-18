@@ -1,7 +1,7 @@
 // @ts-check
 import { makeHelpers } from '@agoric/deploy-script-support';
 import { getManifest, startAxelarGmp } from './start-axelar-gmp.js';
-import { chainInfo, assetInfo } from '../info.js';
+import { chainInfo, assetInfo } from './info.js';
 
 /** @type {import('@agoric/deploy-script-support/src/externalTypes.js').CoreEvalBuilder} */
 export const defaultProposalBuilder = async (
@@ -13,7 +13,9 @@ export const defaultProposalBuilder = async (
     getManifestCall: [
       getManifest.name,
       {
-        installationRef: publishRef(install('../axelar-gmp.contract.js')),
+        installationRef: publishRef(
+          install('../../contract/axelar-gmp.contract.js'),
+        ),
         options,
       },
     ],

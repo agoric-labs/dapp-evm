@@ -97,7 +97,7 @@ test.before(async (t) => {
   );
 
   await evalProposal(
-    buildProposal('../../contract/proposal/init-axelar-gmp.js', [
+    buildProposal('../src/init-axelar-gmp.js', [
       '--chainInfo',
       JSON.stringify({
         agoric: fetchedChainInfo.agoric,
