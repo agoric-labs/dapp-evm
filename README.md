@@ -124,7 +124,7 @@ yarn deploy
 
 #### Important Note
 
-The contract deployment script is `contract/deploy.sh`. If you're making changes to the contract and redeploying to see the updates, you may sometimes encounter an issue where the script deploys an older version of the contract instead of the latest changes.
+The contract deployment script is `deploy/deploy.js`. If you're making changes to the contract and redeploying to see the updates, you may sometimes encounter an issue where the script deploys an older version of the contract instead of the latest changes.
 
 If the expected changes don’t appear after deployment, try running `yarn deploy` again.
 

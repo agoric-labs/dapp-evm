@@ -5,7 +5,7 @@ import { execa } from 'execa';
 const { script, plan, assets } = process.env;
 
 const container = 'agoric';
-const deployScript = '/usr/src/upgrade-test-scripts/deploy.sh';
+const deployScript = '/usr/src/upgrade-test-scripts/deploy/deploy.js';
 
 try {
   console.log('Step 1: Generate contract bundles...');
@@ -24,12 +24,12 @@ try {
     throw new Error(`Plan file not found at ${plan}*`);
   }
 
-  console.log('Step 3: Deploy plan using deploy.sh...');
-  const deployCmd = `docker exec ${container} sh -c 'bash ${deployScript} ${plan} CI=true createVault=false dockerFlag=false'`;
+  console.log('Step 3: Deploy contract...');
+  const deployCmd = `docker exec ${container} sh -c "planFile=${plan} CI=true createVault=false runInsideContainer=false node ${deployScript}"`;
   await execa(deployCmd, { shell: true, stdio: 'inherit' });
 
   console.log('Deployment completed successfully!');
 } catch (err) {
-  console.error('ERROR:', err.shortMessage || err.message);
+  console.error('ERROR:', err);
   process.exit(1);
 }

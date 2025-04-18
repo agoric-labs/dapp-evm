@@ -9,6 +9,7 @@ import type { ContinuingInvitationSpec } from '@agoric/smart-wallet/src/invitati
 import type { ExecutionContext, TestFn } from 'ava';
 import { makeWalletFactoryContext } from './utils/walletFactory.js';
 import type { SmartWalletDriver } from './utils/drivers.js';
+import { buildGMPPayload } from '../../contract/utils/gmp.js';
 
 type MakeEVMTransactionParams = {
   wallet: SmartWalletDriver;
@@ -368,14 +369,14 @@ test.serial('make contract calls using lca', async (t) => {
     methodName: 'sendGmp',
     offerArgs: [
       {
-        destinationAddress: '0x20E68F6c276AC6E297aC46c84Ab260928276691D',
+        destinationAddress: '0x5B34876FFB1656710fb963ecD199C6f173c29267',
         type: 1,
         gasAmount: 20000,
         destinationEVMChain: 'Ethereum',
         contractInvocationData: {
-          functionSelector: 'setCount(uint256)',
-          argType: 'uint256',
-          argValue: 234,
+          functionSelector: 'createVendor(string)',
+          argType: 'string',
+          argValue: 'ownerAddress',
         },
       },
     ],
@@ -389,7 +390,15 @@ test.serial('make contract calls using lca', async (t) => {
 
   t.deepEqual(getLogged(), [
     'Inside sendGmp',
-    'Payload: [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,64,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,128,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,32,230,143,108,39,106,198,226,151,172,70,200,74,178,96,146,130,118,105,29,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,32,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,36,209,78,98,184,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,234,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]',
+    `Payload: ${JSON.stringify(
+      buildGMPPayload({
+        type: 1,
+        functionSelector: 'createVendor(string)',
+        argType: 'string',
+        argValue: 'ownerAddress',
+        targets: ['0x5B34876FFB1656710fb963ecD199C6f173c29267'],
+      }),
+    )}`,
     'Fee object {"amount":"20000","recipient":"axelar1zl3rxpp70lmte2xr6c4lgske2fyuj3hupcsvcd"}',
     'Initiating IBC Transfer...',
     'DENOM of token:ubld',
