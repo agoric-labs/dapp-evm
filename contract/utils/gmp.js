@@ -46,21 +46,39 @@ export const encodeCallData = (functionSignature, paramTypes, params) => {
  * @returns {number[] | null} Encoded payload as number array, or null for a
  *   pure token transfer
  */
-export const buildGMPPayload = ({ type, targets, contractInvocationData }) => {
+
+export const buildGMPPayload = ({ type, targets, ContractInvocationData }) => {
   if (type === GMPMessageType.TOKEN_ONLY) {
     return null;
   }
 
-  const callBytesArray = calls.map(
-    ({ functionSelector, argTypes, argValues }) =>
-      hexToUint8Array(encodeCallData(functionSelector, argTypes, argValues)),
-  );
+  if (!Array.isArray(targets) || targets.length === 0) {
+    throw new Error('At least one target address must be provided');
+  }
 
-  callData = encodeCallData(
-    'multicall(bytes[])',
-    ['bytes[]'],
-    [callBytesArray],
-  );
+  if (!Array.isArray(calls) || calls.length === 0) {
+    throw new Error('At least one contract call must be provided');
+  }
+
+  let callData;
+
+  if (ContractInvocationData.multicall) {
+    const encodedCalls = ContractInvocationData.calls.map(
+      ({ functionSelector, argTypes, argValues }) =>
+        hexToUint8Array(encodeCallData(functionSelector, argTypes, argValues)),
+    );
+
+    callData = encodeCallData(
+      'multicall(bytes[])',
+      ['bytes[]'],
+      [encodedCalls],
+    );
+  } else {
+    const { functionSelector, argTypes, argValues } =
+      ContractInvocationData.calls[0];
+    callData = encodeCallData(functionSelector, argTypes, argValues);
+  }
+
   return Array.from(encode(['address[]', 'bytes[]'], [targets, [callData]]));
 };
 
