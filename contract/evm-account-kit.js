@@ -44,10 +44,16 @@ const { entries } = Object;
  */
 
 /**
+ * @typedef {object} ContractCall
+ * @property {string} functionSelector - Function signature, e.g. "mint(address,uint256)"
+ * @property {string[]} argTypes - List of argument types
+ * @property {any[]} argValues - List of argument values
+ */
+
+/**
  * @typedef {object} ContractInvocationData
- * @property {string} functionSelector
- * @property {string} argType
- * @property {string} argValue
+ * @property {boolean} [multicall] - Whether this is a multicall operation
+ * @property {ContractCall[]} [calls] - List of function calls if multicall is true
  */
 
 const EVMI = M.interface('holder', {
@@ -237,8 +243,9 @@ export const prepareEvmAccountKit = (
           const payload = buildGMPPayload({
             type,
             targets: [destinationAddress],
-            ...contractInvocationData,
+            contractInvocationData,
           });
+
           void log(`Payload: ${JSON.stringify(payload)}`);
 
           const { denom } = NonNullish(

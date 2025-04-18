@@ -1,3 +1,5 @@
+/** @typedef {import('../evm-account-kit').ContractInvocationData} ContractInvocationData */
+
 /**
  * @file utils/gmp.js GMP payload construction utilities
  */
@@ -40,25 +42,26 @@ export const encodeCallData = (functionSignature, paramTypes, params) => {
  * @param {object} params Contract invocation parameters
  * @param {number} params.type GMP message type
  * @param {array} params.targets Target contract address
- * @param {string} params.functionSelector
- * @param {string} params.argType
- * @param {string} params.argValue
+ * @param {ContractInvocationData} params.contractInvocationData
  * @returns {number[] | null} Encoded payload as number array, or null for a
  *   pure token transfer
  */
-export const buildGMPPayload = ({
-  type,
-  targets,
-  functionSelector,
-  argType,
-  argValue,
-}) => {
+export const buildGMPPayload = ({ type, targets, contractInvocationData }) => {
   if (type === GMPMessageType.TOKEN_ONLY) {
     return null;
   }
 
-  const data = [encodeCallData(functionSelector, [argType], [argValue])];
-  return Array.from(encode(['address[]', 'bytes[]'], [targets, data]));
+  const callBytesArray = calls.map(
+    ({ functionSelector, argTypes, argValues }) =>
+      hexToUint8Array(encodeCallData(functionSelector, argTypes, argValues)),
+  );
+
+  callData = encodeCallData(
+    'multicall(bytes[])',
+    ['bytes[]'],
+    [callBytesArray],
+  );
+  return Array.from(encode(['address[]', 'bytes[]'], [targets, [callData]]));
 };
 
 /**
