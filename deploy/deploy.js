@@ -1,148 +1,172 @@
 #! /usr/bin/env node
-// @ts-check
-import { readFile } from 'fs/promises';
 import { execa } from 'execa';
+import fs from 'fs';
 
-const { log, error, warn } = console;
 const planFile = process.env.planFile;
-
-if (!planFile) {
-  error('Usage: node deploy.js path/to/plan.json');
-  process.exit(1);
-}
+if (!planFile) throw new Error('PLAN_FILE environment variable is required.');
 
 const CI = process.env.CI === 'true';
 const createVault = process.env.createVault === 'true';
-const runInsideContainer = process.env.runInsideContainer !== 'false';
+const runInsideContainer = process.env.runInsideContainer == 'true';
 
 const CHAINID = 'agoriclocal';
-const GAS_ADJUSTMENT = 1.2;
+const GAS_ADJUSTMENT = '1.2';
+const SIGN_BROADCAST_OPTS = `--keyring-backend=test --chain-id=${CHAINID} --gas=auto --gas-adjustment=${GAS_ADJUSTMENT} --yes -b block`;
 const walletName = 'gov1';
 const agops = '/usr/src/agoric-sdk/packages/agoric-cli/bin/agops';
-const SIGN_BROADCAST_OPTS = `--keyring-backend=test --chain-id=${CHAINID} --gas=auto --gas-adjustment=${GAS_ADJUSTMENT} --yes -b block`;
 
 let script = '';
 let permit = '';
 let bundleFiles = [];
 
 const execCmd = async (cmd) => {
-  const fullCmd = runInsideContainer
-    ? `docker exec -it agoric bash -c "${cmd}"`
-    : cmd;
-
-  try {
-    const { stdout } = await execa('bash', ['-c', fullCmd]);
-    return { stdout };
-  } catch (err) {
-    error(`Error executing: ${fullCmd}`);
-    error(err.stderr || err);
-    throw err;
-  }
+  const args = ['-c', cmd];
+  const opts = { stdio: 'inherit' };
+  return runInsideContainer
+    ? execa('docker', ['exec', '-i', 'agoric', 'bash', ...args], opts)
+    : execa('bash', args, opts);
 };
 
-const ensureJqInstalled = async () => {
-  try {
-    await execCmd('jq --version');
-  } catch {
-    log('jq not found, installing...');
-    await execCmd('apt-get install -y jq');
-  }
+const jqExtract = async (jqCmd) => {
+  const { stdout } = await execa('jq', ['-r', jqCmd, planFile]);
+  return stdout;
 };
 
 const setPermitAndScript = async () => {
-  const plan = JSON.parse(await readFile(planFile, 'utf-8'));
-  script = CI ? `/usr/src/upgrade-test-scripts/${plan.script}` : plan.script;
-  permit = CI ? `/usr/src/upgrade-test-scripts/${plan.permit}` : plan.permit;
+  console.log('Set script and permit...');
+  script = await jqExtract('.script');
+  permit = await jqExtract('.permit');
 
-  if (!script || !permit)
-    throw new Error('Script or permit not defined in plan.json');
+  if (CI) {
+    script = `/usr/src/upgrade-test-scripts/${script}`;
+    permit = `/usr/src/upgrade-test-scripts/${permit}`;
+  }
+
+  if (!script || !permit) {
+    throw new Error(`Error: Failed to parse required fields from ${planFile}`);
+  }
 };
 
 const setBundleFiles = async () => {
-  const plan = JSON.parse(await readFile(planFile, 'utf-8'));
-  const key = CI ? 'fileName' : 'bundleID';
+  console.log('Setting bundle files from plan...');
+  const sourceKey = CI ? '.bundles[].fileName' : '.bundles[].bundleID';
   const suffix = CI ? '' : '.json';
-  bundleFiles = plan.bundles.map((b) => `${b[key]}${suffix}`);
+
+  const result = await jqExtract(sourceKey);
+  bundleFiles = result
+    .split('\n')
+    .filter(Boolean)
+    .map((line) => `${line}${suffix}`);
 };
 
 const copyFilesToContainer = async () => {
   if (CI) {
-    log('Skipping copy: running in CI');
+    console.log('Skipping file copy: running in CI environment');
     return;
   }
 
-  const files = [script, permit, planFile, ...bundleFiles];
+  const containerID = 'agoric';
+  const targetDir = '/usr/src/';
+
+  console.log('Copying script, permit, and plan...');
+  await execa('docker', ['cp', script, `${containerID}:${targetDir}`]);
+  await execa('docker', ['cp', permit, `${containerID}:${targetDir}`]);
+  await execa('docker', ['cp', planFile, `${containerID}:${targetDir}`]);
+
+  console.log('Copying bundle files...');
+  const files = (await jqExtract('.bundles[].fileName')).split('\n');
   for (const file of files) {
-    try {
-      await execCmd(`docker cp ${file} agoric:/usr/src/`);
-      log(`Copied: ${file}`);
-    } catch {
-      warn(`Warning: File not found or could not copy: ${file}`);
+    if (fs.existsSync(file)) {
+      await execa('docker', ['cp', file, `${containerID}:${targetDir}`]);
+    } else {
+      console.warn(`Warning: File ${file} not found.`);
     }
   }
 };
 
 const installBundles = async () => {
   for (const b of bundleFiles) {
-    const dir = CI ? '/usr/src/upgrade-test-scripts' : '/usr/src';
-    const cmd = `cd ${dir} && echo 'Installing ${b}' && ls -sh '${b}' && agd tx swingset install-bundle --compress '@${b}' --from ${walletName} -bblock ${SIGN_BROADCAST_OPTS}`;
+    let cmd = CI ? `cd /usr/src/upgrade-test-scripts && ` : `cd /usr/src && `;
+
+    cmd += `echo 'Installing ${b}' && ls -sh '${b}' && agd tx swingset install-bundle --compress '@${b}' --from ${walletName} -bblock ${SIGN_BROADCAST_OPTS}`;
+    console.log(`Executing installation for bundle ${b}`);
     await execCmd(cmd);
-    await new Promise((r) => setTimeout(r, 5000));
+    await new Promise((resolve) => setTimeout(resolve, 5000));
   }
 };
 
 const openVault = async () => {
-  if (!createVault) return;
-
   const wantMinted = 450;
   const giveCollateral = 90;
   const walletAddress = 'agoric1ee9hr0jyrxhy999y755mp862ljgycmwyp4pl7q';
 
-  await execCmd(
-    `${agops} vaults open --wantMinted ${wantMinted} --giveCollateral ${giveCollateral} > /tmp/want-ist.json`,
-  );
-  await new Promise((r) => setTimeout(r, 5000));
-  await execCmd(
-    `${agops} perf satisfaction --executeOffer /tmp/want-ist.json --from ${walletAddress} --keyring-backend=test`,
-  );
+  if (createVault && walletAddress) {
+    console.log('Creating the vault...');
+    const openCmd = `${agops} vaults open --wantMinted ${wantMinted} --giveCollateral ${giveCollateral} > /tmp/want-ist.json`;
+    await execCmd(openCmd);
+    await new Promise((resolve) => setTimeout(resolve, 5000));
+    const execOffer = `${agops} perf satisfaction --executeOffer /tmp/want-ist.json --from ${walletAddress} --keyring-backend=test`;
+    console.log('Executing the offer...');
+    await execCmd(execOffer);
+  } else {
+    console.log('Vault not created');
+  }
 };
 
 const acceptProposal = async () => {
-  const dir = CI ? '/usr/src/upgrade-test-scripts' : '/usr/src';
-  const submitCmd = `cd ${dir} && agd tx gov submit-proposal swingset-core-eval ${permit} ${script} --title='Install ${script}' --description='Evaluate ${script}' --deposit=10000000ubld --from ${walletName} ${SIGN_BROADCAST_OPTS} -o json`;
-  await execCmd(submitCmd);
-  await new Promise((r) => setTimeout(r, 5000));
+  console.log(`Submitting proposal to evaluate ${script}`);
 
-  const queryCmd = `cd ${dir} && agd query gov proposals --output json | jq -c '[.proposals[] | (if .proposal_id == null then .id else .proposal_id end | tonumber)] | max'`;
-  const { stdout: latestProposalRaw } = await execCmd(queryCmd);
-  const latestProposal = latestProposalRaw
-    .replace(/\x1b\[[0-9;]*m/g, '')
-    .trim();
+  const baseDir = CI ? '/usr/src/upgrade-test-scripts' : '/usr/src';
+  const submitCommand = `cd ${baseDir} && agd tx gov submit-proposal swingset-core-eval ${permit} ${script} --title='Install ${script}' --description='Evaluate ${script}' --deposit=10000000ubld --from ${walletName} ${SIGN_BROADCAST_OPTS} -o json`;
+  await execCmd(submitCommand);
 
+  await new Promise((resolve) => setTimeout(resolve, 5000));
+
+  const queryCmd = `cd ${baseDir} && agd query gov proposals --output json | jq -c '[.proposals[] | if .proposal_id == null then .id else .proposal_id end | tonumber] | max'`;
+
+  const result = runInsideContainer
+    ? await execa('docker', ['exec', '-i', 'agoric', 'bash', '-c', queryCmd])
+    : await execa('bash', ['-c', queryCmd]);
+
+  const proposalId = runInsideContainer
+    ? result.stdout
+    : (() => {
+        const match = result.stdout.match(/\n(\d+)$/);
+        const proposalId = match?.[1];
+        return proposalId;
+      })();
+
+  console.log(`Voting on proposal ID ${proposalId}`);
   await execCmd(
-    `agd tx gov vote ${latestProposal} yes --from=validator ${SIGN_BROADCAST_OPTS}`,
+    `agd tx gov vote ${proposalId} yes --from=validator ${SIGN_BROADCAST_OPTS}`,
   );
-  const detailsCmd = `agd query gov proposals --output json | jq -c '.proposals[] | select(.proposal_id == "${latestProposal}" or .id == "${latestProposal}") | [.proposal_id or .id, .voting_end_time, .status]'`;
-  const { stdout: details } = await execCmd(detailsCmd);
-  log('Proposal details:', details);
+
+  console.log(`Fetching details for proposal ID ${proposalId}`);
+  const detailsCommand = `agd query gov proposals --output json | jq -c '.proposals[] | select(.proposal_id == "${proposalId}" or .id == "${proposalId}") | [.proposal_id or .id, .voting_end_time, .status]'`;
+  await execCmd(detailsCommand);
 };
 
 const main = async () => {
-  await ensureJqInstalled();
-  await setPermitAndScript();
-  await setBundleFiles();
+  try {
+    if (!fs.existsSync('/usr/bin/jq')) {
+      console.log('jq is not installed. Installing jq...');
+      await execCmd('apt-get install -y jq');
+    }
 
-  log('bundleFiles:', bundleFiles);
-  log('script:', script);
-  log('permit:', permit);
+    await setPermitAndScript();
+    await setBundleFiles();
 
-  await copyFilesToContainer();
-  await openVault();
-  await installBundles();
-  await acceptProposal();
+    console.log('bundleFiles:', bundleFiles);
+    console.log('script:', script);
+    console.log('permit:', permit);
+
+    await copyFilesToContainer();
+    await openVault();
+    await installBundles();
+    await acceptProposal();
+  } catch (err) {
+    console.error('Error:', err.message);
+  }
 };
 
-main().catch((err) => {
-  error('Deployment failed:', err);
-  process.exit(1);
-});
+main();

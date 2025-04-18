@@ -13,8 +13,8 @@
     "build": "esbuild ../contract/axelar-gmp.contract.js --platform=node --format=esm --bundle --outfile=dist/axelar-gmp.contract.bundle.js",
     "build-artifacts": "agoric run src/init-axelar-gmp.js",
     "test": "yarn build && ava",
-    "deploy": "planFile=startAxelarGmp-plan.json node deploy.js",
-    "register:token": "planFile=eval-register-interchain-bank-assets-plan.json node deploy.js"
+    "deploy": "runInsideContainer=true planFile=startAxelarGmp-plan.json node deploy.js",
+    "register:token": "runInsideContainer=true planFile=eval-register-interchain-bank-assets-plan.json node deploy.js"
   },
   "ava": {
     "extensions": {

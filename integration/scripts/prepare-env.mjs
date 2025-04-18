@@ -14,7 +14,7 @@ const DEPLOY_FOLDER = process.env.DEPLOY_FOLDER || 'deploy';
 
 try {
   console.log('Cloning agoric-sdk...');
-  await execa(`git clone ${AGORIC_REPO} ${TEMP_DIR}`, {
+  await execa(`git clone ${AGORIC_REPO} ${TEMP_DIR} --depth=1`, {
     shell: true,
     stdio: 'inherit',
   });
