@@ -67,7 +67,7 @@ export const MakeAccount = () => {
     }
   };
 
-  const makeOfferToLCA = async () => {
+  const sendGmpViaLCA = async () => {
     if (!latestInvitation) return;
 
     const requiredBrand = brands?.[BLD.brandKey];
@@ -79,13 +79,29 @@ export const MakeAccount = () => {
         value: amountValue,
       },
     };
+
     const args = {
       id: Date.now(),
       invitationSpec: {
         source: 'continuing',
         previousOffer: latestInvitation[0],
         invitationMakerName: 'makeEVMTransactionInvitation',
-        invitationArgs: harden(['callContract', []]),
+        invitationArgs: harden([
+          'sendGmp',
+          [
+            {
+              destinationAddress: '0x5B34876FFB1656710fb963ecD199C6f173c29267',
+              type: 1,
+              gasAmount: 20000,
+              destinationEVMChain: 'Ethereum',
+              contractInvocationData: {
+                functionSelector: 'createVendor(string)',
+                argType: 'string',
+                argValue: 'ownerAddress',
+              },
+            },
+          ],
+        ]),
       },
       offerArgs: {},
       proposal: { give },
@@ -145,7 +161,7 @@ export const MakeAccount = () => {
           </button>
           <button
             className="invoke-button"
-            onClick={makeOfferToLCA}
+            onClick={sendGmpViaLCA}
             disabled={!latestInvitation}
           >
             Use Account {latestInvitation ? `(${latestInvitation[0]})` : ''}

@@ -1,8 +1,13 @@
 #!/usr/bin/env node
 import './lockdown.mjs';
-import { execa } from 'execa';
-import fs from 'fs/promises';
-import { prepareOffer, fetchFromVStorage, wait } from './utils.mjs';
+import {
+  prepareOffer,
+  fetchFromVStorage,
+  wait,
+  copyOfferFileToContainer,
+  writeOfferToFile,
+  executeWalletAction,
+} from './utils.mjs';
 
 const CONTAINER = 'agoric';
 const OFFER_FILE = 'offer.json';
@@ -10,32 +15,7 @@ const CONTAINER_PATH = `/usr/src/${OFFER_FILE}`;
 const FROM_ADDRESS = 'agoric1rwwley550k9mmk6uq6mm6z4udrg8kyuyvfszjk';
 const vStorageUrl = `http://localhost/agoric-lcd/agoric/vstorage/data/published.wallet.${FROM_ADDRESS}`;
 const { makeAccount, waitInSeconds } = process.env;
-
-const writeOfferToFile = async (offer) => {
-  await fs.writeFile(OFFER_FILE, JSON.stringify(offer, null, 2));
-  console.log(`Written ${OFFER_FILE}`);
-};
-
-const copyOfferFileToContainer = async () => {
-  await execa(`docker cp ${OFFER_FILE} ${CONTAINER}:${CONTAINER_PATH}`, {
-    shell: true,
-    stdio: 'inherit',
-  });
-  console.log(`Copied ${OFFER_FILE} to container`);
-};
-
-const executeWalletAction = async () => {
-  const cmd = `agd tx swingset wallet-action "$(cat ${CONTAINER_PATH})" \
-    --allow-spend \
-    --from=${FROM_ADDRESS} \
-    --keyring-backend=test \
-    --chain-id=agoriclocal -y`;
-
-  return execa(`docker exec ${CONTAINER} bash -c '${cmd}'`, {
-    shell: true,
-    stdio: 'inherit',
-  });
-};
+const { log, error } = console;
 
 const validateEvmAddress = (address) => {
   if (typeof address !== 'string' || !/^0x[a-fA-F0-9]{40}$/.test(address)) {
@@ -45,12 +25,14 @@ const validateEvmAddress = (address) => {
 
 try {
   if (waitInSeconds) {
+    log(`Waiting for ${waitInSeconds} seconds before starting...`);
     await wait(waitInSeconds);
   }
 
   if (makeAccount) {
-    console.log('--- Creating and Monitoring LCA ---');
+    log('--- Creating and Monitoring LCA ---');
 
+    log('Preparing offer...');
     const offer = await prepareOffer({
       publicInvitationMaker: 'createAndMonitorLCA',
       instanceName: 'axelarGmp',
@@ -59,20 +41,38 @@ try {
       source: 'contract',
     });
 
-    await writeOfferToFile(offer);
-    await copyOfferFileToContainer();
-    await executeWalletAction();
+    log('Writing offer to file...');
+    await writeOfferToFile({ offer, OFFER_FILE });
+
+    log('Copying offer file to container...');
+    await copyOfferFileToContainer({
+      OFFER_FILE,
+      CONTAINER,
+      CONTAINER_PATH,
+    });
+
+    log('Executing wallet action...');
+    await executeWalletAction({
+      CONTAINER,
+      CONTAINER_PATH,
+      FROM_ADDRESS,
+    });
+
+    log('--- LCA creation process complete ---');
   } else {
-    console.log('--- Getting EVM Smart Wallet Address ---');
+    log('--- Getting EVM Smart Wallet Address ---');
 
     const methodName = 'getAddress';
     const invitationArgs = harden([methodName, []]);
 
+    log(`Fetching previous offer from ${vStorageUrl}.current`);
     const { offerToUsedInvitation } = await fetchFromVStorage(
       `${vStorageUrl}.current`,
     );
     const previousOffer = offerToUsedInvitation[0][0];
+    log(`Previous offer found: ${JSON.stringify(previousOffer)}`);
 
+    log('Preparing offer...');
     const offer = await prepareOffer({
       invitationMakerName: 'makeEVMTransactionInvitation',
       instanceName: 'axelarGmp',
@@ -82,20 +82,29 @@ try {
       previousOffer,
     });
 
-    await writeOfferToFile(offer);
-    await copyOfferFileToContainer();
-    await executeWalletAction();
+    log('Writing offer to file...');
+    await writeOfferToFile({ offer, OFFER_FILE });
+
+    log('Copying offer file to container...');
+    await copyOfferFileToContainer({ OFFER_FILE, CONTAINER, CONTAINER_PATH });
+
+    log('Executing wallet action...');
+    await executeWalletAction({ CONTAINER, CONTAINER_PATH, FROM_ADDRESS });
+
+    log('Waiting 30 seconds for offer result...');
     await wait(30);
 
+    log(`Fetching offer result from ${vStorageUrl}`);
     const offerData = await fetchFromVStorage(vStorageUrl);
-    console.log(`offerData: ${JSON.stringify(offerData)}`);
+    log(`Offer data received: ${JSON.stringify(offerData)}`);
 
     const smartWalletAddress = offerData.status.result;
+    log(`Validating smart wallet address: ${smartWalletAddress}`);
     validateEvmAddress(smartWalletAddress);
 
-    console.log(`smartWalletAddress: ${smartWalletAddress}`);
+    log(`Smart wallet address: ${smartWalletAddress}`);
   }
 } catch (err) {
-  console.error('ERROR:', err.shortMessage || err.message);
+  error('ERROR:', err.shortMessage || err.message);
   process.exit(1);
 }

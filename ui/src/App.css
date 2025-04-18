@@ -86,6 +86,7 @@ button {
   margin-top: 2.5rem;
 }
 
+.fund-button,
 .invoke-button,
 .metamask-button,
 .view-transaction-button,
@@ -95,6 +96,7 @@ button {
   color: #f7f7f7;
 }
 
+.fund-button:hover,
 .invoke-button:hover,
 .view-transaction-button:hover,
 .metamask-button:hover,

@@ -3,24 +3,13 @@ import { M, mustMatch } from '@endo/patterns';
 import { VowShape } from '@agoric/vow';
 import { makeTracer, NonNullish } from '@agoric/internal';
 import { atob, decodeBase64 } from '@endo/base64';
-import { encode, decode } from '@findeth/abi';
+import { decode } from '@findeth/abi';
 import { Fail } from '@endo/errors';
 import { ChainAddressShape } from '@agoric/orchestration';
-import {
-  buildGMPPayload,
-  gmpAddresses,
-  encodeCallData,
-  GMPMessageType,
-} from './utils/gmp.js';
+import { gmpAddresses, buildGMPPayload } from './utils/gmp.js';
 
 const trace = makeTracer('EvmTap');
 const { entries } = Object;
-
-const addresses = {
-  AXELAR_GMP:
-    'axelar1dv4u5k73pzqrxlzujxg3qp8kvc3pje7jtdvu72npnt5zhq05ejcsn5qme5',
-  AXELAR_GAS: 'axelar1zl3rxpp70lmte2xr6c4lgske2fyuj3hupcsvcd',
-};
 
 /**
  * @typedef {Object} AxelarGmpMemo
@@ -56,19 +45,18 @@ const addresses = {
 
 /**
  * @typedef {object} ContractInvocationData
- * @property {string} functionSelector - Function selector (4 bytes)
- * @property {string} encodedArgs - ABI encoded arguments
- * @property {number} deadline
- * @property {number} nonce
+ * @property {string} functionSelector
+ * @property {string} argType
+ * @property {string} argValue
  */
 
 const EVMI = M.interface('holder', {
   getLocalAddress: M.call().returns(M.any()),
   getAddress: M.call().returns(M.any()),
+  getLatestMessage: M.call().returns(M.any()),
   send: M.call(M.any(), M.any()).returns(M.any()),
   sendGmp: M.call(M.any(), M.any()).returns(M.any()),
   fundLCA: M.call(M.any(), M.any()).returns(VowShape),
-  callContractWithFunctionCalls: M.call().returns(VowShape),
 });
 
 const InvitationMakerI = M.interface('invitationMaker', {
@@ -119,12 +107,14 @@ export const prepareEvmAccountKit = (
      * @param {EvmTapState} initialState
      * @returns {{
      *   evmAccountAddress: string | undefined;
+     *   latestMessage: string | undefined;
      * } & EvmTapState}
      */
     (initialState) => {
       mustMatch(initialState, EvmKitStateShape);
       return harden({
         evmAccountAddress: /** @type {string | undefined} */ (undefined),
+        latestMessage: /** @type {string | undefined} */ (undefined),
         ...initialState,
       });
     },
@@ -147,9 +137,15 @@ export const prepareEvmAccountKit = (
           if (memo.source_chain === 'Ethereum') {
             const payloadBytes = decodeBase64(memo.payload);
             const decoded = decode(['address'], payloadBytes);
-            trace(decoded);
-            // TODO: do not do this again if already set
-            this.state.evmAccountAddress = decoded[0];
+            trace('receiveUpcall Decoded:', decoded);
+
+            if (this.state.evmAccountAddress) {
+              trace('Setting latestMessage:', decoded[0]);
+              this.state.latestMessage = decoded[0];
+            } else {
+              trace('Setting evmAccountAddress:', decoded[0]);
+              this.state.evmAccountAddress = decoded[0];
+            }
           }
 
           trace('receiveUpcall completed');
@@ -173,7 +169,9 @@ export const prepareEvmAccountKit = (
         async getAddress() {
           return this.state.evmAccountAddress;
         },
-
+        async getLatestMessage() {
+          return this.state.latestMessage;
+        },
         /**
          * Sends tokens from the local account to a specified Cosmos chain
          * address.
@@ -207,6 +205,8 @@ export const prepareEvmAccountKit = (
             contractInvocationData,
           } = offerArgs;
 
+          trace('Offer Args:', JSON.stringify(offerArgs));
+
           destinationAddress != null ||
             Fail`Destination address must be defined`;
           destinationEVMChain != null ||
@@ -218,7 +218,7 @@ export const prepareEvmAccountKit = (
             contractInvocationData != null ||
               Fail`contractInvocationData is not defined`;
 
-            ['functionSelector', 'encodedArgs', 'deadline', 'nonce'].every(
+            ['functionSelector', 'argType', 'argValue'].every(
               (field) => contractInvocationData[field] != null,
             ) ||
               Fail`Contract invocation payload is invalid or missing required fields`;
@@ -228,11 +228,15 @@ export const prepareEvmAccountKit = (
 
           const [[_kw, amt]] = entries(give);
           amt.value > 0n || Fail`IBC transfer amount must be greater than zero`;
-          console.log('_kw, amt', _kw, amt);
+          trace('_kw, amt', _kw, amt);
+          trace(`targets: [${destinationAddress}]`);
+          trace(
+            `contractInvocationData: ${JSON.stringify(contractInvocationData)}`,
+          );
 
           const payload = buildGMPPayload({
             type,
-            evmContractAddress: destinationAddress,
+            targets: [destinationAddress],
             ...contractInvocationData,
           });
           void log(`Payload: ${JSON.stringify(payload)}`);
@@ -242,7 +246,7 @@ export const prepareEvmAccountKit = (
             `${amt.brand} not registered in vbank`,
           );
 
-          console.log('amt and brand', amt.brand);
+          trace('amt and brand', amt.brand);
 
           const { chainId } = this.state.remoteChainInfo;
 
@@ -256,17 +260,19 @@ export const prepareEvmAccountKit = (
           if (type === 1 || type === 2) {
             memo.fee = {
               amount: String(gasAmount),
-              recipient: addresses.AXELAR_GAS,
+              recipient: gmpAddresses.AXELAR_GAS,
             };
             void log(`Fee object ${JSON.stringify(memo.fee)}`);
+            trace(`Fee object ${JSON.stringify(memo.fee)}`);
           }
 
           void log(`Initiating IBC Transfer...`);
           void log(`DENOM of token:${denom}`);
 
+          trace('Initiating IBC Transfer...');
           await this.state.localAccount.transfer(
             {
-              value: addresses.AXELAR_GMP,
+              value: gmpAddresses.AXELAR_GMP,
               encoding: 'bech32',
               chainId,
             },
@@ -289,54 +295,6 @@ export const prepareEvmAccountKit = (
           seat.hasExited() && Fail`The seat cannot be exited.`;
           return zoeTools.localTransfer(seat, this.state.localAccount, give);
         },
-        callContractWithFunctionCalls() {
-          const targets = ['0x5B34876FFB1656710fb963ecD199C6f173c29267'];
-          const data = [
-            encodeCallData(
-              'createVendor(string)',
-              ['string'],
-              ['ownerAddress'],
-            ),
-          ];
-          const payload = Array.from(
-            encode(['address[]', 'bytes[]'], [targets, data]),
-          );
-
-          const { vow, resolver } = vowTools.makeVowKit();
-
-          void (async () => {
-            try {
-              await this.state.localAccount.transfer(
-                {
-                  value: gmpAddresses.AXELAR_GMP,
-                  encoding: 'bech32',
-                  chainId: 'axelar',
-                },
-                {
-                  denom: 'ubld',
-                  value: BigInt(1000000),
-                },
-                {
-                  memo: JSON.stringify({
-                    destination_chain: 'Ethereum',
-                    destination_address: this.state.evmAccountAddress,
-                    payload,
-                    type: GMPMessageType.MESSAGE_ONLY,
-                    fee: {
-                      amount: '1',
-                      recipient: gmpAddresses.AXELAR_GAS,
-                    },
-                  }),
-                },
-              );
-              resolver.resolve(`transfer success`);
-            } catch (err) {
-              resolver.reject(Error(`transfer failed: ${err.message}`));
-            }
-          })();
-
-          return vow;
-        },
       },
       invitationMakers: {
         // "method" and "args" can be used to invoke methods of localAccount obj
@@ -345,6 +303,8 @@ export const prepareEvmAccountKit = (
             const { holder } = this.facets;
             switch (method) {
               case 'sendGmp': {
+                const { give } = seat.getProposal();
+                await vowTools.when(holder.fundLCA(seat, give));
                 return holder.sendGmp(seat, args[0]);
               }
               case 'getLocalAddress': {
@@ -356,6 +316,13 @@ export const prepareEvmAccountKit = (
               }
               case 'getAddress': {
                 const vow = holder.getAddress();
+                return vowTools.when(vow, (res) => {
+                  seat.exit();
+                  return res;
+                });
+              }
+              case 'getLatestMessage': {
+                const vow = holder.getLatestMessage();
                 return vowTools.when(vow, (res) => {
                   seat.exit();
                   return res;
@@ -375,17 +342,6 @@ export const prepareEvmAccountKit = (
                   seat.exit();
                   return res;
                 });
-              }
-              case 'callContract': {
-                const { give } = seat.getProposal();
-                await vowTools.when(holder.fundLCA(seat, give));
-                return vowTools.when(
-                  holder.callContractWithFunctionCalls(),
-                  (res) => {
-                    seat.exit();
-                    return res;
-                  },
-                );
               }
               default:
                 return 'Invalid method';

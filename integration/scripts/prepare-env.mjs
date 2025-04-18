@@ -8,8 +8,8 @@ const AGORIC_REPO = 'https://github.com/Agoric/agoric-sdk.git';
 const TEMP_DIR = '$HOME/temp-agoric-sdk';
 const MULTICHAIN_PATH = 'multichain-testing';
 const DEST_MULTICHAIN = `/usr/src/agoric-sdk/${MULTICHAIN_PATH}`;
-const CONTRACT_FOLDER = 'contract';
-const DEPLOY_SH_LOCAL = 'deploy/deploy.sh';
+const CONTRACT_FOLDER = process.env.CONTRACT_FOLDER || 'contract';
+const DEPLOY_SH_LOCAL = process.env.DEPLOY_SH_LOCAL || 'deploy/deploy.sh';
 const DEPLOY_SH_DEST = '/usr/src/upgrade-test-scripts/deploy.sh';
 
 try {
@@ -58,7 +58,7 @@ try {
     'Installing dependencies for contract folder inside container...',
   );
   await execa(
-    `docker exec ${CONTAINER} bash -c "cd /usr/src/upgrade-test-scripts/${CONTRACT_FOLDER} && yarn install"`,
+    `docker exec ${CONTAINER} bash -c "cd /usr/src/upgrade-test-scripts/contract && yarn install"`,
     { shell: true, stdio: 'inherit' },
   );
 

@@ -1,4 +1,7 @@
+// @ts-check
 import { makeVstorageKit, makeAgoricNames } from '@agoric/client-utils';
+import fs from 'fs/promises';
+import { execa } from 'execa';
 
 const LOCAL_CONFIG = {
   rpcAddrs: ['http://localhost/agoric-rpc'],
@@ -7,45 +10,78 @@ const LOCAL_CONFIG = {
 
 const vstorageKit = makeVstorageKit({ fetch }, LOCAL_CONFIG);
 
+/**
+ * @typedef {Object} PrepareOfferParams
+ * @property {string} instanceName - The instance name to get from AgoricNames.
+ * @property {string} source - Source of the invitation: 'contract' | 'continuing'.
+ * @property {string} [publicInvitationMaker] - Used for public invitations.
+ * @property {string} [invitationMakerName] - Used for contract invitations.
+ * @property {string} [brandName] - Required if giving an amount.
+ * @property {bigint} [amount] - Required if giving something.
+ * @property {any[]} [invitationArgs] - Arguments for the invitation (e.g. method, params).
+ * @property {string} [previousOffer] - For continuing invitations.
+ * @property {boolean} [emptyProposal] - If true, skips constructing the give section.
+ * @property {(x: any) => any} [hardenFn] - Optionally override the harden function.
+ */
+
+/**
+ * Prepares a hardened offer object with all required CapData format.
+ * @param {PrepareOfferParams} params
+ * @returns {Promise<any>} CapData object ready to be written or sent to wallet.
+ */
 export const prepareOffer = async ({
-  invitationMakerName,
-  publicInvitationMaker,
   instanceName,
+  source,
+  publicInvitationMaker,
+  invitationMakerName,
   brandName,
   amount,
-  source,
   invitationArgs,
   previousOffer,
-  emptyProposal,
+  emptyProposal = false,
 }) => {
+  if (!vstorageKit) throw new Error('vstorageKit is required');
+  if (!instanceName) throw new Error('instanceName is required');
+  if (!source) throw new Error('source is required');
+
   const { brand, instance } = await makeAgoricNames(
     vstorageKit.fromBoard,
     vstorageKit.vstorage,
   );
 
-  const id = `make-account-${Date.now()}`;
+  const offerId = `offer-${Date.now()}`;
+
+  const invitationSpec = {
+    ...(invitationMakerName && { invitationMakerName }),
+    ...(publicInvitationMaker && { publicInvitationMaker }),
+    source,
+    instance: instance[instanceName],
+    ...(invitationArgs && { invitationArgs }),
+    ...(previousOffer && { previousOffer }),
+  };
+
+  const proposal =
+    emptyProposal || !amount || !brandName
+      ? {}
+      : {
+          give: {
+            [brandName]: {
+              brand: brand[brandName],
+              value: amount,
+            },
+          },
+        };
+
   const body = {
     method: 'executeOffer',
     offer: {
-      id,
-      invitationSpec: {
-        ...(invitationMakerName && { invitationMakerName }),
-        ...(publicInvitationMaker && { publicInvitationMaker }),
-        source,
-        instance: instance[instanceName],
-        ...(previousOffer && { previousOffer }),
-        ...(invitationArgs && { invitationArgs }),
-      },
-      proposal: emptyProposal
-        ? {}
-        : {
-            give: {
-              [brandName]: { brand: brand[brandName], value: amount },
-            },
-          },
+      id: offerId,
+      invitationSpec,
+      proposal,
     },
   };
 
+  // @ts-ignore
   return vstorageKit.marshaller.toCapData(harden(body));
 };
 
@@ -71,4 +107,38 @@ export const fetchFromVStorage = async (vStorageUrl) => {
 
   const bodyString = JSON.parse(rawValue).body;
   return JSON.parse(bodyString.slice(1));
+};
+
+export const writeOfferToFile = async ({ OFFER_FILE, offer }) => {
+  await fs.writeFile(OFFER_FILE, JSON.stringify(offer, null, 2));
+  console.log(`Written ${OFFER_FILE}`);
+};
+
+export const copyOfferFileToContainer = async ({
+  OFFER_FILE,
+  CONTAINER,
+  CONTAINER_PATH,
+}) => {
+  await execa(`docker cp ${OFFER_FILE} ${CONTAINER}:${CONTAINER_PATH}`, {
+    shell: true,
+    stdio: 'inherit',
+  });
+  console.log(`Copied ${OFFER_FILE} to container`);
+};
+
+export const executeWalletAction = async ({
+  CONTAINER,
+  CONTAINER_PATH,
+  FROM_ADDRESS,
+}) => {
+  const cmd = `agd tx swingset wallet-action "$(cat ${CONTAINER_PATH})" \
+    --allow-spend \
+    --from=${FROM_ADDRESS} \
+    --keyring-backend=test \
+    --chain-id=agoriclocal -y`;
+
+  return execa(`docker exec ${CONTAINER} bash -c '${cmd}'`, {
+    shell: true,
+    stdio: 'inherit',
+  });
 };

@@ -1,7 +1,6 @@
 /**
  * @file utils/gmp.js GMP payload construction utilities
  */
-import { hexlify, arrayify, concat } from '@ethersproject/bytes';
 import { encode } from '@findeth/abi';
 import sha3 from 'js-sha3';
 
@@ -40,40 +39,26 @@ export const encodeCallData = (functionSignature, paramTypes, params) => {
  *
  * @param {object} params Contract invocation parameters
  * @param {number} params.type GMP message type
- * @param {string} params.evmContractAddress Target contract address
- * @param {string} params.functionSelector Function selector (4 bytes)
- * @param {string} params.encodedArgs ABI encoded arguments
- * @param {number} params.deadline
- * @param {number} params.nonce
+ * @param {array} params.targets Target contract address
+ * @param {string} params.functionSelector
+ * @param {string} params.argType
+ * @param {string} params.argValue
  * @returns {number[] | null} Encoded payload as number array, or null for a
  *   pure token transfer
  */
 export const buildGMPPayload = ({
   type,
-  evmContractAddress,
+  targets,
   functionSelector,
-  encodedArgs,
-  deadline,
-  nonce,
+  argType,
+  argValue,
 }) => {
   if (type === GMPMessageType.TOKEN_ONLY) {
     return null;
   }
 
-  const LOGIC_CALL_MSG_ID = 0;
-
-  const payload = encode(
-    ['uint256', 'address', 'uint256', 'uint256', 'bytes'],
-    [
-      LOGIC_CALL_MSG_ID,
-      evmContractAddress,
-      nonce,
-      deadline,
-      hexlify(concat([functionSelector, encodedArgs])),
-    ],
-  );
-
-  return Array.from(arrayify(payload));
+  const data = [encodeCallData(functionSelector, [argType], [argValue])];
+  return Array.from(encode(['address[]', 'bytes[]'], [targets, data]));
 };
 
 /**
