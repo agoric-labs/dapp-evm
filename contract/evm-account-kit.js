@@ -1,9 +1,12 @@
 // @ts-check
+
+/** @typedef {import('./utils/gmp.js').ContractCall} ContractCall */
+
 import { M, mustMatch } from '@endo/patterns';
 import { VowShape } from '@agoric/vow';
 import { makeTracer, NonNullish } from '@agoric/internal';
 import { atob, decodeBase64 } from '@endo/base64';
-import { decode } from '@findeth/abi';
+// import { decode } from '@findeth/abi';
 import { Fail } from '@endo/errors';
 import { ChainAddressShape } from '@agoric/orchestration';
 import { gmpAddresses, buildGMPPayload } from './utils/gmp.js';
@@ -17,9 +20,6 @@ const { entries } = Object;
  * @property {string} source_address - The originating address on the source chain.
  * @property {string} payload - The payload being passed in the message, usually a serialized string.
  * @property {1 | 2 | 3} type - The type of message:
- *   1 = contract call,
- *   2 = token transfer,
- *   3 = arbitrary payload.
  */
 
 /**
@@ -41,13 +41,6 @@ const { entries } = Object;
  *   assets: any;
  *   remoteChainInfo: any;
  * }} EvmTapState
- */
-
-/**
- * @typedef {object} ContractInvocationData
- * @property {string} functionSelector
- * @property {string} argType
- * @property {string} argValue
  */
 
 const EVMI = M.interface('holder', {
@@ -136,16 +129,16 @@ export const prepareEvmAccountKit = (
 
           if (memo.source_chain === 'Ethereum') {
             const payloadBytes = decodeBase64(memo.payload);
-            const decoded = decode(['address'], payloadBytes);
-            trace('receiveUpcall Decoded:', decoded);
+            // const decoded = decode(['address'], payloadBytes);
+            // trace('receiveUpcall Decoded:', decoded);
 
-            if (this.state.evmAccountAddress) {
-              trace('Setting latestMessage:', decoded[0]);
-              this.state.latestMessage = decoded[0];
-            } else {
-              trace('Setting evmAccountAddress:', decoded[0]);
-              this.state.evmAccountAddress = decoded[0];
-            }
+            // if (this.state.evmAccountAddress) {
+            //   trace('Setting latestMessage:', decoded[0]);
+            //   this.state.latestMessage = decoded[0];
+            // } else {
+            //   trace('Setting evmAccountAddress:', decoded[0]);
+            //   this.state.evmAccountAddress = decoded[0];
+            // }
           }
 
           trace('receiveUpcall completed');
@@ -192,7 +185,7 @@ export const prepareEvmAccountKit = (
          *   type: number;
          *   destinationEVMChain: string;
          *   gasAmount: number;
-         *   contractInvocationData: ContractInvocationData;
+         *   contractInvocationData: Array<ContractCall>;
          * }} offerArgs
          */
         async sendGmp(seat, offerArgs) {
@@ -218,7 +211,7 @@ export const prepareEvmAccountKit = (
             contractInvocationData != null ||
               Fail`contractInvocationData is not defined`;
 
-            ['functionSelector', 'argType', 'argValue'].every(
+            ['target', 'functionSignature', 'args'].every(
               (field) => contractInvocationData[field] != null,
             ) ||
               Fail`Contract invocation payload is invalid or missing required fields`;
@@ -234,11 +227,9 @@ export const prepareEvmAccountKit = (
             `contractInvocationData: ${JSON.stringify(contractInvocationData)}`,
           );
 
-          const payload = buildGMPPayload({
-            type,
-            targets: [destinationAddress],
-            ...contractInvocationData,
-          });
+          const payload =
+            type === 3 ? null : buildGMPPayload(contractInvocationData);
+
           void log(`Payload: ${JSON.stringify(payload)}`);
 
           const { denom } = NonNullish(
