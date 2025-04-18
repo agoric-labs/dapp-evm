@@ -14,7 +14,7 @@ export const defaultProposalBuilder = async (
       getManifest.name,
       {
         installationRef: publishRef(
-          install('../../contract/axelar-gmp.contract.js'),
+          install('../dist/axelar-gmp.contract.bundle.js'),
         ),
         options,
       },

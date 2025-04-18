@@ -5,11 +5,13 @@
   "type": "module",
   "devDependencies": {
     "@agoric/deploy-script-support": "^0.10.4-u19.2",
-    "agoric": "^0.22.0-u19.3"
+    "agoric": "^0.22.0-u19.3",
+    "esbuild": "^0.25.2"
   },
   "scripts": {
-    "test": "ava",
-    "build": "agoric run src/init-axelar-gmp.js",
+    "build": "esbuild ../contract/axelar-gmp.contract.js --platform=node --format=esm --bundle --outfile=dist/axelar-gmp.contract.bundle.js",
+    "build-artifacts": "agoric run src/init-axelar-gmp.js",
+    "test": "yarn build && ava",
     "deploy": "bash deploy.sh startAxelarGmp-plan.json",
     "register:token": "bash deploy.sh eval-register-interchain-bank-assets-plan.json"
   },
