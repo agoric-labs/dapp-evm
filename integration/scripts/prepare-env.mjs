@@ -1,4 +1,5 @@
 #!/usr/bin/env node
+// @ts-check
 import './lockdown.mjs';
 import { execa } from 'execa';
 import fs from 'fs/promises';
@@ -10,8 +11,6 @@ const MULTICHAIN_PATH = 'multichain-testing';
 const DEST_MULTICHAIN = `/usr/src/agoric-sdk/${MULTICHAIN_PATH}`;
 const CONTRACT_FOLDER = process.env.CONTRACT_FOLDER || 'contract';
 const DEPLOY_FOLDER = process.env.DEPLOY_FOLDER || 'deploy';
-const DEPLOY_SH_LOCAL = process.env.DEPLOY_SH_LOCAL || 'deploy/deploy.sh';
-const DEPLOY_SH_DEST = '/usr/src/upgrade-test-scripts/deploy.sh';
 
 try {
   console.log('Cloning agoric-sdk...');
@@ -39,12 +38,6 @@ try {
     `docker exec ${CONTAINER} bash -c "cd /usr/src/agoric-sdk && yarn install"`,
     { shell: true, stdio: 'inherit' },
   );
-
-  console.log('Copying deploy.sh into container...');
-  await execa(`docker cp ${DEPLOY_SH_LOCAL} ${CONTAINER}:${DEPLOY_SH_DEST}`, {
-    shell: true,
-    stdio: 'inherit',
-  });
 
   console.log('Copying Axelar GMP contract folder into container...');
   await execa(
