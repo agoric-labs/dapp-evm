@@ -71,13 +71,17 @@ export const buildGMPPayload = (contractCalls) => {
 
   const abiEncodedData = encodeAbiParameters(
     [
-      { type: 'bytes[]', name: 'calls' },
+      {
+        type: 'tuple[]',
+        name: 'calls',
+        components: [
+          { name: 'target', type: 'address' },
+          { name: 'data', type: 'bytes' },
+        ],
+      },
       { type: 'uint256', name: 'totalCalls' },
     ],
-    [
-      abiEncodedContractCalls.map((c) => c.data),
-      abiEncodedContractCalls.length,
-    ],
+    [abiEncodedContractCalls, abiEncodedContractCalls.length],
   );
 
   return Array.from(abiEncodedData);
