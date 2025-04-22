@@ -34,6 +34,13 @@ try {
   log(`Previous offer found: ${JSON.stringify(previousOffer)}`);
 
   log('Preparing GMP send offer...');
+  const contractInvocationData = [
+    {
+      functionSignature: 'createVendor(string)',
+      args: ['ownerAddress'],
+      target: '0x5B34876FFB1656710fb963ecD199C6f173c29267',
+    },
+  ];
   const offer = await prepareOffer({
     invitationMakerName: 'makeEVMTransactionInvitation',
     instanceName: 'axelarGmp',
@@ -45,11 +52,7 @@ try {
           type: 1,
           gasAmount: 20000,
           destinationEVMChain: 'Ethereum',
-          contractInvocationData: {
-            functionSelector: 'createVendor(string)',
-            argType: 'string',
-            argValue: 'ownerAddress',
-          },
+          contractInvocationData,
         },
       ],
     ]),

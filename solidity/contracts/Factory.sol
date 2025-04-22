@@ -57,13 +57,6 @@ contract Wallet is AxelarExecutable, Ownable {
         // (address[] memory targets, bytes[] memory callDatas) = abi.decode(payload, (address[], bytes[]));
         // require(targets.length == callDatas.length, "Payload length mismatch");
 
-        // // storedMessage = Message('fraz', toAsciiString(targets[0]));
-        // // Loop over each command and execute the call.
-        // for (uint256 i = 0; i < targets.length; i++) {
-        //     (bool success, ) = targets[i].call(callDatas[i]);
-        //     require(success, "Command execution failed");
-        // }
-
         address stakingAddress = abi.decode(payload, (address));
 
         require(amount > 0, 'Deposit amount must be greater than zero');
@@ -103,9 +96,6 @@ contract Factory is AxelarExecutable {
 
     function createVendor(string memory owner) public returns (address) {
         address newVendorAddress = address(new Wallet(_gateway, owner));
-        string memory newVendor = toAsciiString(newVendorAddress);
-
-        storedMessage = Message(newVendorAddress);
         return newVendorAddress;
     }
 
@@ -117,18 +107,6 @@ contract Factory is AxelarExecutable {
         // storedMessage = Message(sender, message);
         address vendorAddress = createVendor(sourceAddress);
         _send(sourceChain, sourceAddress, vendorAddress);
-    }
-
-    function toAsciiString(address x) internal pure returns (string memory) {
-        bytes memory s = new bytes(40);
-        for (uint i = 0; i < 20; i++) {
-            bytes1 b = bytes1(uint8(uint(uint160(x)) / (2 ** (8 * (19 - i)))));
-            bytes1 hi = bytes1(uint8(b) / 16);
-            bytes1 lo = bytes1(uint8(b) - 16 * uint8(hi));
-            s[2 * i] = char(hi);
-            s[2 * i + 1] = char(lo);
-        }
-        return string(s);
     }
 
     function char(bytes1 b) internal pure returns (bytes1 c) {
