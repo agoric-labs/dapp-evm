@@ -6,7 +6,7 @@ import { M, mustMatch } from '@endo/patterns';
 import { VowShape } from '@agoric/vow';
 import { makeTracer, NonNullish } from '@agoric/internal';
 import { atob, decodeBase64 } from '@endo/base64';
-// import { decode } from '@findeth/abi';
+import { decodeAbiParameters } from 'viem';
 import { Fail } from '@endo/errors';
 import { ChainAddressShape } from '@agoric/orchestration';
 import { gmpAddresses, buildGMPPayload } from './utils/gmp.js';
@@ -129,16 +129,19 @@ export const prepareEvmAccountKit = (
 
           if (memo.source_chain === 'Ethereum') {
             const payloadBytes = decodeBase64(memo.payload);
-            // const decoded = decode(['address'], payloadBytes);
-            // trace('receiveUpcall Decoded:', decoded);
+            const decoded = decodeAbiParameters(
+              [{ type: 'address' }],
+              payloadBytes,
+            );
+            trace('receiveUpcall Decoded:', decoded);
 
-            // if (this.state.evmAccountAddress) {
-            //   trace('Setting latestMessage:', decoded[0]);
-            //   this.state.latestMessage = decoded[0];
-            // } else {
-            //   trace('Setting evmAccountAddress:', decoded[0]);
-            //   this.state.evmAccountAddress = decoded[0];
-            // }
+            if (this.state.evmAccountAddress) {
+              trace('Setting latestMessage:', decoded[0]);
+              this.state.latestMessage = decoded[0];
+            } else {
+              trace('Setting evmAccountAddress:', decoded[0]);
+              this.state.evmAccountAddress = decoded[0];
+            }
           }
 
           trace('receiveUpcall completed');
@@ -211,10 +214,8 @@ export const prepareEvmAccountKit = (
             contractInvocationData != null ||
               Fail`contractInvocationData is not defined`;
 
-            ['target', 'functionSignature', 'args'].every(
-              (field) => contractInvocationData[field] != null,
-            ) ||
-              Fail`Contract invocation payload is invalid or missing required fields`;
+            contractInvocationData.length != 0 ||
+              Fail`contractInvocationData array is empty`;
           }
 
           const { give } = seat.getProposal();
