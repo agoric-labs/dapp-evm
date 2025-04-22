@@ -10,10 +10,9 @@
     "execa": "^9.5.2"
   },
   "scripts": {
-    "build": "esbuild ../contract/axelar-gmp.contract.js --platform=node --format=esm --bundle --outfile=dist/axelar-gmp.contract.bundle.js",
-    "build-artifacts": "agoric run src/init-axelar-gmp.js",
+    "build": "esbuild ../contract/axelar-gmp.contract.js --platform=node --format=esm --bundle --outfile=dist/axelar-gmp.contract.bundle.js && agoric run src/init-axelar-gmp.js",
     "test": "yarn build && ava",
-    "deploy": "runInsideContainer=true planFile=startAxelarGmp-plan.json node deploy.js",
+    "deploy": "yarn build && runInsideContainer=true planFile=startAxelarGmp-plan.json node deploy.js",
     "register:token": "runInsideContainer=true planFile=eval-register-interchain-bank-assets-plan.json node deploy.js"
   },
   "ava": {

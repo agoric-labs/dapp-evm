@@ -1,7 +1,7 @@
 /**
  * @file utils/gmp.js GMP payload construction utilities
  */
-import { encodeFunctionData, encodeAbiParameters } from 'viem';
+import { encodeFunctionData, encodeAbiParameters, hexToBytes } from 'viem';
 
 export const GMPMessageType = {
   MESSAGE_ONLY: 1,
@@ -84,5 +84,5 @@ export const buildGMPPayload = (contractCalls) => {
     [abiEncodedContractCalls, abiEncodedContractCalls.length],
   );
 
-  return Array.from(abiEncodedData);
+  return Array.from(hexToBytes(abiEncodedData));
 };
