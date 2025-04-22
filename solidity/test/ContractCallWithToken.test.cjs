@@ -96,9 +96,7 @@ describe('CallContractWithToken', function () {
     );
 
     const StakingContract = await ethers.getContractFactory('StakingContract');
-    stakingContract = await StakingContract.deploy(
-      gatewayMock.target,
-    );
+    stakingContract = await StakingContract.deploy(gatewayMock.target);
 
     // Creating a new wallet from the factory
     [owner, addr1, addr2] = await ethers.getSigners();
@@ -113,7 +111,6 @@ describe('CallContractWithToken', function () {
     );
     const options = {};
     const payloadHash = ethers.keccak256(payload);
-    console.log(commandId);
     await approveMessage(
       commandId,
       sourceContract,
@@ -131,7 +128,7 @@ describe('CallContractWithToken', function () {
   });
   const pack = (functionSignature, paramTypes, params) => {
     let utf8Encode = new TextEncoder();
-const encodedSignature = utf8Encode.encode(functionSignature);
+    const encodedSignature = utf8Encode.encode(functionSignature);
     const functionHash = ethers.keccak256(encodedSignature).slice(2, 10);
     const encodedParams = abiCoder.encode(paramTypes, params).slice(2);
 
@@ -144,6 +141,10 @@ const encodedSignature = utf8Encode.encode(functionSignature);
       abiCoder.encode(['address'], [expectedWalletAddress])
     );
     const expectedPayloadHash = ethers.keccak256(expectedPayload);
+
+    await expect(factoryTx)
+      .to.emit(contract, 'WalletCreated')
+      .withArgs(expectedWalletAddress, sourceAddress);
 
     await expect(factoryTx)
       .to.emit(gatewayMock, 'ContractCall')
@@ -195,5 +196,44 @@ const encodedSignature = utf8Encode.encode(functionSignature);
     expect(tx).to.be.reverted;
   });
 
-  it('should let user trigger contracts through a wallet', async function () {});
+  it('should let user trigger contracts through a wallet', async function () {
+    const walletContract = await ethers.getContractAt(
+      'Wallet',
+      expectedWalletAddress
+    );
+
+    const targets = [contract.target];
+    const payloads = [
+      pack('createVendor(string)', ['string'], [sourceAddress]),
+    ];
+
+    // Call the Factory contract to create a new Wallet
+    const commandId = getCommandId();
+    const payload = abiCoder.encode(
+      ['address[]', 'bytes[]'],
+      [targets, payloads]
+    );
+    const options = {};
+    const payloadHash = ethers.keccak256(payload);
+
+    await approveMessage(
+      commandId,
+      sourceContract,
+      sourceAddress,
+      walletContract.target,
+      payloadHash
+    );
+    const tx = walletContract.execute(
+      commandId,
+      sourceContract,
+      sourceAddress,
+      payload,
+      options
+    );
+
+    const expectedAddress = '0xb0279Db6a2F1E01fbC8483FCCef0Be2bC6299cC3';
+    await expect(tx)
+      .to.emit(contract, 'WalletCreated')
+      .withArgs(expectedAddress, sourceAddress);
+  });
 });
