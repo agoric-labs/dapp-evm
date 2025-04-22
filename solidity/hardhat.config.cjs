@@ -1,6 +1,6 @@
 require('@nomicfoundation/hardhat-toolbox');
 const { config } = require('dotenv');
-const { testnets } =  process.env.CI ? {} : require('./testnets.cjs');
+const { testnets } = process.env.CI ? {} : require('./testnets.cjs');
 
 config();
 
