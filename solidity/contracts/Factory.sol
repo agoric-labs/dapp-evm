@@ -10,24 +10,15 @@ import {StringToAddress, AddressToString} from '@axelar-network/axelar-gmp-sdk-s
 import {Ownable} from './Ownable.sol';
 
 contract Wallet is AxelarExecutable, Ownable {
-    struct Message {
-        string sender;
-        string message;
-    }
-
     struct Call {
         address target;
         bytes data;
     }
 
-    Message public storedMessage; // message received from _execute
-
     constructor(
         address gateway_,
         string memory owner_
-    ) AxelarExecutable(gateway_) Ownable(owner_) {
-        storedMessage = Message('s', 'f');
-    }
+    ) AxelarExecutable(gateway_) Ownable(owner_) {}
 
     function _execute(
         string calldata sourceChain,
@@ -61,7 +52,6 @@ contract Wallet is AxelarExecutable, Ownable {
 
         require(amount > 0, 'Deposit amount must be greater than zero');
         address tokenAddress = gateway.tokenAddresses(tokenSymbol);
-        storedMessage = Message(tokenSymbol, 'f');
 
         IERC20(tokenAddress).transfer(address(this), amount); // Transfer tokens from user
         IERC20(tokenAddress).approve(stakingAddress, amount); // Approve Aave Pool
@@ -77,12 +67,6 @@ contract Factory is AxelarExecutable {
     address _gateway;
     IAxelarGasService public immutable gasService;
     string public chainName; // name of the chain this contract is deployed to
-
-    struct Message {
-        address sender;
-    }
-
-    Message public storedMessage; // message received from _execute
 
     event WalletCreated(address indexed target, string ownerAddress);
 
@@ -109,7 +93,6 @@ contract Factory is AxelarExecutable {
         string calldata sourceAddress,
         bytes calldata payload
     ) internal override {
-        // storedMessage = Message(sender, message);
         address vendorAddress = createVendor(sourceAddress);
         _send(sourceChain, sourceAddress, vendorAddress);
     }
