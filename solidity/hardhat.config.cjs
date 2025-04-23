@@ -1,5 +1,7 @@
 require('@nomicfoundation/hardhat-toolbox');
 const { config } = require('dotenv');
+const { testnets } = process.env.CI ? {} : require('./testnets.cjs');
+
 config();
 
 /** @type import('hardhat/config').HardhatUserConfig */
@@ -51,7 +53,7 @@ module.exports = {
       url: 'http://127.0.0.1:8545',
       chainId: 31337,
     },
-    ...(process.env.CI ? {} : testnets),
+    ...testnets,
   },
   mocha: {
     timeout: 20000,

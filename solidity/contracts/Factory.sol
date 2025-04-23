@@ -84,6 +84,8 @@ contract Factory is AxelarExecutable {
 
     Message public storedMessage; // message received from _execute
 
+    event WalletCreated(address indexed target, string ownerAddress);
+
     constructor(
         address gateway_,
         address gasReceiver_,
@@ -96,6 +98,9 @@ contract Factory is AxelarExecutable {
 
     function createVendor(string memory owner) public returns (address) {
         address newVendorAddress = address(new Wallet(_gateway, owner));
+
+        emit WalletCreated(newVendorAddress, owner);
+
         return newVendorAddress;
     }
 
