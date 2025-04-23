@@ -363,6 +363,14 @@ test.serial('make contract calls using lca', async (t) => {
   const { wallet, storage } = t.context;
   const { BLD } = t.context.agoricNamesRemotes.brand;
 
+  const contractInvocationData = [
+    {
+      functionSignature: 'createVendor(string)',
+      args: ['ownerAddress'],
+      target: '0x5B34876FFB1656710fb963ecD199C6f173c29267',
+    },
+  ];
+
   await makeEVMTransaction({
     wallet,
     previousOffer,
@@ -373,11 +381,7 @@ test.serial('make contract calls using lca', async (t) => {
         type: 1,
         gasAmount: 20000,
         destinationEVMChain: 'Ethereum',
-        contractInvocationData: {
-          functionSelector: 'createVendor(string)',
-          argType: 'string',
-          argValue: 'ownerAddress',
-        },
+        contractInvocationData,
       },
     ],
     proposal: {
@@ -390,15 +394,7 @@ test.serial('make contract calls using lca', async (t) => {
 
   t.deepEqual(getLogged(), [
     'Inside sendGmp',
-    `Payload: ${JSON.stringify(
-      buildGMPPayload({
-        type: 1,
-        functionSelector: 'createVendor(string)',
-        argType: 'string',
-        argValue: 'ownerAddress',
-        targets: ['0x5B34876FFB1656710fb963ecD199C6f173c29267'],
-      }),
-    )}`,
+    `Payload: ${JSON.stringify(buildGMPPayload(contractInvocationData))}`,
     'Fee object {"amount":"20000","recipient":"axelar1zl3rxpp70lmte2xr6c4lgske2fyuj3hupcsvcd"}',
     'Initiating IBC Transfer...',
     'DENOM of token:ubld',

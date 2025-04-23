@@ -1,8 +1,7 @@
 /**
  * @file utils/gmp.js GMP payload construction utilities
  */
-import { encode } from '@findeth/abi';
-import sha3 from 'js-sha3';
+import { encodeFunctionData, encodeAbiParameters, hexToBytes } from 'viem';
 
 export const GMPMessageType = {
   MESSAGE_ONLY: 1,
@@ -17,64 +16,73 @@ export const gmpAddresses = {
   OSMOSIS_RECEIVER: 'osmo1yh3ra8eage5xtr9a3m5utg6mx0pmqreytudaqj',
 };
 
-export const uint8ArrayToHex = (uint8Array) => {
-  return `0x${Array.from(uint8Array)
-    .map((byte) => byte.toString(16).padStart(2, '0'))
-    .join('')}`;
+/**
+ * @typedef {Object} ContractCall
+ * @property {string} target - The target contract address.
+ * @property {string} functionSignature - The function signature (e.g., "transfer(address,uint256)").
+ * @property {Array<*>} args - The arguments to pass to the function.
+ */
+
+/**
+ * @typedef {Object} AbiEncodedContractCall
+ * @property {string} target - The target contract address (same as input).
+ * @property {string} data - ABI-encoded function call data.
+ */
+
+/**
+ * Constructs a contract call object with ABI encoding.
+ * @param {ContractCall} data - The data for the contract call.
+ * @returns {AbiEncodedContractCall} The encoded contract call object.
+ */
+export const constructContractCall = ({ target, functionSignature, args }) => {
+  const [name, paramsRaw] = functionSignature.split('(');
+  const params = paramsRaw.replace(')', '').split(',').filter(Boolean);
+
+  return {
+    target,
+    data: encodeFunctionData({
+      abi: [
+        {
+          type: 'function',
+          name,
+          inputs: params.map((type, i) => ({ type, name: `arg${i}` })),
+        },
+      ],
+      functionName: name,
+      args,
+    }),
+  };
 };
 
-export const encodeCallData = (functionSignature, paramTypes, params) => {
-  const functionHash = sha3.keccak256.digest(functionSignature);
+/**
+ * Builds a GMP payload from an array of contract calls.
+ *
+ * @param {Array<ContractCall>} contractCalls - Array of contract call objects.
+ * @returns {{ payload: Array<AbiEncodedContractCall>, totalCalls: number }} The GMP payload object.
+ */
+export const buildGMPPayload = (contractCalls) => {
+  let abiEncodedContractCalls = [];
+  for (let call of contractCalls) {
+    const { target, functionSignature, args } = call;
+    abiEncodedContractCalls.push(
+      constructContractCall({ target, functionSignature, args }),
+    );
+  }
 
-  return uint8ArrayToHex(
-    Uint8Array.from([
-      ...Uint8Array.from(functionHash.slice(0, 4)),
-      ...encode(paramTypes, params),
-    ]),
+  const abiEncodedData = encodeAbiParameters(
+    [
+      {
+        type: 'tuple[]',
+        name: 'calls',
+        components: [
+          { name: 'target', type: 'address' },
+          { name: 'data', type: 'bytes' },
+        ],
+      },
+      { type: 'uint256', name: 'totalCalls' },
+    ],
+    [abiEncodedContractCalls, abiEncodedContractCalls.length],
   );
-};
 
-/**
- * Builds a GMP payload for contract invocation
- *
- * @param {object} params Contract invocation parameters
- * @param {number} params.type GMP message type
- * @param {array} params.targets Target contract address
- * @param {string} params.functionSelector
- * @param {string} params.argType
- * @param {string} params.argValue
- * @returns {number[] | null} Encoded payload as number array, or null for a
- *   pure token transfer
- */
-export const buildGMPPayload = ({
-  type,
-  targets,
-  functionSelector,
-  argType,
-  argValue,
-}) => {
-  if (type === GMPMessageType.TOKEN_ONLY) {
-    return null;
-  }
-
-  const data = [encodeCallData(functionSelector, [argType], [argValue])];
-  return Array.from(encode(['address[]', 'bytes[]'], [targets, data]));
-};
-
-/**
- * Converts a hex string to a Uint8Array
- *
- * @param {string} hexString The hex string to convert
- * @returns {Uint8Array} The resulting Uint8Array
- */
-export const hexToUint8Array = (hexString) => {
-  if (hexString.startsWith('0x')) {
-    hexString = hexString.slice(2);
-  }
-  const length = hexString.length / 2;
-  const uint8Array = new Uint8Array(length);
-  for (let i = 0; i < length; i++) {
-    uint8Array[i] = parseInt(hexString.substr(i * 2, 2), 16);
-  }
-  return uint8Array;
+  return Array.from(hexToBytes(abiEncodedData));
 };
