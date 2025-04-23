@@ -80,11 +80,12 @@ export const MakeAccount = () => {
       },
     };
 
+    const factoryContractAddress = '0xef8651dD30cF990A1e831224f2E0996023163A81';
     const contractInvocationData = [
       {
         functionSignature: 'createVendor(string)',
         args: ['ownerAddress'],
-        target: '0x5B34876FFB1656710fb963ecD199C6f173c29267',
+        target: factoryContractAddress,
       },
     ];
 
@@ -98,7 +99,7 @@ export const MakeAccount = () => {
           'sendGmp',
           [
             {
-              destinationAddress: '0x5B34876FFB1656710fb963ecD199C6f173c29267',
+              destinationAddress: factoryContractAddress,
               type: 1,
               gasAmount: 20000,
               destinationEVMChain: 'Ethereum',

@@ -84,11 +84,10 @@ export const createAndMonitorLCA = async (
 
   await zoeTools.localTransfer(seat, localAccount, give);
 
-  const WalletFactoryContractAddress =
-    '0x5B34876FFB1656710fb963ecD199C6f173c29267';
+  const factoryContractAddress = '0xef8651dD30cF990A1e831224f2E0996023163A81';
   const memo = {
     destination_chain: 'Ethereum',
-    destination_address: WalletFactoryContractAddress,
+    destination_address: factoryContractAddress,
     payload: [],
     type: GMPMessageType.MESSAGE_ONLY,
     fee: {
