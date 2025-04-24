@@ -394,8 +394,35 @@ describe('CallContractWithToken', function () {
 
     // Call the Factory contract to create a new Wallet
     const commandId = getCommandId();
-    const payload = abiCoder.encode(['address'], [stakingContract.target]);
     const options = {};
+
+    const abiEncodedContractCalls = [
+      constructContractCall({
+        target: usdcContract.target,
+        functionSignature: 'approve(address,uint256)',
+        args: [stakingContract.target, 100],
+      }),
+      constructContractCall({
+        target: stakingContract.target,
+        functionSignature: 'stake(uint256)',
+        args: [100],
+      }),
+    ];
+
+    const payload = encodeAbiParameters(
+      [
+        {
+          type: 'tuple[]',
+          name: 'calls',
+          components: [
+            { name: 'target', type: 'address' },
+            { name: 'data', type: 'bytes' },
+          ],
+        },
+        { type: 'uint256', name: 'totalCalls' },
+      ],
+      [abiEncodedContractCalls, abiEncodedContractCalls.length],
+    );
     const payloadHash = ethers.keccak256(payload);
 
     await approveMessageWithToken(
@@ -408,15 +435,23 @@ describe('CallContractWithToken', function () {
       100,
     );
 
-    const initialStakedBalance = await stakingContract.balanceOf(
+    const initialStakeTokenInWallet = await stakingContract.balanceOf(
       expectedWalletAddress,
     );
-    const initialUsdcBalance = await usdcContract.balanceOf(
+    const initialUsdcInWallet = await usdcContract.balanceOf(
+      expectedWalletAddress,
+    );
+    const initialStakeTokenInStaker = await stakingContract.balanceOf(
+      stakingContract.target,
+    );
+    const initialUsdcInStaker = await usdcContract.balanceOf(
       stakingContract.target,
     );
 
-    expect(initialStakedBalance.toString()).to.equal('0');
-    expect(initialUsdcBalance.toString()).to.equal('0');
+    expect(initialStakeTokenInWallet.toString()).to.equal('0');
+    expect(initialUsdcInWallet.toString()).to.equal('0');
+    expect(initialStakeTokenInStaker.toString()).to.equal('0');
+    expect(initialUsdcInStaker.toString()).to.equal('0');
 
     const tx = walletContract.executeWithToken(
       commandId,
@@ -429,14 +464,21 @@ describe('CallContractWithToken', function () {
     );
     await tx;
 
-    const finalStakedBalance = await stakingContract.balanceOf(
+    const finalStakeTokenInWallet = await stakingContract.balanceOf(
       expectedWalletAddress,
     );
-    const finalUsdcBalance = await usdcContract.balanceOf(
+    const finalUsdcInWallet = await usdcContract.balanceOf(
+      expectedWalletAddress,
+    );
+    const finalStakeTokenInStaker = await stakingContract.balanceOf(
       stakingContract.target,
     );
-
-    expect(finalStakedBalance.toString()).to.equal('100');
-    expect(finalUsdcBalance.toString()).to.equal('100');
+    const finalUsdcInStaker = await usdcContract.balanceOf(
+      stakingContract.target,
+    );
+    expect(finalStakeTokenInWallet.toString()).to.equal('100');
+    expect(finalUsdcInWallet.toString()).to.equal('0');
+    expect(finalStakeTokenInStaker.toString()).to.equal('0');
+    expect(finalUsdcInStaker.toString()).to.equal('100');
   });
 });
