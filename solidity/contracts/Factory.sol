@@ -1,6 +1,6 @@
 // Factory Contract
 // SPDX-License-Identifier: MIT
-pragma solidity ^0.8.20;
+pragma solidity ^0.8.0;
 
 import {AxelarExecutable} from '@axelar-network/axelar-gmp-sdk-solidity/contracts/executable/AxelarExecutable.sol';
 import {IAxelarGasService} from '@axelar-network/axelar-gmp-sdk-solidity/contracts/interfaces/IAxelarGasService.sol';
@@ -9,12 +9,23 @@ import {IERC20} from '@axelar-network/axelar-gmp-sdk-solidity/contracts/interfac
 import {StringToAddress, AddressToString} from '@axelar-network/axelar-gmp-sdk-solidity/contracts/libs/AddressString.sol';
 import {Ownable} from './Ownable.sol';
 
-contract Wallet is AxelarExecutable, Ownable {
-    struct Call {
-        address target;
-        bytes data;
-    }
+struct CallResult {
+    bool success;
+    bytes result;
+}
 
+struct AgoricResponse {
+    // false if this is a smart wallet creation, true if it's a contract call
+    bool isContractCallResult;
+    CallResult[] data;
+}
+
+struct CallParams {
+    address target;
+    bytes data;
+}
+
+contract Wallet is AxelarExecutable, Ownable {
     IAxelarGasService public gasService;
 
     constructor(
@@ -27,21 +38,18 @@ contract Wallet is AxelarExecutable, Ownable {
 
     function _multicall(
         bytes calldata payload
-    ) internal returns (bytes[] memory) {
-        (Call[] memory calls, uint256 totalCalls) = abi.decode(
-            payload,
-            (Call[], uint256)
-        );
-        require(calls.length == totalCalls, 'Payload length mismatch');
+    ) internal returns (CallResult[] memory) {
+        CallParams[] memory calls = abi.decode(payload, (CallParams[]));
+        require(calls.length == 0, 'Payload is empty');
 
-        bytes[] memory results = new bytes[](calls.length);
+        CallResult[] memory results = new CallResult[](calls.length);
 
         for (uint256 i = 0; i < calls.length; i++) {
             (bool success, bytes memory result) = calls[i].target.call(
                 calls[i].data
             );
             require(success, 'Contract call failed');
-            results[i] = result;
+            results[i] = CallResult(success, result);
         }
 
         return results;
@@ -52,11 +60,9 @@ contract Wallet is AxelarExecutable, Ownable {
         string calldata sourceAddress,
         bytes calldata payload
     ) internal override onlyOwner(sourceAddress) {
-        bytes[] memory results = _multicall(payload);
-
         bytes memory responsePayload = abi.encodePacked(
             bytes4(0x00000000),
-            abi.encode(results)
+            abi.encode(AgoricResponse(true, _multicall(payload)))
         );
 
         _send(sourceChain, sourceAddress, responsePayload);
@@ -95,7 +101,7 @@ contract Factory is AxelarExecutable {
 
     address _gateway;
     IAxelarGasService public immutable gasService;
-    string public chainName; // name of the chain this contract is deployed to
+    string public chainName;
 
     event WalletCreated(address indexed target, string ownerAddress);
 
@@ -123,10 +129,13 @@ contract Factory is AxelarExecutable {
         bytes calldata /*payload*/
     ) internal override {
         address vendorAddress = createVendor(sourceAddress);
+        CallResult[] memory results = new CallResult[](1);
+
+        results[0] = CallResult(true, abi.encode(vendorAddress));
 
         bytes memory msgPayload = abi.encodePacked(
             bytes4(0x00000000),
-            abi.encode(vendorAddress)
+            abi.encode(AgoricResponse(false, results))
         );
         _send(sourceChain, sourceAddress, msgPayload);
     }
