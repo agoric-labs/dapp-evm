@@ -25,11 +25,9 @@ contract Wallet is AxelarExecutable, Ownable {
         gasService = IAxelarGasService(gasReceiver_);
     }
 
-    function _execute(
-        string calldata sourceChain,
-        string calldata sourceAddress,
+    function _multicall(
         bytes calldata payload
-    ) internal override onlyOwner(sourceAddress) {
+    ) internal returns (bytes[] memory) {
         (Call[] memory calls, uint256 totalCalls) = abi.decode(
             payload,
             (Call[], uint256)
@@ -46,6 +44,16 @@ contract Wallet is AxelarExecutable, Ownable {
             results[i] = result;
         }
 
+        return results;
+    }
+
+    function _execute(
+        string calldata sourceChain,
+        string calldata sourceAddress,
+        bytes calldata payload
+    ) internal override onlyOwner(sourceAddress) {
+        bytes[] memory results = _multicall(payload);
+
         bytes memory responsePayload = abi.encodePacked(
             bytes4(0x00000000),
             abi.encode(results)
@@ -55,25 +63,13 @@ contract Wallet is AxelarExecutable, Ownable {
     }
 
     function _executeWithToken(
-        string calldata sourceChain,
-        string calldata sourceAddress,
+        string calldata /*sourceChain*/,
+        string calldata /*sourceAddress*/,
         bytes calldata payload,
-        string calldata tokenSymbol,
-        uint256 amount
+        string calldata /*tokenSymbol*/,
+        uint256 /*amount*/
     ) internal override {
-        // Decode the payload: expect two arrays of equal length.
-        // (address[] memory targets, bytes[] memory callDatas) = abi.decode(payload, (address[], bytes[]));
-        // require(targets.length == callDatas.length, "Payload length mismatch");
-
-        address stakingAddress = abi.decode(payload, (address));
-
-        require(amount > 0, 'Deposit amount must be greater than zero');
-        address tokenAddress = gateway.tokenAddresses(tokenSymbol);
-
-        IERC20(tokenAddress).transfer(address(this), amount); // Transfer tokens from user
-        IERC20(tokenAddress).approve(stakingAddress, amount); // Approve Aave Pool
-
-        StakingContract(stakingAddress).stake(amount); // Deposit into Aave
+        _multicall(payload);
     }
 
     function _send(
@@ -124,7 +120,7 @@ contract Factory is AxelarExecutable {
     function _execute(
         string calldata sourceChain,
         string calldata sourceAddress,
-        bytes calldata payload
+        bytes calldata /*payload*/
     ) internal override {
         address vendorAddress = createVendor(sourceAddress);
 
