@@ -157,7 +157,7 @@ export const prepareEvmAccountKit = (
               JSON.stringify({ isContractCallResult, data }),
             );
 
-            if (isContractCallResult) {
+            if (!this.state.evmAccountAddress) {
               trace('Setting latestMessage:', data);
               this.state.latestMessage = harden([...data]);
             } else {
@@ -199,7 +199,7 @@ export const prepareEvmAccountKit = (
           return this.state.evmAccountAddress;
         },
         async getLatestMessage() {
-          return this.state.latestMessage;
+          return JSON.stringify(this.state.latestMessage);
         },
         /**
          * Sends tokens from the local account to a specified Cosmos chain

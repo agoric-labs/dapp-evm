@@ -7,6 +7,7 @@ import {
   copyOfferFileToContainer,
   writeOfferToFile,
   executeWalletAction,
+  validateEvmAddress,
 } from './utils.mjs';
 
 const CONTAINER = 'agoric';
@@ -104,8 +105,13 @@ try {
   const offerData = await fetchFromVStorage(vStorageUrl);
   log(`Offer data received: ${JSON.stringify(offerData)}`);
 
-  const latestMessage = offerData.status.result;
-  if (latestMessage && latestMessage !== '#undefined') {
+  const latestMessage = JSON.parse(offerData.status.result);
+  if (
+    Array.isArray(latestMessage) &&
+    latestMessage.length > 0 &&
+    latestMessage[0]?.success === true &&
+    validateEvmAddress(latestMessage[0]?.result)
+  ) {
     log('Latest message is valid:', latestMessage);
   } else {
     throw new Error(`Latest message is invalid: ${latestMessage}`);

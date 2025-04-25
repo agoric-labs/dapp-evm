@@ -142,3 +142,9 @@ export const executeWalletAction = async ({
     stdio: 'inherit',
   });
 };
+
+export const validateEvmAddress = (address) => {
+  if (typeof address !== 'string' || !/^0x[a-fA-F0-9]{40}$/.test(address)) {
+    throw new Error(`Invalid EVM wallet address: ${address}`);
+  }
+};

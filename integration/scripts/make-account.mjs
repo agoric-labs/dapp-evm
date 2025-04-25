@@ -7,6 +7,7 @@ import {
   copyOfferFileToContainer,
   writeOfferToFile,
   executeWalletAction,
+  validateEvmAddress,
 } from './utils.mjs';
 
 const CONTAINER = 'agoric';
@@ -16,12 +17,6 @@ const FROM_ADDRESS = 'agoric1rwwley550k9mmk6uq6mm6z4udrg8kyuyvfszjk';
 const vStorageUrl = `http://localhost/agoric-lcd/agoric/vstorage/data/published.wallet.${FROM_ADDRESS}`;
 const { makeAccount, waitInSeconds } = process.env;
 const { log, error } = console;
-
-const validateEvmAddress = (address) => {
-  if (typeof address !== 'string' || !/^0x[a-fA-F0-9]{40}$/.test(address)) {
-    throw new Error(`Invalid EVM wallet address: ${address}`);
-  }
-};
 
 try {
   if (waitInSeconds) {
