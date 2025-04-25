@@ -3,13 +3,14 @@ import { buildVTransferEvent } from '@agoric/orchestration/tools/ibc-mocks.js';
 import { makeTestAddress } from '@agoric/orchestration/tools/make-test-address.js';
 import { BridgeId } from '@agoric/internal';
 import fetchedChainInfo from './utils/fetched-chain-info.js';
-import { defaultAbiCoder } from '@ethersproject/abi';
 import { eventLoopIteration } from '@agoric/internal/src/testing-utils.js';
 import type { ContinuingInvitationSpec } from '@agoric/smart-wallet/src/invitations.js';
 import type { ExecutionContext, TestFn } from 'ava';
 import { makeWalletFactoryContext } from './utils/walletFactory.js';
 import type { SmartWalletDriver } from './utils/drivers.js';
 import { buildGMPPayload } from '../../contract/utils/gmp.js';
+import { makeReceiveUpCallPayload } from './utils/makeReceiveUpCallPayload.js';
+import { encodeAbiParameters } from 'viem';
 
 type MakeEVMTransactionParams = {
   wallet: SmartWalletDriver;
@@ -224,12 +225,10 @@ test.serial('receiveUpCall test', async (t) => {
     counterPartyChannelId: axelarToAgoricChannel,
   } = fetchedChainInfo.agoric.connections.axelar.transferChannel;
 
-  const payload = defaultAbiCoder.encode(
-    ['address'],
-    ['0x20E68F6c276AC6E297aC46c84Ab260928276691D'],
+  const encodedAddress = encodeAbiParameters(
+    [{ type: 'address' }],
+    ['0x126cf3AC9ea12794Ff50f56727C7C66E26D9C092'],
   );
-
-  const base64Payload = Buffer.from(payload.slice(2), 'hex').toString('base64');
 
   await runInbound(
     BridgeId.VTRANSFER,
@@ -245,7 +244,15 @@ test.serial('receiveUpCall test', async (t) => {
       memo: JSON.stringify({
         source_chain: 'Ethereum',
         source_address: '0x19e71e7eE5c2b13eF6bd52b9E3b437bdCc7d43c8',
-        payload: base64Payload,
+        payload: makeReceiveUpCallPayload({
+          isContractCallResult: false,
+          data: [
+            {
+              success: true,
+              result: encodedAddress,
+            },
+          ],
+        }),
         type: 1,
       } satisfies AxelarGmpMemo),
     }),

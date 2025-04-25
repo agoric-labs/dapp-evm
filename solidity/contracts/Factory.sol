@@ -40,7 +40,6 @@ contract Wallet is AxelarExecutable, Ownable {
         bytes calldata payload
     ) internal returns (CallResult[] memory) {
         CallParams[] memory calls = abi.decode(payload, (CallParams[]));
-        require(calls.length == 0, 'Payload is empty');
 
         CallResult[] memory results = new CallResult[](calls.length);
 
