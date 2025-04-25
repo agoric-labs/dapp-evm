@@ -10,7 +10,8 @@
     "check-axelar-gmp": "vStorageUrl=http://localhost/agoric-lcd/agoric/vstorage/data/published.agoricNames.instance valueToFind=axelarGmp waitInSeconds=30 node scripts/check-vstorage.mjs",
     "make-account": "makeAccount=true node scripts/make-account.mjs",
     "evm-address": "node scripts/make-account.mjs",
-    "send-gmp": "node scripts/gmp-via-lca.mjs"
+    "send-gmp": "node scripts/gmp-via-lca.mjs",
+    "multicall": "node scripts/multicall.mjs"
   },
   "devDependencies": {
     "@agoric/client-utils": "^0.2.0-u19.2",
@@ -21,5 +22,8 @@
   "keywords": [],
   "author": "",
   "license": "ISC",
-  "description": ""
+  "description": "",
+  "dependencies": {
+    "viem": "^2.28.0"
+  }
 }

@@ -1,7 +1,13 @@
 // @ts-check
 const { expect } = require('chai');
 const { ethers, network } = require('hardhat');
-const { encodeFunctionData, encodeAbiParameters } = require('viem');
+const {
+  encodeAbiParameters,
+  keccak256,
+  toBytes,
+  stringToHex,
+} = require('viem');
+const { constructContractCall } = require('./utils.cjs');
 
 const abiCoder = new ethers.AbiCoder();
 
@@ -9,7 +15,6 @@ describe('CallContractWithToken', function () {
   let contract,
     owner,
     addr1,
-    addr2,
     auth,
     gasServiceMock,
     gatewayMock,
@@ -34,7 +39,7 @@ describe('CallContractWithToken', function () {
       ['string', 'string', 'address', 'bytes32'],
       [from, sourceAddress, targetAddress, payloadHash],
     );
-    const data = ethers.getBytes(
+    const data = toBytes(
       abiCoder.encode(
         ['uint256', 'bytes32[]', 'string[]', 'bytes[]'],
         [
@@ -46,9 +51,7 @@ describe('CallContractWithToken', function () {
       ),
     );
     const wallet = owner;
-    const signature = await wallet.signMessage(
-      ethers.getBytes(ethers.keccak256(data)),
-    );
+    const signature = await wallet.signMessage(toBytes(keccak256(data)));
     const signData = abiCoder.encode(
       ['address[]', 'uint256[]', 'uint256', 'bytes[]'],
       [[wallet.address], [1], 1, [signature]],
@@ -80,7 +83,7 @@ describe('CallContractWithToken', function () {
         amount,
       ],
     );
-    const data = ethers.getBytes(
+    const data = toBytes(
       abiCoder.encode(
         ['uint256', 'bytes32[]', 'string[]', 'bytes[]'],
         [
@@ -92,9 +95,7 @@ describe('CallContractWithToken', function () {
       ),
     );
     const wallet = owner;
-    const signature = await wallet.signMessage(
-      ethers.getBytes(ethers.keccak256(data)),
-    );
+    const signature = await wallet.signMessage(toBytes(keccak256(data)));
     const signData = abiCoder.encode(
       ['address[]', 'uint256[]', 'uint256', 'bytes[]'],
       [[wallet.address], [1], 1, [signature]],
@@ -119,16 +120,15 @@ describe('CallContractWithToken', function () {
       ['string', 'string', 'uint8', 'uint256', 'address', 'uint256'],
       [name, symbol, decimals, cap, tokenAddress, mintLimit],
     );
-    const data = ethers.getBytes(
+
+    const data = toBytes(
       abiCoder.encode(
         ['uint256', 'bytes32[]', 'string[]', 'bytes[]'],
         [network.config.chainId, [commandId], ['deployToken'], [params]],
       ),
     );
     const wallet = owner;
-    const signature = await wallet.signMessage(
-      ethers.getBytes(ethers.keccak256(data)),
-    );
+    const signature = await wallet.signMessage(toBytes(keccak256(data)));
     const signData = abiCoder.encode(
       ['address[]', 'uint256[]', 'uint256', 'bytes[]'],
       [[wallet.address], [1], 1, [signature]],
@@ -142,35 +142,9 @@ describe('CallContractWithToken', function () {
 
   let commandIdCounter = 1;
   const getCommandId = () => {
-    const commandId = ethers.id(String(commandIdCounter));
+    const commandId = keccak256(stringToHex(String(commandIdCounter)));
     commandIdCounter++;
     return commandId;
-  };
-
-  function encodeVersionedPayload(version, payload) {
-    const { zeroPadValue, hexlify, getBytes } = ethers;
-    const versionHex = zeroPadValue(hexlify(version), 4);
-    return getBytes(versionHex.concat(payload.substring(2)));
-  }
-
-  const constructContractCall = ({ target, functionSignature, args }) => {
-    const [name, paramsRaw] = functionSignature.split('(');
-    const params = paramsRaw.replace(')', '').split(',').filter(Boolean);
-
-    return {
-      target,
-      data: encodeFunctionData({
-        abi: [
-          {
-            type: 'function',
-            name,
-            inputs: params.map((type, i) => ({ type, name: `arg${i}` })),
-          },
-        ],
-        functionName: name,
-        args,
-      }),
-    };
   };
 
   before(async function () {
@@ -233,7 +207,7 @@ describe('CallContractWithToken', function () {
       [walletName, walletOwner],
     );
     const options = {};
-    const payloadHash = ethers.keccak256(payload);
+    const payloadHash = keccak256(payload);
     await approveMessage(
       commandId,
       sourceContract,
@@ -249,21 +223,33 @@ describe('CallContractWithToken', function () {
       options,
     );
   });
-  const pack = (functionSignature, paramTypes, params) => {
-    let utf8Encode = new TextEncoder();
-    const encodedSignature = utf8Encode.encode(functionSignature);
-    const functionHash = ethers.keccak256(encodedSignature).slice(2, 10);
-    const encodedParams = abiCoder.encode(paramTypes, params).slice(2);
-
-    return `0x${functionHash}${encodedParams}`;
-  };
-
   it('should create a new Wallet object using the Factory contract', async function () {
-    const expectedPayload = encodeVersionedPayload(
-      '0x00',
-      abiCoder.encode(['address'], [expectedWalletAddress]),
+    const encodedAddress = abiCoder.encode(
+      ['address'],
+      [expectedWalletAddress],
     );
-    const expectedPayloadHash = ethers.keccak256(expectedPayload);
+
+    const agoricResponseEncoded = abiCoder.encode(
+      ['tuple(bool processed, tuple(bool success, bytes data)[] results)'],
+      [
+        {
+          processed: false,
+          results: [
+            {
+              success: true,
+              data: encodedAddress,
+            },
+          ],
+        },
+      ],
+    );
+
+    const expectedPayload = ethers.solidityPacked(
+      ['bytes4', 'bytes'],
+      ['0x00000000', agoricResponseEncoded],
+    );
+
+    const expectedPayloadHash = keccak256(expectedPayload);
 
     await expect(factoryTx)
       .to.emit(contract, 'WalletCreated')
@@ -306,12 +292,11 @@ describe('CallContractWithToken', function () {
             { name: 'data', type: 'bytes' },
           ],
         },
-        { type: 'uint256', name: 'totalCalls' },
       ],
-      [abiEncodedContractCalls, abiEncodedContractCalls.length],
+      [abiEncodedContractCalls],
     );
     const options = {};
-    const payloadHash = ethers.keccak256(payload);
+    const payloadHash = keccak256(payload);
 
     const unexpectedAddress = '0xNotTheCorrectAddress';
 
@@ -358,12 +343,11 @@ describe('CallContractWithToken', function () {
             { name: 'data', type: 'bytes' },
           ],
         },
-        { type: 'uint256', name: 'totalCalls' },
       ],
-      [abiEncodedContractCalls, abiEncodedContractCalls.length],
+      [abiEncodedContractCalls],
     );
     const options = {};
-    const payloadHash = ethers.keccak256(payload);
+    const payloadHash = keccak256(payload);
 
     await approveMessage(
       commandId,
@@ -419,11 +403,10 @@ describe('CallContractWithToken', function () {
             { name: 'data', type: 'bytes' },
           ],
         },
-        { type: 'uint256', name: 'totalCalls' },
       ],
-      [abiEncodedContractCalls, abiEncodedContractCalls.length],
+      [abiEncodedContractCalls],
     );
-    const payloadHash = ethers.keccak256(payload);
+    const payloadHash = keccak256(payload);
 
     await approveMessageWithToken(
       commandId,
