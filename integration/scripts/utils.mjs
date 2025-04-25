@@ -148,3 +148,20 @@ export const validateEvmAddress = (address) => {
     throw new Error(`Invalid EVM wallet address: ${address}`);
   }
 };
+
+export const processWalletOffer = async ({
+  offer,
+  OFFER_FILE,
+  CONTAINER,
+  CONTAINER_PATH,
+  FROM_ADDRESS,
+}) => {
+  console.log('Writing offer to file...');
+  await writeOfferToFile({ offer, OFFER_FILE });
+
+  console.log('Copying offer file to container...');
+  await copyOfferFileToContainer({ OFFER_FILE, CONTAINER, CONTAINER_PATH });
+
+  console.log('Executing wallet action...');
+  await executeWalletAction({ CONTAINER, CONTAINER_PATH, FROM_ADDRESS });
+};

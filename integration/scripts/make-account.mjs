@@ -4,9 +4,7 @@ import {
   prepareOffer,
   fetchFromVStorage,
   wait,
-  copyOfferFileToContainer,
-  writeOfferToFile,
-  executeWalletAction,
+  processWalletOffer,
   validateEvmAddress,
 } from './utils.mjs';
 
@@ -36,18 +34,9 @@ try {
       source: 'contract',
     });
 
-    log('Writing offer to file...');
-    await writeOfferToFile({ offer, OFFER_FILE });
-
-    log('Copying offer file to container...');
-    await copyOfferFileToContainer({
+    await processWalletOffer({
+      offer,
       OFFER_FILE,
-      CONTAINER,
-      CONTAINER_PATH,
-    });
-
-    log('Executing wallet action...');
-    await executeWalletAction({
       CONTAINER,
       CONTAINER_PATH,
       FROM_ADDRESS,
@@ -77,14 +66,13 @@ try {
       previousOffer,
     });
 
-    log('Writing offer to file...');
-    await writeOfferToFile({ offer, OFFER_FILE });
-
-    log('Copying offer file to container...');
-    await copyOfferFileToContainer({ OFFER_FILE, CONTAINER, CONTAINER_PATH });
-
-    log('Executing wallet action...');
-    await executeWalletAction({ CONTAINER, CONTAINER_PATH, FROM_ADDRESS });
+    await processWalletOffer({
+      offer,
+      OFFER_FILE,
+      CONTAINER,
+      CONTAINER_PATH,
+      FROM_ADDRESS,
+    });
 
     log('Waiting 30 seconds for offer result...');
     await wait(30);

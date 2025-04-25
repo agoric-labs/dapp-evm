@@ -15,7 +15,6 @@ describe('CallContractWithToken', function () {
   let contract,
     owner,
     addr1,
-    add2,
     auth,
     gasServiceMock,
     gatewayMock,
@@ -293,9 +292,8 @@ describe('CallContractWithToken', function () {
             { name: 'data', type: 'bytes' },
           ],
         },
-        { type: 'uint256' },
       ],
-      [abiEncodedContractCalls, BigInt(abiEncodedContractCalls.length)],
+      [abiEncodedContractCalls],
     );
     const options = {};
     const payloadHash = keccak256(payload);
@@ -345,9 +343,8 @@ describe('CallContractWithToken', function () {
             { name: 'data', type: 'bytes' },
           ],
         },
-        { type: 'uint256' },
       ],
-      [abiEncodedContractCalls, BigInt(abiEncodedContractCalls.length)],
+      [abiEncodedContractCalls],
     );
     const options = {};
     const payloadHash = keccak256(payload);
@@ -406,9 +403,8 @@ describe('CallContractWithToken', function () {
             { name: 'data', type: 'bytes' },
           ],
         },
-        { type: 'uint256' },
       ],
-      [abiEncodedContractCalls, BigInt(abiEncodedContractCalls.length)],
+      [abiEncodedContractCalls],
     );
     const payloadHash = keccak256(payload);
 

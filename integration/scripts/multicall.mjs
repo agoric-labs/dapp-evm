@@ -5,8 +5,8 @@ import {
   prepareOffer,
   fetchFromVStorage,
   wait,
-  processWalletOffer,
   validateEvmAddress,
+  processWalletOffer,
 } from './utils.mjs';
 import { decodeAbiParameters, parseAbiParameters } from 'viem';
 
@@ -24,33 +24,77 @@ try {
     await wait(waitInSeconds);
   }
 
-  log('--- Send GMP via the LCA ---');
+  log('--- Getting EVM Smart Wallet Address ---');
+
+  const methodName = 'getAddress';
+  const invitationArgs = harden([methodName, []]);
 
   log(`Fetching previous offer from ${vStorageUrl}.current`);
   const { offerToUsedInvitation } = await fetchFromVStorage(
     `${vStorageUrl}.current`,
   );
-
   const previousOffer = offerToUsedInvitation[0][0];
   log(`Previous offer found: ${JSON.stringify(previousOffer)}`);
 
-  log('Preparing GMP send offer...');
-  const factoryContractAddress = '0xef8651dD30cF990A1e831224f2E0996023163A81';
+  log('Preparing offer...');
+  const offer = await prepareOffer({
+    invitationMakerName: 'makeEVMTransactionInvitation',
+    instanceName: 'axelarGmp',
+    emptyProposal: true,
+    source: 'continuing',
+    invitationArgs,
+    previousOffer,
+  });
+
+  await processWalletOffer({
+    offer,
+    OFFER_FILE,
+    CONTAINER,
+    CONTAINER_PATH,
+    FROM_ADDRESS,
+  });
+
+  log('Waiting 30 seconds for offer result...');
+  await wait(30);
+
+  log(`Fetching offer result from ${vStorageUrl}`);
+  const offerData = await fetchFromVStorage(vStorageUrl);
+  log(`Offer data received: ${JSON.stringify(offerData)}`);
+
+  const smartWalletAddress = offerData.status.result;
+  log(`Validating smart wallet address: ${smartWalletAddress}`);
+  validateEvmAddress(smartWalletAddress);
+
+  log(`Smart wallet address: ${smartWalletAddress}`);
+
+  log('--- Preparing MultiCall Offer ---');
+  const multiCallContractAddress = '0x5B34876FFB1656710fb963ecD199C6f173c29267';
   const contractInvocationData = [
     {
-      functionSignature: 'createVendor(string)',
-      args: ['ownerAddress'],
-      target: factoryContractAddress,
+      functionSignature: 'setValue(uint256)',
+      args: [42],
+      target: multiCallContractAddress,
+    },
+    {
+      functionSignature: 'addToValue(uint256)',
+      args: [10],
+      target: multiCallContractAddress,
+    },
+    {
+      functionSignature: 'getValue()',
+      args: [],
+      target: multiCallContractAddress,
     },
   ];
-  const offer = await prepareOffer({
+
+  const multiCallOffer = await prepareOffer({
     invitationMakerName: 'makeEVMTransactionInvitation',
     instanceName: 'axelarGmp',
     invitationArgs: harden([
       'sendGmp',
       [
         {
-          destinationAddress: factoryContractAddress,
+          destinationAddress: smartWalletAddress,
           type: 1,
           gasAmount: 20000,
           destinationEVMChain: 'Ethereum',
@@ -65,27 +109,25 @@ try {
   });
 
   await processWalletOffer({
-    offer,
+    offer: multiCallOffer,
     OFFER_FILE,
     CONTAINER,
     CONTAINER_PATH,
     FROM_ADDRESS,
   });
 
-  log('Waiting 70 seconds for the GMP transaction to process...');
-  await wait(70);
+  log('Waiting 80 seconds for the GMP transaction to process...');
+  await wait(80);
 
-  log('--- See response from the EVM chain ---');
+  log('--- Verify Response from EVM ---');
 
-  log('Preparing offer to get latest message...');
   const latestMessageOffer = await prepareOffer({
     invitationMakerName: 'makeEVMTransactionInvitation',
     instanceName: 'axelarGmp',
+    emptyProposal: true,
     source: 'continuing',
     invitationArgs: harden(['getLatestMessage', []]),
     previousOffer,
-    brandName: 'BLD',
-    amount: 1n,
   });
 
   await processWalletOffer({
@@ -95,26 +137,24 @@ try {
     CONTAINER_PATH,
     FROM_ADDRESS,
   });
-  log('Waiting 30 seconds for message retrieval...');
+
+  log('Waiting 30 seconds for offer result...');
   await wait(30);
 
-  log(`Fetching offer result from ${vStorageUrl}...`);
-  const offerData = await fetchFromVStorage(vStorageUrl);
-  log(`Offer data received: ${JSON.stringify(offerData)}`);
-
-  const latestMessage = JSON.parse(offerData.status.result);
+  log(`Fetching offer result from ${vStorageUrl}`);
+  const latestMessagOfferData = await fetchFromVStorage(vStorageUrl);
+  log(`Offer data received: ${JSON.stringify(latestMessagOfferData)}`);
+  const latestMessage = JSON.parse(latestMessagOfferData.status.result);
 
   if (
     Array.isArray(latestMessage) &&
     latestMessage.length > 0 &&
-    latestMessage[0]?.success === true
+    latestMessage[2]?.success === true &&
+    decodeAbiParameters(
+      parseAbiParameters('uint256'),
+      latestMessage[2].result,
+    )[0] === 52n
   ) {
-    const [decodedAddress] = decodeAbiParameters(
-      parseAbiParameters('address'),
-      latestMessage[0]?.result,
-    );
-    log('Decoded Address:', decodedAddress);
-    validateEvmAddress(decodedAddress);
     log('Latest message is valid:', latestMessage);
   } else {
     throw new Error(`Latest message is invalid: ${latestMessage}`);
