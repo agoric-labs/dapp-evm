@@ -23,39 +23,17 @@ jobs:
         with:
           node-version: '18'
 
-      - name: Install root dependencies
+      - name: Install dependencies
         run: yarn install
 
-      - name: Install dependencies in contract/
-        run: |
-          cd contract
-          yarn install
-
-      - name: Install dependencies in deploy/
-        run: |
-          cd deploy
-          yarn install
-
       - name: Run contract tests
-        run: |
-          cd deploy
-          yarn test
-
-      - name: Install dependencies in solidity/
-        run: |
-          cd solidity
-          yarn install
+        run: cd deploy && yarn test
 
       - name: Build solidity contracts
-        run: |
-          cd solidity
-          CI=true yarn build
+        run: cd solidity && CI=true yarn build
 
       - name: Run tests for solidity contracts
-        run: |
-          cd solidity
-          yarn test
+        run: cd solidity && yarn test
 
       - name: Run lint check
-        run: |
-          yarn lint
+        run: yarn lint

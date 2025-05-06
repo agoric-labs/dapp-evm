@@ -71,11 +71,6 @@ jobs:
           cd packages/axelar-local-dev-cosmos
           npm run start
 
-      - name: Install dependencies in integration/
-        run: |
-          cd integration
-          yarn install
-
       - name: Prepare Env
         run: ./integration/scripts/prepare-env.mjs
 
