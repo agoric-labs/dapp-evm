@@ -1,4 +1,5 @@
 #! /usr/bin/env node
+// @ts-check
 import './lockdown.mjs';
 import { fetchFromVStorage, poll } from './utils.mjs';
 

@@ -1,9 +1,10 @@
 #!/usr/bin/env node
+// @ts-check
 import './lockdown.mjs';
 import {
   prepareOffer,
   fetchFromVStorage,
-  wait,
+  poll,
   processWalletOffer,
   validateEvmAddress,
 } from './utils.mjs';
@@ -13,15 +14,10 @@ const OFFER_FILE = 'offer.json';
 const CONTAINER_PATH = `/usr/src/${OFFER_FILE}`;
 const FROM_ADDRESS = 'agoric1rwwley550k9mmk6uq6mm6z4udrg8kyuyvfszjk';
 const vStorageUrl = `http://localhost/agoric-lcd/agoric/vstorage/data/published.wallet.${FROM_ADDRESS}`;
-const { makeAccount, waitInSeconds } = process.env;
+const { makeAccount } = process.env;
 const { log, error } = console;
 
 try {
-  if (waitInSeconds) {
-    log(`Waiting for ${waitInSeconds} seconds before starting...`);
-    await wait(waitInSeconds);
-  }
-
   if (makeAccount) {
     log('--- Creating and Monitoring LCA ---');
 
@@ -41,8 +37,6 @@ try {
       CONTAINER_PATH,
       FROM_ADDRESS,
     });
-
-    log('--- LCA creation process complete ---');
   } else {
     log('--- Getting EVM Smart Wallet Address ---');
 
@@ -74,18 +68,37 @@ try {
       FROM_ADDRESS,
     });
 
-    log('Waiting 30 seconds for offer result...');
-    await wait(30);
+    const pollIntervalMs = 5000; // 5 seconds
+    const maxWaitMs = 2 * 60 * 1000; // 2 minutes
+    const found = await poll({
+      checkFn: async () => {
+        log(`Fetching offer result from ${vStorageUrl}`);
+        const offerData = await fetchFromVStorage(vStorageUrl);
+        log(`Offer data received: ${JSON.stringify(offerData)}`);
 
-    log(`Fetching offer result from ${vStorageUrl}`);
-    const offerData = await fetchFromVStorage(vStorageUrl);
-    log(`Offer data received: ${JSON.stringify(offerData)}`);
+        let smartWalletAddress;
+        try {
+          smartWalletAddress = JSON.parse(offerData?.status?.result);
+        } catch (err) {
+          log('Failed to parse offerData.status.result as JSON:', err);
+        }
 
-    const smartWalletAddress = offerData.status.result;
-    log(`Validating smart wallet address: ${smartWalletAddress}`);
-    validateEvmAddress(smartWalletAddress);
+        log(`Validating smart wallet address: ${smartWalletAddress}`);
+        validateEvmAddress(smartWalletAddress);
 
-    log(`Smart wallet address: ${smartWalletAddress}`);
+        log(`Smart wallet address: ${smartWalletAddress}`);
+        return true;
+      },
+      pollIntervalMs,
+      maxWaitMs,
+    });
+
+    if (found) {
+      console.log(`✅ Test passed`);
+    } else {
+      console.error(`❌ Test failed`);
+      process.exitCode = 1;
+    }
   }
 } catch (err) {
   error('ERROR:', err.shortMessage || err.message);
