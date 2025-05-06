@@ -7,7 +7,8 @@
  * @import {TypedPattern} from '@agoric/internal';
  * @import {FungibleTokenPacketData} from '@agoric/cosmic-proto/ibc/applications/transfer/v2/packet.js';
  * @import {ZoeTools} from '@agoric/orchestration/src/utils/zoe-tools.js';
- * @import {AxelarGmpIncomingMemo, EvmTapState, ContractCall} from './types'
+ * @import {AxelarGmpIncomingMemo, EvmTapState, ContractCall} from './types';
+ * @import {ZCF, ZCFSeat} from '@agoric/zoe';
  */
 
 /** @typedef {ContractCall} ContractCall */
@@ -18,7 +19,7 @@ import { makeTracer, NonNullish } from '@agoric/internal';
 import { atob, decodeBase64 } from '@endo/base64';
 import { decodeAbiParameters } from 'viem';
 import { Fail } from '@endo/errors';
-import { ChainAddressShape } from '@agoric/orchestration';
+import { CosmosChainAddressShape } from '@agoric/orchestration';
 import { gmpAddresses, buildGMPPayload } from './utils/gmp.js';
 
 const trace = makeTracer('EvmAccountKit');
@@ -41,7 +42,7 @@ harden(InvitationMakerI);
 
 /** @type {TypedPattern<EvmTapState>} */
 const EvmKitStateShape = {
-  localChainAddress: ChainAddressShape,
+  localChainAddress: CosmosChainAddressShape,
   sourceChannel: M.string(),
   remoteDenom: M.string(),
   localDenom: M.string(),
@@ -189,7 +190,7 @@ export const prepareEvmAccountKit = (
          * Sends tokens from the local account to a specified Cosmos chain
          * address.
          *
-         * @param {import('@agoric/orchestration').ChainAddress} toAccount
+         * @param {import('@agoric/orchestration').CosmosChainAddress} toAccount
          * @param {import('@agoric/orchestration').AmountArg} amount
          * @returns {Promise<string>} A success message upon completion.
          */
