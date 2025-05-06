@@ -14,8 +14,8 @@
     "multicall": "node scripts/multicall.mjs"
   },
   "devDependencies": {
-    "@agoric/client-utils": "0.2.0-u19.2",
-    "@agoric/internal": "^0.4.0-u19.2",
+    "@agoric/client-utils": "dev",
+    "@agoric/internal": "dev",
     "execa": "^9.5.2",
     "ses": "^1.12.0"
   },

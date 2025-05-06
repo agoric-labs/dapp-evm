@@ -1,25 +1,32 @@
+/**
+ * @import {Brand} from '@agoric/ertp';
+ * @import {Denom} from '@agoric/orchestration';
+ */
+
 const osmosisData = {
   channelId: 'channel-10170',
   clientId: '07-tendermint-4441',
   connectionId: 'connection-3881',
+  chainId: 'osmosis-1',
 };
 
 const agoricData = {
   channelId: 'channel-0',
   clientId: '07-tendermint-0',
   connectionId: 'connection-0',
+  chainId: 'agoriclocal',
 };
 
 export const chainInfo = JSON.stringify({
   agoric: {
-    chainId: 'agoriclocal',
-    stakingTokens: [
-      {
-        denom: 'ubld',
-      },
-    ],
+    bech32Prefix: 'agoric',
+    chainId: agoricData.chainId,
+    icqEnabled: false,
+    namespace: 'cosmos',
+    reference: agoricData.chainId,
+    stakingTokens: [{ denom: 'ubld' }],
     connections: {
-      'osmo-test-5': {
+      [osmosisData.chainId]: {
         id: agoricData.connectionId,
         client_id: agoricData.clientId,
         counterparty: {
@@ -59,14 +66,14 @@ export const chainInfo = JSON.stringify({
   },
 
   osmosis: {
-    chainId: 'osmo-test-5',
-    stakingTokens: [
-      {
-        denom: 'uosmo',
-      },
-    ],
+    bech32Prefix: 'osmo',
+    chainId: osmosisData.chainId,
+    icqEnabled: true,
+    namespace: 'cosmos',
+    reference: osmosisData.chainId,
+    stakingTokens: [{ denom: 'uosmo' }],
     connections: {
-      agoriclocal: {
+      [agoricData.chainId]: {
         id: osmosisData.connectionId,
         client_id: osmosisData.clientId,
         counterparty: {
@@ -88,12 +95,12 @@ export const chainInfo = JSON.stringify({
   },
 
   axelar: {
+    bech32Prefix: 'axelar',
     chainId: 'axelar',
-    stakingTokens: [
-      {
-        denom: 'uaxl',
-      },
-    ],
+    icqEnabled: true,
+    namespace: 'cosmos',
+    reference: 'axelar',
+    stakingTokens: [{ denom: 'uaxl' }],
     connections: {
       agoriclocal: {
         id: 'connection-0',
