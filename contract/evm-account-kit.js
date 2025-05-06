@@ -4,6 +4,7 @@
  * @import {VTransferIBCEvent} from '@agoric/vats';
  * @import {Vow, VowTools} from '@agoric/vow';
  * @import {Zone} from '@agoric/zone';
+ * @import {TypedPattern} from '@agoric/internal';
  * @import {FungibleTokenPacketData} from '@agoric/cosmic-proto/ibc/applications/transfer/v2/packet.js';
  * @import {ZoeTools} from '@agoric/orchestration/src/utils/zoe-tools.js';
  * @import {AxelarGmpIncomingMemo, EvmTapState, ContractCall} from './types'
@@ -31,11 +32,14 @@ const EVMI = M.interface('holder', {
   sendGmp: M.call(M.any(), M.any()).returns(M.any()),
   fundLCA: M.call(M.any(), M.any()).returns(VowShape),
 });
+harden(EVMI);
 
 const InvitationMakerI = M.interface('invitationMaker', {
   makeEVMTransactionInvitation: M.call(M.string(), M.array()).returns(M.any()),
 });
+harden(InvitationMakerI);
 
+/** @type {TypedPattern<EvmTapState>} */
 const EvmKitStateShape = {
   localChainAddress: ChainAddressShape,
   sourceChannel: M.string(),
