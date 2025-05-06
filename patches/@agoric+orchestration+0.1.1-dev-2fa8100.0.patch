@@ -1,0 +1,11 @@
+diff --git a/node_modules/@agoric/orchestration/tools/make-test-address.js b/node_modules/@agoric/orchestration/tools/make-test-address.js
+index 337eb0f..9bed5f6 100644
+--- a/node_modules/@agoric/orchestration/tools/make-test-address.js
++++ b/node_modules/@agoric/orchestration/tools/make-test-address.js
+@@ -1,5 +1,5 @@
+ // eslint-disable-next-line import/no-extraneous-dependencies
+-import { bech32 } from 'bech32';
++import bech32 from 'bech32';
+ 
+ /**
+  * @import {Bech32Address} from '../src/cosmos-api.ts';

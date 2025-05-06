@@ -14,9 +14,10 @@ import { makeTracer } from '@agoric/internal';
  * @import {OrchestrationPowers, OrchestrationTools} from '@agoric/orchestration/src/utils/start-helper.js';
  * @import {CosmosChainInfo, Denom, DenomDetail} from '@agoric/orchestration';
  * @import {Marshaller, StorageNode} from '@agoric/internal/src/lib-chainStorage.js';
+ * @import {ZCF} from '@agoric/zoe';
  */
 
-const trace = makeTracer('EvmAccountKit');
+const trace = makeTracer('AxelarGmp');
 
 /**
  * Orchestration contract to be wrapped by withOrchestration for Zoe

@@ -12,6 +12,7 @@ import { gmpAddresses, GMPMessageType } from './utils/gmp.js';
  * @import {ChainHub} from '@agoric/orchestration/src/exos/chain-hub.js';
  * @import {Vow} from '@agoric/vow';
  * @import {ZoeTools} from '@agoric/orchestration/src/utils/zoe-tools.js';
+ * @import {ZCFSeat} from '@agoric/zoe';
  */
 
 const trace = makeTracer('EvmFlow');
