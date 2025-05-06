@@ -1,27 +1,28 @@
 # Steps to run
 
-Firstly prepare all parts of dapp-evm by installing dependencies and building
+## 1. Install dependencies and build the monorepo
 
 ```bash
-yarn # install base dependencies
-yarn deps # install dependencies in subdirectories
+yarn # install dependencies
 yarn build # build items in subdirectories
 ```
 
-Secondly start the environment
+## 2. Start the environment
 
 ```bash
 yarn local-env:start # start agoric and axelar chains
 yarn deploy-contracts # deploy contracts on agoric
 ```
 
-Next start the UI for use
+## 3. Start the UI
 
 ```bash
 yarn start:ui
 ```
 
-Next start the relayer. this will boot up an ethereum chain and start relaying between Agoric <=> EVM using Axelar
+## 4. Start the relayer
+
+This will boot up a local Ethereum chain and start relaying between Agoric <=> EVM using Axelar
 
 ```bash
 yarn local-env:relay

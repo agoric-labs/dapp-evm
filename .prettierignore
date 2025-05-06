@@ -8,8 +8,8 @@ eval-register-interchain-bank-assets-plan.json
 eval-register-interchain-bank-assets.js
 
 bundles/
-
 .env
+local-env/agoric-to-axelar-local
 
 # Hardhat files
 evm/cache
