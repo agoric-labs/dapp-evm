@@ -1,24 +1,21 @@
 #! /usr/bin/env node
 import './lockdown.mjs';
-import { fetchFromVStorage, wait } from './utils.mjs';
+import { fetchFromVStorage, poll } from './utils.mjs';
 
-const { vStorageUrl, valueToFind, waitInSeconds } = process.env;
+const { vStorageUrl, valueToFind } = process.env;
 
 try {
-  if (waitInSeconds) {
-    await wait(waitInSeconds);
-  }
+  const pollIntervalMs = 5000; // 5 seconds
+  const maxWaitMs = 2 * 60 * 1000; // 2 minutes
 
-  const data = await fetchFromVStorage(vStorageUrl);
-
-  let found = false;
-
-  for (const val of data) {
-    if (val[0] === valueToFind) {
-      found = true;
-      break;
-    }
-  }
+  const found = await poll(
+    async () => {
+      const data = await fetchFromVStorage(vStorageUrl);
+      return data.some(([val]) => val === valueToFind);
+    },
+    pollIntervalMs,
+    maxWaitMs,
+  );
 
   if (found) {
     console.log(`✅ Test passed: ${valueToFind} was found.`);

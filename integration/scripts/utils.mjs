@@ -165,3 +165,30 @@ export const processWalletOffer = async ({
   console.log('Executing wallet action...');
   await executeWalletAction({ CONTAINER, CONTAINER_PATH, FROM_ADDRESS });
 };
+
+/**
+ * A generic polling function.
+ *
+ * @typedef {Object} pollingParams
+ * @property {() => Promise<boolean>} checkFn - The async function that returns true when the condition is met.
+ * @property {number} intervalMs - Polling interval in milliseconds.
+ * @property {number} timeoutMs - Max wait time in milliseconds.
+ * @returns {Promise<boolean>} - Resolves true if condition met, false if timeout.
+ */
+export const poll = async ({ checkFn, intervalMs, timeoutMs }) => {
+  const start = Date.now();
+
+  while (Date.now() - start < timeoutMs) {
+    try {
+      const result = await checkFn();
+      if (result) return true;
+    } catch (err) {
+      console.error('Polling error:', err);
+    }
+
+    console.log(`Waiting ${intervalMs / 1000} seconds...`);
+    await new Promise((res) => setTimeout(res, intervalMs));
+  }
+
+  return false;
+};
