@@ -6,6 +6,7 @@
     "start:ui": "cd ui && yarn dev",
     "lint": "prettier . --check",
     "lint:fix": "prettier . --write",
+    "test": "yarn workspace deploy test && yarn workspace solidity test",
     "build:solidity": "cd solidity && yarn build",
     "build:deploy": "cd deploy && yarn build",
     "build:local-env": "cd local-env && yarn build",
