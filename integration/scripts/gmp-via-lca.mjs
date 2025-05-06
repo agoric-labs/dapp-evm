@@ -7,6 +7,7 @@ import {
   processWalletOffer,
   validateEvmAddress,
   poll,
+  wait,
 } from './utils.mjs';
 import { decodeAbiParameters, parseAbiParameters } from 'viem';
 
@@ -66,6 +67,10 @@ try {
     FROM_ADDRESS,
   });
 
+  // TODO: remove wait. Figure out how to find offer status
+  log('Waiting 60 seconds for the GMP transaction to process...');
+  await wait(60);
+
   log('--- See response from the EVM chain ---');
 
   log('Preparing offer to get latest message...');
@@ -87,10 +92,10 @@ try {
     FROM_ADDRESS,
   });
 
-  const pollIntervalMs = 5000; // 5 seconds
-  const maxWaitMs = 2 * 60 * 1000; // 2 minutes
+  const pollIntervalMs = 10000; // 5 seconds
+  const maxWaitMs = 2 * 60 * 1000; // 5 minutes
 
-  const found = await poll({
+  const valid = await poll({
     checkFn: async () => {
       log(`Fetching offer result from ${vStorageUrl}...`);
       const offerData = await fetchFromVStorage(vStorageUrl);
@@ -125,7 +130,7 @@ try {
     maxWaitMs,
   });
 
-  if (found) {
+  if (valid) {
     console.log(`✅ Test passed`);
   } else {
     console.error(`❌ Test failed`);

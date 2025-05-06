@@ -70,7 +70,7 @@ try {
 
     const pollIntervalMs = 5000; // 5 seconds
     const maxWaitMs = 2 * 60 * 1000; // 2 minutes
-    const found = await poll({
+    const valid = await poll({
       checkFn: async () => {
         log(`Fetching offer result from ${vStorageUrl}`);
         const offerData = await fetchFromVStorage(vStorageUrl);
@@ -78,7 +78,7 @@ try {
 
         let smartWalletAddress;
         try {
-          smartWalletAddress = JSON.parse(offerData?.status?.result);
+          smartWalletAddress = offerData?.status?.result;
         } catch (err) {
           log('Failed to parse offerData.status.result as JSON:', err);
         }
@@ -93,7 +93,7 @@ try {
       maxWaitMs,
     });
 
-    if (found) {
+    if (valid) {
       console.log(`✅ Test passed`);
     } else {
       console.error(`❌ Test failed`);
