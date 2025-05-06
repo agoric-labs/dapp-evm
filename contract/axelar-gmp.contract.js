@@ -6,6 +6,7 @@ import { withOrchestration } from '@agoric/orchestration/src/utils/start-helper.
 import { registerChainsAndAssets } from '@agoric/orchestration/src/utils/chain-hub-helper.js';
 import * as evmFlows from './evm.flows.js';
 import { prepareEvmAccountKit } from './evm-account-kit.js';
+import { makeTracer } from '@agoric/internal';
 
 /**
  * @import {Remote, Vow} from '@agoric/vow';
@@ -14,6 +15,8 @@ import { prepareEvmAccountKit } from './evm-account-kit.js';
  * @import {CosmosChainInfo, Denom, DenomDetail} from '@agoric/orchestration';
  * @import {Marshaller, StorageNode} from '@agoric/internal/src/lib-chainStorage.js';
  */
+
+const trace = makeTracer('EvmAccountKit');
 
 /**
  * Orchestration contract to be wrapped by withOrchestration for Zoe
@@ -34,15 +37,15 @@ export const contract = async (
   zone,
   { chainHub, orchestrateAll, vowTools, zoeTools },
 ) => {
-  console.log('Inside Contract');
+  trace('Inside Contract');
 
-  console.log('Channel Info Agoric:');
-  console.log(privateArgs.chainInfo.agoric.connections);
+  trace('Channel Info Agoric:');
+  trace(privateArgs.chainInfo.agoric.connections);
 
-  console.log('Channel Info Axelar:');
-  console.log(privateArgs.chainInfo.axelar.connections);
+  trace('Channel Info Axelar:');
+  trace(privateArgs.chainInfo.axelar.connections);
 
-  console.log('Registering Chain and Assets....');
+  trace('Registering Chain and Assets....');
   registerChainsAndAssets(
     chainHub,
     zcf.getTerms().brands,

@@ -20,7 +20,7 @@ import { Fail } from '@endo/errors';
 import { ChainAddressShape } from '@agoric/orchestration';
 import { gmpAddresses, buildGMPPayload } from './utils/gmp.js';
 
-const trace = makeTracer('EvmTap');
+const trace = makeTracer('EvmAccountKit');
 const { entries } = Object;
 
 const EVMI = M.interface('holder', {

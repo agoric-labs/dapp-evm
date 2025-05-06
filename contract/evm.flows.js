@@ -1,6 +1,6 @@
 // @ts-check
 import { Fail, makeError, q } from '@endo/errors';
-import { NonNullish } from '@agoric/internal';
+import { makeTracer, NonNullish } from '@agoric/internal';
 import { denomHash } from '@agoric/orchestration/src/utils/denomHash.js';
 import { gmpAddresses, GMPMessageType } from './utils/gmp.js';
 
@@ -13,6 +13,8 @@ import { gmpAddresses, GMPMessageType } from './utils/gmp.js';
  * @import {Vow} from '@agoric/vow';
  * @import {ZoeTools} from '@agoric/orchestration/src/utils/zoe-tools.js';
  */
+
+const trace = makeTracer('EvmFlow');
 
 /**
  * @satisfies {OrchestrationFlow}
@@ -43,7 +45,7 @@ export const createAndMonitorLCA = async (
   const localAccount = await agoric.makeAccount();
   void log('localAccount created successfully');
   const localChainAddress = await localAccount.getAddress();
-  console.log('Local Chain Address:', localChainAddress);
+  trace('Local Chain Address:', localChainAddress);
 
   const agoricChainId = (await agoric.getChainInfo()).chainId;
   const { transferChannel } = await chainHub.getConnectionInfo(
