@@ -1,7 +1,9 @@
-/**
- * @file utils/gmp.js GMP payload construction utilities
- */
+// @ts-check
 import { encodeFunctionData, encodeAbiParameters, hexToBytes } from 'viem';
+
+/**
+ * @import {ContractCall, AbiEncodedContractCall} from '../types'
+ */
 
 export const GMPMessageType = {
   MESSAGE_ONLY: 1,
@@ -15,19 +17,6 @@ export const gmpAddresses = {
   AXELAR_GAS: 'axelar1zl3rxpp70lmte2xr6c4lgske2fyuj3hupcsvcd',
   OSMOSIS_RECEIVER: 'osmo1yh3ra8eage5xtr9a3m5utg6mx0pmqreytudaqj',
 };
-
-/**
- * @typedef {Object} ContractCall
- * @property {string} target - The target contract address.
- * @property {string} functionSignature - The function signature (e.g., "transfer(address,uint256)").
- * @property {Array<*>} args - The arguments to pass to the function.
- */
-
-/**
- * @typedef {Object} AbiEncodedContractCall
- * @property {string} target - The target contract address (same as input).
- * @property {string} data - ABI-encoded function call data.
- */
 
 /**
  * Constructs a contract call object with ABI encoding.
