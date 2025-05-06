@@ -1,6 +1,15 @@
 // @ts-check
 
-/** @typedef {import('./utils/gmp.js').ContractCall} ContractCall */
+/**
+ * @import {VTransferIBCEvent} from '@agoric/vats';
+ * @import {Vow, VowTools} from '@agoric/vow';
+ * @import {Zone} from '@agoric/zone';
+ * @import {FungibleTokenPacketData} from '@agoric/cosmic-proto/ibc/applications/transfer/v2/packet.js';
+ * @import {ZoeTools} from '@agoric/orchestration/src/utils/zoe-tools.js';
+ * @import {AxelarGmpIncomingMemo, EvmTapState, ContractCall} from './types'
+ */
+
+/** @typedef {ContractCall} ContractCall */
 
 import { M, mustMatch } from '@endo/patterns';
 import { VowShape } from '@agoric/vow';
@@ -13,35 +22,6 @@ import { gmpAddresses, buildGMPPayload } from './utils/gmp.js';
 
 const trace = makeTracer('EvmTap');
 const { entries } = Object;
-
-/**
- * @typedef {Object} AxelarGmpMemo
- * @property {string} source_chain - The name of the source blockchain (e.g., 'ethereum', 'avalanche').
- * @property {string} source_address - The originating address on the source chain.
- * @property {string} payload - The payload being passed in the message, usually a serialized string.
- * @property {1 | 2 | 3} type - The type of message:
- */
-
-/**
- * @import {IBCChannelID, VTransferIBCEvent} from '@agoric/vats';
- * @import {Vow, VowTools} from '@agoric/vow';
- * @import {Zone} from '@agoric/zone';
- * @import {ChainAddress, Denom, OrchestrationAccount} from '@agoric/orchestration';
- * @import {FungibleTokenPacketData} from '@agoric/cosmic-proto/ibc/applications/transfer/v2/packet.js';
- * @import {ZoeTools} from '@agoric/orchestration/src/utils/zoe-tools.js';
- */
-
-/**
- * @typedef {{
- *   localAccount: OrchestrationAccount<{ chainId: 'agoric' }>;
- *   localChainAddress: ChainAddress;
- *   sourceChannel: IBCChannelID;
- *   remoteDenom: Denom;
- *   localDenom: Denom;
- *   assets: any;
- *   remoteChainInfo: any;
- * }} EvmTapState
- */
 
 const EVMI = M.interface('holder', {
   getLocalAddress: M.call().returns(M.any()),
@@ -127,7 +107,7 @@ export const prepareEvmAccountKit = (
           );
 
           trace('receiveUpcall packet data', tx);
-          /** @type {AxelarGmpMemo} */
+          /** @type {AxelarGmpIncomingMemo} */
           const memo = JSON.parse(tx.memo);
 
           if (memo.source_chain === 'Ethereum') {
