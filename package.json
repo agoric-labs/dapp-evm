@@ -14,11 +14,17 @@
     "local-env:relay": "cd local-env && yarn relay",
     "deploy:token": "cd deploy && yarn register:token",
     "deploy:contract": "cd deploy && yarn deploy",
-    "deploy:contracts": "yarn deploy:token && yarn deploy:contract",
-    "deps": "cd contract && yarn install && cd ../deploy && yarn install && cd ../local-env && yarn install && cd ../ui && yarn install && cd ../solidity && yarn install"
+    "deploy:contracts": "yarn deploy:token && yarn deploy:contract"
   },
   "private": true,
   "useWorkspaces": true,
+  "workspaces": [
+    "contract",
+    "ui",
+    "deploy",
+    "solidity",
+    "integration"
+  ],
   "prettier": {
     "semi": true,
     "singleQuote": true,
