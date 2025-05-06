@@ -8,20 +8,28 @@ try {
   const pollIntervalMs = 5000; // 5 seconds
   const maxWaitMs = 2 * 60 * 1000; // 2 minutes
 
-  const found = await poll(
-    async () => {
+  const found = await poll({
+    checkFn: async () => {
       const data = await fetchFromVStorage(vStorageUrl);
-      return data.some(([val]) => val === valueToFind);
+
+      for (const val of data) {
+        if (val[0] === valueToFind) {
+          return true;
+        }
+      }
+
+      return false;
     },
     pollIntervalMs,
     maxWaitMs,
-  );
+  });
 
   if (found) {
     console.log(`✅ Test passed: ${valueToFind} was found.`);
+    process.exit(0);
   } else {
     console.error(`❌ Test failed: ${valueToFind} was not found.`);
-    process.exitCode = 1;
+    process.exit(1);
   }
 } catch (error) {
   console.error('Failed to fetch or parse vStorage data:', error);

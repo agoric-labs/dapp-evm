@@ -171,14 +171,14 @@ export const processWalletOffer = async ({
  *
  * @typedef {Object} pollingParams
  * @property {() => Promise<boolean>} checkFn - The async function that returns true when the condition is met.
- * @property {number} intervalMs - Polling interval in milliseconds.
- * @property {number} timeoutMs - Max wait time in milliseconds.
+ * @property {number} pollIntervalMs - Polling interval in milliseconds.
+ * @property {number} maxWaitMs - Max wait time in milliseconds.
  * @returns {Promise<boolean>} - Resolves true if condition met, false if timeout.
  */
-export const poll = async ({ checkFn, intervalMs, timeoutMs }) => {
+export const poll = async ({ checkFn, pollIntervalMs, maxWaitMs }) => {
   const start = Date.now();
 
-  while (Date.now() - start < timeoutMs) {
+  while (Date.now() - start < maxWaitMs) {
     try {
       const result = await checkFn();
       if (result) return true;
@@ -186,8 +186,8 @@ export const poll = async ({ checkFn, intervalMs, timeoutMs }) => {
       console.error('Polling error:', err);
     }
 
-    console.log(`Waiting ${intervalMs / 1000} seconds...`);
-    await new Promise((res) => setTimeout(res, intervalMs));
+    console.log(`Waiting ${pollIntervalMs / 1000} seconds...`);
+    await new Promise((res) => setTimeout(res, pollIntervalMs));
   }
 
   return false;
