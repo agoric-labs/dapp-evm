@@ -1,4 +1,4 @@
-import { AppState } from './interfaces/interfaces';
+import { AppState } from './types';
 import { create } from 'zustand';
 
 export const useAppStore = create<AppState>((set) => ({

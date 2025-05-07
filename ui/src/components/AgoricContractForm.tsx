@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { AxelarQueryParams } from '../interfaces/interfaces';
+import { AxelarQueryParams } from '../types';
 import { AGORIC_PROXY_CONTRACT, BRAND_CONFIG, TOAST_DURATION } from '../config';
 import {
   getAxelarTxURL,

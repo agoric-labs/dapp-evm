@@ -30,9 +30,9 @@ export type AppState = {
 };
 
 export type PayloadParams = {
-  type: number;
-  chain: keyof typeof EVM_CHAINS;
-  address: string;
+  type: GMPMessageType;
+  chain: SupportedDestinationChains;
+  address: `0x${string}`;
 };
 
 export type AxelarQueryParams = {

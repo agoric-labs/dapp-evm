@@ -5,7 +5,7 @@ import {
   AxelarQueryParams,
   GasEstimateParams,
   ToastMessageOptions,
-} from './interfaces/interfaces';
+} from './types';
 
 export const isValidEthereumAddress = (address: string) => {
   if (!/^0x[a-fA-F0-9]{40}$/.test(address)) {
