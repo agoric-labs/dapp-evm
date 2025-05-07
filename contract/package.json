@@ -4,15 +4,15 @@
   "version": "1.0.0",
   "type": "module",
   "devDependencies": {
-    "@agoric/async-flow": "dev",
-    "@agoric/vats": "dev",
-    "@agoric/zoe": "dev",
-    "@agoric/zone": "dev"
+    "@agoric/async-flow": "^0.2.0-u20.0",
+    "@agoric/vats": "^0.16.0-u20.0",
+    "@agoric/zoe": "^0.27.0-u20.0",
+    "@agoric/zone": "^0.3.0-u20.0"
   },
   "dependencies": {
     "@agoric/internal": "^0.4.0-u20.0",
     "@agoric/orchestration": "^0.2.0-u20.0",
-    "@agoric/vow": "dev",
+    "@agoric/vow": "^0.2.0-u20.0",
     "@endo/base64": "^1.0.9",
     "@endo/errors": "^1.2.10",
     "@endo/far": "^1.1.11",

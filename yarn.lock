@@ -78,23 +78,6 @@
     "@endo/patterns" "^1.5.0"
     "@endo/promise-kit" "^1.1.10"
 
-"@agoric/async-flow@dev":
-  version "0.1.1-dev-2fa8100.0"
-  resolved "https://registry.yarnpkg.com/@agoric/async-flow/-/async-flow-0.1.1-dev-2fa8100.0.tgz#15b1788dc95b4fffa6aaf7e3142fb263ca85fc22"
-  integrity sha512-i2psPCFSzvlwyPwwmJGDdMsbp6ZJfNVNwmfajabrJAltt0E2TMIS5knj6Bebp5qxuUwSXgK88Y825hBPL4DRAA==
-  dependencies:
-    "@agoric/base-zone" "0.1.1-dev-2fa8100.0+2fa8100"
-    "@agoric/internal" "0.3.3-dev-2fa8100.0+2fa8100"
-    "@agoric/store" "0.9.3-dev-2fa8100.0+2fa8100"
-    "@agoric/vow" "0.1.1-dev-2fa8100.0+2fa8100"
-    "@endo/common" "^1.2.10"
-    "@endo/errors" "^1.2.10"
-    "@endo/eventual-send" "^1.3.1"
-    "@endo/marshal" "^1.6.4"
-    "@endo/pass-style" "^1.5.0"
-    "@endo/patterns" "^1.5.0"
-    "@endo/promise-kit" "^1.1.10"
-
 "@agoric/babel-generator@^7.17.4", "@agoric/babel-generator@^7.17.6":
   version "7.17.6"
   resolved "https://registry.yarnpkg.com/@agoric/babel-generator/-/babel-generator-7.17.6.tgz#75ff4629468a481d670b4154bcfade11af6de674"
@@ -1197,7 +1180,7 @@
     "@endo/exo" "^1.5.9"
     "@endo/patterns" "^1.5.0"
 
-"@agoric/vats@0.15.2-dev-2fa8100.0+2fa8100", "@agoric/vats@dev":
+"@agoric/vats@0.15.2-dev-2fa8100.0+2fa8100":
   version "0.15.2-dev-2fa8100.0"
   resolved "https://registry.yarnpkg.com/@agoric/vats/-/vats-0.15.2-dev-2fa8100.0.tgz#04f744e5a25acccdad837d44f108af7757cfe3db"
   integrity sha512-Z7UWedMza9lrtCHgyB4C/jVeRdM3oH2WACOadvltXpfU7OH0yUR72GgjyXkRRquTkX2qCsOY8pO4k1UmaAJK5g==
@@ -1286,7 +1269,7 @@
   resolved "https://registry.yarnpkg.com/@agoric/vm-config/-/vm-config-0.1.1-dev-2fa8100.0.tgz#954af50048f32626b5ca603d9d3174825059f133"
   integrity sha512-PHYaguMKY5DUq2fheJdl0I5jKECk9HvnA1FWa3w1xHYTvqOXCAa8K1PhFST3/OFzZ8JOdD5xSRmjmL1rMMfHVA==
 
-"@agoric/vow@0.1.1-dev-2fa8100.0+2fa8100", "@agoric/vow@dev":
+"@agoric/vow@0.1.1-dev-2fa8100.0+2fa8100":
   version "0.1.1-dev-2fa8100.0"
   resolved "https://registry.yarnpkg.com/@agoric/vow/-/vow-0.1.1-dev-2fa8100.0.tgz#951574b330f955e415f28b4883377272fc107c7d"
   integrity sha512-iDeJ0hXX+CtB1pMNGIkiVEL4yu1qbtPEXSVdVBTupmLnPVOQVVzDfdKHFS2cMv5b+lfvttNoaVXsOaXPE+JGog==
@@ -1381,7 +1364,7 @@
     glob "^7.1.6"
     tmp "^0.2.1"
 
-"@agoric/zoe@0.26.3-dev-2fa8100.0+2fa8100", "@agoric/zoe@dev":
+"@agoric/zoe@0.26.3-dev-2fa8100.0+2fa8100":
   version "0.26.3-dev-2fa8100.0"
   resolved "https://registry.yarnpkg.com/@agoric/zoe/-/zoe-0.26.3-dev-2fa8100.0.tgz#7177bd6a094fa0add3c8fb55a3af0efdf50b05dc"
   integrity sha512-L55xOVI3+0vN7rMJsYiBW2mjDLOl7XLlbjmef1IPMVcs2G1acbmeQfK3+VQ0gr842kzh4Ap5os6oxcpFbiBs2A==
@@ -1466,7 +1449,7 @@
     "@endo/promise-kit" "^1.1.10"
     yargs-parser "^21.1.1"
 
-"@agoric/zone@0.2.3-dev-2fa8100.0+2fa8100", "@agoric/zone@dev":
+"@agoric/zone@0.2.3-dev-2fa8100.0+2fa8100":
   version "0.2.3-dev-2fa8100.0"
   resolved "https://registry.yarnpkg.com/@agoric/zone/-/zone-0.2.3-dev-2fa8100.0.tgz#f47a218d02f2630afa249f7708f940792f5cfa41"
   integrity sha512-o8zpulpidAy2FPXOhNlwy7UwfOtyCcRmAxKb8hxNp//AZDKFL/u4yG77+Xgfzx7GSYnuvwEmd68x23U7boFEFQ==
