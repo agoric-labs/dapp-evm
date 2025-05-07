@@ -1,4 +1,4 @@
-import { useAppStore } from 'state';
+import { useAppStore } from '../state';
 import './WalletStatus.css';
 
 const WalletStatus = () => {
