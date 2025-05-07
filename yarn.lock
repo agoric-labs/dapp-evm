@@ -528,7 +528,7 @@
     agoric "^0.21.1"
     jessie.js "^0.3.2"
 
-"@agoric/internal@0.3.3-dev-2fa8100.0+2fa8100", "@agoric/internal@dev":
+"@agoric/internal@0.3.3-dev-2fa8100.0+2fa8100":
   version "0.3.3-dev-2fa8100.0"
   resolved "https://registry.yarnpkg.com/@agoric/internal/-/internal-0.3.3-dev-2fa8100.0.tgz#e8b2302f4796e04e1b782f76988688af8ceaec0d"
   integrity sha512-V7wEgoIWSBoh6JuBICV2c9s1Igw6A500dKAcmob20GqhSrrKu6WV1cNKtmfbdPqPdRL1tvfrfbzl47cf1HOmxw==

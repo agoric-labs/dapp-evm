@@ -10,7 +10,7 @@
     "@agoric/zone": "dev"
   },
   "dependencies": {
-    "@agoric/internal": "dev",
+    "@agoric/internal": "^0.4.0-u20.0",
     "@agoric/orchestration": "^0.2.0-u20.0",
     "@agoric/vow": "dev",
     "@endo/base64": "^1.0.9",
