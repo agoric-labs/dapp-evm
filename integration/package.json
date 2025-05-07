@@ -15,7 +15,7 @@
   },
   "devDependencies": {
     "@agoric/client-utils": "dev",
-    "@agoric/internal": "dev",
+    "@agoric/internal": "^0.4.0-u20.0",
     "execa": "^9.5.2",
     "ses": "^1.12.0"
   },

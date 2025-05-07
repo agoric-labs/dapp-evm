@@ -19,8 +19,8 @@
     "wagmi": "^2.14.12"
   },
   "devDependencies": {
-    "@agoric/rpc": "dev",
-    "@agoric/web-components": "dev",
+    "@agoric/rpc": "^0.10.0",
+    "@agoric/web-components": "^0.16.0",
     "ses": "1.3.0",
     "typescript": "^5.0.2",
     "vite": "^4.4.5",
