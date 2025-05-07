@@ -24,6 +24,7 @@ try {
   log(`Fetching previous offer from ${vStorageUrl}.current`);
   const { offerToUsedInvitation } = await fetchFromVStorage(
     `${vStorageUrl}.current`,
+    fetch,
   );
 
   const previousOffer = offerToUsedInvitation[0][0];
@@ -98,7 +99,7 @@ try {
   const valid = await poll({
     checkFn: async () => {
       log(`Fetching offer result from ${vStorageUrl}...`);
-      const offerData = await fetchFromVStorage(vStorageUrl);
+      const offerData = await fetchFromVStorage(vStorageUrl, fetch);
 
       log(`Offer data received: ${JSON.stringify(offerData)}`);
 

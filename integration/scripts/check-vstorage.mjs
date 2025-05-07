@@ -11,7 +11,7 @@ try {
 
   const found = await poll({
     checkFn: async () => {
-      const data = await fetchFromVStorage(vStorageUrl);
+      const data = await fetchFromVStorage(vStorageUrl, fetch);
 
       for (const val of data) {
         if (val[0] === valueToFind) {
