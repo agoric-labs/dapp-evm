@@ -4,9 +4,10 @@ import './lockdown.mjs';
 import {
   prepareOffer,
   fetchFromVStorage,
-  wait,
   processWalletOffer,
   validateEvmAddress,
+  poll,
+  wait,
 } from './utils.mjs';
 import { decodeAbiParameters, parseAbiParameters } from 'viem';
 
@@ -15,15 +16,9 @@ const OFFER_FILE = 'offer.json';
 const CONTAINER_PATH = `/usr/src/${OFFER_FILE}`;
 const FROM_ADDRESS = 'agoric1rwwley550k9mmk6uq6mm6z4udrg8kyuyvfszjk';
 const vStorageUrl = `http://localhost/agoric-lcd/agoric/vstorage/data/published.wallet.${FROM_ADDRESS}`;
-const { waitInSeconds } = process.env;
 const { log, error } = console;
 
 try {
-  if (waitInSeconds) {
-    log(`Waiting for ${waitInSeconds} seconds before proceeding...`);
-    await wait(waitInSeconds);
-  }
-
   log('--- Send GMP via the LCA ---');
 
   log(`Fetching previous offer from ${vStorageUrl}.current`);
@@ -72,8 +67,9 @@ try {
     FROM_ADDRESS,
   });
 
-  log('Waiting 70 seconds for the GMP transaction to process...');
-  await wait(70);
+  // TODO: remove wait. Figure out how to find offer status
+  log('Waiting 60 seconds for the GMP transaction to process...');
+  await wait(60);
 
   log('--- See response from the EVM chain ---');
 
@@ -95,29 +91,50 @@ try {
     CONTAINER_PATH,
     FROM_ADDRESS,
   });
-  log('Waiting 30 seconds for message retrieval...');
-  await wait(30);
 
-  log(`Fetching offer result from ${vStorageUrl}...`);
-  const offerData = await fetchFromVStorage(vStorageUrl);
-  log(`Offer data received: ${JSON.stringify(offerData)}`);
+  const pollIntervalMs = 10000; // 5 seconds
+  const maxWaitMs = 2 * 60 * 1000; // 5 minutes
 
-  const latestMessage = JSON.parse(offerData.status.result);
+  const valid = await poll({
+    checkFn: async () => {
+      log(`Fetching offer result from ${vStorageUrl}...`);
+      const offerData = await fetchFromVStorage(vStorageUrl);
 
-  if (
-    Array.isArray(latestMessage) &&
-    latestMessage.length > 0 &&
-    latestMessage[0]?.success === true
-  ) {
-    const [decodedAddress] = decodeAbiParameters(
-      parseAbiParameters('address'),
-      latestMessage[0]?.result,
-    );
-    log('Decoded Address:', decodedAddress);
-    validateEvmAddress(decodedAddress);
-    log('Latest message is valid:', latestMessage);
+      log(`Offer data received: ${JSON.stringify(offerData)}`);
+
+      let latestMessage;
+      try {
+        latestMessage = JSON.parse(offerData?.status?.result);
+      } catch (err) {
+        log('Failed to parse offerData.status.result as JSON:', err);
+      }
+
+      if (
+        Array.isArray(latestMessage) &&
+        latestMessage.length > 0 &&
+        latestMessage[0]?.success === true
+      ) {
+        const [decodedAddress] = decodeAbiParameters(
+          parseAbiParameters('address'),
+          latestMessage[0]?.result,
+        );
+        log('Decoded Address:', decodedAddress);
+        validateEvmAddress(decodedAddress);
+        log('Latest message is valid:', latestMessage);
+
+        return true;
+      }
+      return false;
+    },
+    pollIntervalMs,
+    maxWaitMs,
+  });
+
+  if (valid) {
+    console.log(`✅ Test passed`);
   } else {
-    throw new Error(`Latest message is invalid: ${latestMessage}`);
+    console.error(`❌ Test failed`);
+    process.exitCode = 1;
   }
 } catch (err) {
   error('ERROR:', err.shortMessage || err.message);
