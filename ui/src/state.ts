@@ -3,8 +3,7 @@ import { create } from 'zustand';
 
 export const useAppStore = create<AppState>((set) => ({
   contractInstance: null,
-  balance: 0,
-  evmAddress: '',
+  evmAddress: '0x',
   destinationEVMChain: 'Avalanche',
   amountToSend: 0,
   loading: false,

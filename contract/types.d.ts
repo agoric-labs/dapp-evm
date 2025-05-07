@@ -52,3 +52,19 @@ export type AbiEncodedContractCall = {
   target: `0x${string}`;
   data: `0x${string}`;
 };
+
+export const EVM_CHAINS = {
+  Avalanche: 'Avalanche',
+  Base: 'base-sepolia',
+  Ethereum: 'ethereum-sepolia',
+};
+
+export type SupportedDestinationChains = keyof typeof EVM_CHAINS;
+
+export type OfferArgs = {
+  destinationAddress: `0x${string}`;
+  type: GMPMessageType;
+  destinationEVMChain: SupportedDestinationChains;
+  gasAmount: number;
+  contractInvocationData: ContractCall[];
+};

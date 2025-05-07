@@ -1,80 +1,41 @@
 import { makeAgoricWalletConnection } from '@agoric/web-components';
-import { EVM_CHAINS } from '../config';
+import { CurrentWalletRecord } from '@agoric/smart-wallet/src/smartWallet.js';
+import {
+  SupportedDestinationChains,
+  EVM_CHAINS,
+  GMPMessageType,
+} from 'contract/types';
 
 type Wallet = Awaited<ReturnType<typeof makeAgoricWalletConnection>>;
 
-export interface CurrentOffer {
-  liveOffers: Array<unknown>;
-  offerToPublicSubscriberPaths: Array<unknown>;
-  offerToUsedInvitation: Array<
-    [
-      string,
-      {
-        brand: unknown;
-        value: Array<{
-          description: string;
-          handle: unknown;
-          instance: unknown;
-          installation: unknown;
-        }>;
-      },
-    ]
-  >;
-  purses: Array<unknown>;
-}
+export type ToastMessageOptions = {
+  content: string;
+  duration?: number;
+};
 
-export interface OfferArgs {
-  type: number;
-  destinationEVMChain: (typeof EVM_CHAINS)[keyof typeof EVM_CHAINS];
-  contractInvocationPayload: number[] | null;
-  destAddr: string;
-  amountToSend: number;
-  gasAmount?: number;
-}
-export interface AppState {
+export type AppState = {
   wallet?: Wallet;
   contractInstance?: unknown;
   brands?: Record<string, unknown>;
-  balance: number;
   destinationEVMChain: keyof typeof EVM_CHAINS;
-  evmAddress: string;
+  evmAddress: `0x${string}`;
   amountToSend: number;
   loading: boolean;
   error?: string;
-  type: number;
+  type: GMPMessageType;
   gasAmount?: number;
-  contractInvocationPayload?: number[];
   transactionUrl: string | null;
   tab: number;
-  currentOffers: CurrentOffer | null;
-}
+  currentOffers: CurrentWalletRecord | null;
+};
 
-export interface BalanceCheckParams {
-  walletAddress: string;
-  rpcUrl: string;
-  tokenDenom: string;
-}
-
-export interface PayloadParams {
+export type PayloadParams = {
   type: number;
   chain: keyof typeof EVM_CHAINS;
   address: string;
-}
+};
 
-export interface AxelarFeeObject {
-  amount: string;
-  recipient: string;
-}
-
-export interface AxelarMemo {
-  destination_chain: string;
-  destination_address: string;
-  payload: number[] | null;
-  type: number;
-  fee?: AxelarFeeObject;
-}
-
-export interface AxelarQueryParams {
+export type AxelarQueryParams = {
   transfersType: 'gmp' | 'transfers';
   searchParams: {
     address: string;
@@ -86,4 +47,10 @@ export interface AxelarQueryParams {
     senderAddress?: string;
     size?: number;
   };
-}
+};
+
+export type GasEstimateParams = {
+  destinationChain: SupportedDestinationChains;
+  gasLimit: number;
+  gasMuliplier: number;
+};

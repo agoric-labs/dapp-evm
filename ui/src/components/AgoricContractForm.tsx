@@ -1,15 +1,8 @@
-import React, { useState, useEffect } from 'react';
-import { AxelarQueryParams, OfferArgs } from '../interfaces/interfaces';
-import {
-  AGORIC_PROXY_CONTRACT,
-  BRAND_CONFIG,
-  EVM_CHAINS,
-  TOAST_DURATION,
-} from '../config';
+import { useState, useEffect } from 'react';
+import { AxelarQueryParams } from '../interfaces/interfaces';
+import { AGORIC_PROXY_CONTRACT, BRAND_CONFIG, TOAST_DURATION } from '../config';
 import {
   getAxelarTxURL,
-  getGasEstimate,
-  getPayload,
   isValidEthereumAddress,
   showError,
   showSuccess,
@@ -18,54 +11,46 @@ import { toast } from 'react-toastify';
 import { useAccount, useConnect } from 'wagmi';
 import metamaskLogo from '/metamask.svg';
 import { useAppStore } from '../state';
+import {
+  SupportedDestinationChains,
+  OfferArgs,
+  ContractCall,
+  GMPMessageType,
+} from 'contract/types';
 
 const prepareOfferArguments = async (
   type: number,
-  chain: keyof typeof EVM_CHAINS,
-  address: string,
-  amount: number,
+  destinationEVMChain: SupportedDestinationChains,
+  destinationAddress: `0x${string}`,
+  gasAmount: number,
 ): Promise<OfferArgs> => {
-  const contractPayload = getPayload({ type, chain, address });
+  console.log(
+    'TODO: ensure prepareOfferArguments returns object conforming to (contract/types).OfferArgs',
+  );
 
-  switch (type) {
-    case 3:
-      return {
-        type,
-        destAddr: address,
-        destinationEVMChain: EVM_CHAINS[chain],
-        contractInvocationPayload: contractPayload,
-        amountToSend: amount * 1_000_000,
-      };
+  const factoryContractAddress = '0xef8651dD30cF990A1e831224f2E0996023163A81';
+  const contractInvocationData: Array<ContractCall> = [
+    {
+      functionSignature: 'createVendor(string)',
+      args: ['ownerAddress'],
+      target: factoryContractAddress,
+    },
+  ];
 
-    case 1:
-    case 2: // Contract interaction transactions
-      // const gasAmount = await getGasEstimate({
-      //   destinationChain: EVM_CHAINS[chain],
-      //   gasLimit: 8000000000000000,
-      //   gasMuliplier: 'auto',
-      // });
-      // TODO: This needs refinement
-      // It should be "destAddr: AGORIC_PROXY_CONTRACT[chain]"
-      // address should be part of contractInvocationPayload
-      return {
-        type,
-        destAddr: AGORIC_PROXY_CONTRACT[chain],
-        destinationEVMChain: EVM_CHAINS[chain],
-        contractInvocationPayload: contractPayload,
-        gasAmount: 0.008 * 10 ** 18,
-        amountToSend: amount * 10 ** 18,
-      };
-
-    default:
-      throw new Error(`Invalid transaction type: ${type}. Must be 1, 2, or 3.`);
-  }
+  return {
+    type,
+    destinationAddress,
+    destinationEVMChain,
+    contractInvocationData,
+    gasAmount,
+  };
 };
 
 const createQueryParameters = (
-  type: number,
+  type: GMPMessageType,
   timestamp: number,
-  address: string,
-  chain: string,
+  address: `0x${string}`,
+  chain: SupportedDestinationChains,
 ): AxelarQueryParams => {
   const commonParams = {
     fromTime: timestamp,
@@ -197,7 +182,10 @@ export const AgoricContractForm = () => {
         duration: TOAST_DURATION.SUCCESS,
       });
     } catch (error) {
-      showError({ content: error.message, duration: TOAST_DURATION.ERROR });
+      showError({
+        content: error instanceof Error ? error.message : String(error),
+        duration: TOAST_DURATION.ERROR,
+      });
     } finally {
       if (toastId) toast.dismiss(toastId);
       useAppStore.setState({ loading: false });
@@ -214,7 +202,7 @@ export const AgoricContractForm = () => {
     }
   };
 
-  const handleAmountToSend = (e) => {
+  const handleAmountToSend = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (type === 3) {
       useAppStore.setState({
         amountToSend: Number(e.target.value),
@@ -265,7 +253,8 @@ export const AgoricContractForm = () => {
               value={destinationEVMChain}
               onChange={(e) =>
                 useAppStore.setState({
-                  destinationEVMChain: e.target.value,
+                  destinationEVMChain: e.target
+                    .value as SupportedDestinationChains,
                 })
               }
             >
@@ -287,7 +276,7 @@ export const AgoricContractForm = () => {
                   value={destinationEVMChain}
                   onChange={(e) =>
                     useAppStore.setState({
-                      evmAddress: e.target.value,
+                      evmAddress: e.target.value as `0x${string}`,
                     })
                   }
                 >
@@ -315,7 +304,9 @@ export const AgoricContractForm = () => {
                 className="input-field"
                 value={evmAddress}
                 onChange={(e) =>
-                  useAppStore.setState({ evmAddress: e.target.value })
+                  useAppStore.setState({
+                    evmAddress: e.target.value as `0x${string}`,
+                  })
                 }
                 placeholder="0x..."
               />
