@@ -89,7 +89,7 @@ export const wait = async (seconds) => {
   return new Promise((resolve) => setTimeout(resolve, seconds * 1000));
 };
 
-export const fetchFromVStorage = async (vStorageUrl) => {
+export const fetchFromVStorage = async (vStorageUrl, fetch) => {
   const response = await fetch(vStorageUrl);
 
   if (!response.ok) {
