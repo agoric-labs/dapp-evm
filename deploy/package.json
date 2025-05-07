@@ -41,7 +41,7 @@
   "dependencies": {
     "@agoric/cosmic-swingset": "dev",
     "@agoric/internal": "dev",
-    "@agoric/orchestration": "dev",
+    "@agoric/orchestration": "^0.2.0-u20.0",
     "@agoric/swingset-vat": "dev",
     "@agoric/telemetry": "dev",
     "@agoric/vats": "dev",
