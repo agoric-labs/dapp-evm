@@ -1,4 +1,3 @@
-// @ts-check
 import { encodeFunctionData, encodeAbiParameters, hexToBytes } from 'viem';
 
 /**

@@ -7,10 +7,11 @@
     "@agoric/deploy-script-support": "dev",
     "agoric": "dev",
     "esbuild": "^0.25.2",
-    "execa": "^9.5.2"
+    "execa": "^9.5.2",
+    "typescript": "~5.8.2"
   },
   "scripts": {
-    "esbuild:contract": "esbuild ../contract/axelar-gmp.contract.js --platform=node --format=esm --bundle --outfile=dist/axelar-gmp.contract.bundle.js",
+    "esbuild:contract": "esbuild ../contract/src/axelar-gmp.contract.js --platform=node --format=esm --bundle --outfile=dist/axelar-gmp.contract.bundle.js",
     "generate-bundles": "agoric run src/init-axelar-gmp.js",
     "build:contract": "yarn esbuild:contract && yarn generate-bundles",
     "build:token": "agoric run ./asset-builder/register-interchain-bank-assets.builder.js --assets='[{\"denom\":\"ibc/2CC0B1B7A981ACC74854717F221008484603BB8360E81B262411B0D830EDE9B0\",\"issuerName\":\"AXL\",\"decimalPlaces\":6}]'",

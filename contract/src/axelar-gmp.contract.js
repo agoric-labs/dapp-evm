@@ -1,4 +1,3 @@
-// @ts-check
 import { M } from '@endo/patterns';
 import { E } from '@endo/far';
 import { prepareChainHubAdmin } from '@agoric/orchestration/src/exos/chain-hub-admin.js';

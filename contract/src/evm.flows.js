@@ -1,8 +1,7 @@
-// @ts-check
 import { Fail, makeError, q } from '@endo/errors';
 import { makeTracer, NonNullish } from '@agoric/internal';
 import { denomHash } from '@agoric/orchestration/src/utils/denomHash.js';
-import { gmpAddresses, GMPMessageType } from './utils/gmp.js';
+import { gmpAddresses, GMPMessageType } from '../utils/gmp.js';
 
 /**
  * @import {GuestInterface, GuestOf} from '@agoric/async-flow';
@@ -88,6 +87,7 @@ export const createAndMonitorLCA = async (
   await zoeTools.localTransfer(seat, localAccount, give);
 
   const factoryContractAddress = '0xef8651dD30cF990A1e831224f2E0996023163A81';
+
   const memo = {
     destination_chain: 'Ethereum',
     destination_address: factoryContractAddress,
