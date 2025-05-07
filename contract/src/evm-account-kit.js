@@ -5,7 +5,7 @@
  * @import {TypedPattern} from '@agoric/internal';
  * @import {FungibleTokenPacketData} from '@agoric/cosmic-proto/ibc/applications/transfer/v2/packet.js';
  * @import {ZoeTools} from '@agoric/orchestration/src/utils/zoe-tools.js';
- * @import {AxelarGmpIncomingMemo, EvmTapState, ContractCall} from '../types.js';
+ * @import {AxelarGmpIncomingMemo, EvmTapState, ContractCall} from '../types';
  * @import {ZCF, ZCFSeat} from '@agoric/zoe';
  * @import {AxelarGmpOutgoingMemo} from '../types'
  */

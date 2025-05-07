@@ -90,7 +90,7 @@ jobs:
       - name: Deploy Axelar GMP contract
         run: ./integration/scripts/deploy-contract.mjs
         env:
-          script: /usr/src/upgrade-test-scripts/deploy/src/init-axelar-gmp.js
+          script: /usr/src/upgrade-test-scripts/deploy/src/init-contract.js
           plan: /usr/src/upgrade-test-scripts/startAxelarGmp-plan.json
 
       - name: Verify Axelar GMP contract installation from vStorage

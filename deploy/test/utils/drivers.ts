@@ -4,10 +4,7 @@ import { type Amount } from '@agoric/ertp';
 import { NonNullish } from '@agoric/internal';
 import { Offers } from '@agoric/inter-protocol/src/clientSupport.js';
 import { SECONDS_PER_MINUTE } from '@agoric/inter-protocol/src/proposals/econ-behaviors.js';
-import {
-  slotToBoardRemote,
-  unmarshalFromVstorage,
-} from '@agoric/internal/src/marshal.js';
+import { unmarshalFromVstorage } from '@agoric/internal/src/marshal.js';
 import {
   type FakeStorageKit,
   slotToRemotable,
@@ -28,9 +25,9 @@ import type { OfferSpec } from '@agoric/smart-wallet/src/offers.js';
 import type { TimerService } from '@agoric/time';
 import type { OfferMaker } from '@agoric/smart-wallet/src/types.js';
 import type { RunUtils } from '@agoric/swingset-vat/tools/run-utils.js';
-import { makeMarshal } from '@endo/marshal';
-import type { InvitationDetails } from '@agoric/zoe';
+import type { Instance, InvitationDetails } from '@agoric/zoe';
 import type { SwingsetTestKit } from './support.js';
+import type { ERef } from '@endo/far';
 
 // XXX SwingsetTestKit would simplify this
 export const makeWalletFactoryDriver = async (

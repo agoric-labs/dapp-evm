@@ -1,6 +1,6 @@
 // @ts-check
 import { makeHelpers } from '@agoric/deploy-script-support';
-import { getManifest, startAxelarGmp } from './start-axelar-gmp.js';
+import { getManifest, startAxelarGmp } from './start-contract.js';
 import { chainInfo, assetInfo } from './info.js';
 
 /** @type {import('@agoric/deploy-script-support/src/externalTypes.js').CoreEvalBuilder} */
@@ -9,7 +9,7 @@ export const defaultProposalBuilder = async (
   options,
 ) =>
   harden({
-    sourceSpec: './start-axelar-gmp.js',
+    sourceSpec: './start-contract.js',
     getManifestCall: [
       getManifest.name,
       {

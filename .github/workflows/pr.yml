@@ -32,8 +32,8 @@ jobs:
       - name: Build project
         run: yarn build
 
-      - name: Type Check contract/
-        run: cd contract && yarn lint:types
+      - name: Type Check contract/ && deploy/
+        run: yarn lint:types
 
       - name: Run tests
         run: yarn test

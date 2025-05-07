@@ -99,7 +99,7 @@ test.before(async (t) => {
   );
 
   await evalProposal(
-    buildProposal('../src/init-axelar-gmp.js', [
+    buildProposal('../src/init-contract.js', [
       '--chainInfo',
       JSON.stringify({
         agoric: fetchedChainInfo.agoric,
@@ -237,8 +237,8 @@ test.serial('receiveUpCall test', async (t) => {
       amount: 1n,
       denom: 'uaxl',
       sender: makeTestAddress(),
-      target: lcaAddress,
-      receiver: lcaAddress,
+      target: lcaAddress as `${string}1${string}`,
+      receiver: lcaAddress as `${string}1${string}`,
       sourceChannel: axelarToAgoricChannel,
       destinationChannel: agoricToAxelarChannel,
       memo: JSON.stringify({
@@ -370,7 +370,8 @@ test.serial('make contract calls using lca', async (t) => {
   const { wallet, storage } = t.context;
   const { BLD } = t.context.agoricNamesRemotes.brand;
 
-  const factoryContractAddress = '0xef8651dD30cF990A1e831224f2E0996023163A81';
+  const factoryContractAddress: `0x${string}` =
+    '0xef8651dD30cF990A1e831224f2E0996023163A81';
   const contractInvocationData = [
     {
       functionSignature: 'createVendor(string)',

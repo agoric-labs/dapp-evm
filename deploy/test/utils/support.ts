@@ -56,7 +56,7 @@ import type { EconomyBootstrapPowers } from '@agoric/inter-protocol/src/proposal
 import type { SwingsetController } from '@agoric/swingset-vat/src/controller/controller.js';
 import type { BridgeHandler, IBCDowncallMethod, IBCMethod } from '@agoric/vats';
 import type { BootstrapRootObject } from '@agoric/vats/src/core/lib-boot.js';
-import type { EProxy } from '@endo/eventual-send';
+import type { EProxy, ERef } from '@endo/eventual-send';
 import { FileSystemCache, NodeFetchCache } from 'node-fetch-cache';
 import { tmpdir } from 'node:os';
 import { icaMocks, protoMsgMockMap, protoMsgMocks } from './ibc/mocks.js';
