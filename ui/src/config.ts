@@ -51,21 +51,23 @@ export const evmAddresses = {
 export const AGORIC_PROXY_CONTRACT = {
   Base: '0xE964445cfCf1013e296CC9f3297C7ed453a4f3b9',
   Avalanche: '0xA248B81d42639e12a9B120AE42AdB44512273f15',
+  // TODO: temp value
+  Ethereum: '0xA248B81d42639e12a9B120AE42AdB44512273f15',
 };
 
 export const COSMOS_CHAINS = {
   osmosis: 'osmosis-7',
 };
 
-export const EVM_CHAINS = {
-  Avalanche: 'Avalanche',
-  Base: 'base-sepolia',
-  Ethereum: 'ethereum-sepolia',
-};
-
 export const ONE_DAY_IN_SECONDS = 24 * 60 * 60; // 24 hours in seconds
 
 export const BRAND_CONFIG = {
+  // TODO: decide what brand to use for type 1 calls
+  1: {
+    brandKey: 'AUSDC',
+    decimals: 6,
+    needsEVMCheck: true,
+  },
   3: {
     brandKey: 'AUSDC',
     decimals: 6,

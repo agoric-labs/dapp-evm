@@ -1,4 +1,3 @@
-import React from 'react';
 import { useAppStore } from '../state';
 
 export const Tabs = () => {
@@ -13,7 +12,7 @@ export const Tabs = () => {
         onClick={() =>
           useAppStore.setState({
             type: 3,
-            evmAddress: '',
+            evmAddress: '0x',
             destinationEVMChain: 'Avalanche',
             amountToSend: 0,
             loading: false,
@@ -29,7 +28,7 @@ export const Tabs = () => {
         onClick={() =>
           useAppStore.setState({
             type: 2,
-            evmAddress: '',
+            evmAddress: '0x',
             destinationEVMChain: 'Avalanche',
             amountToSend: 0,
             loading: false,

@@ -1,4 +1,3 @@
-import React from 'react';
 import agoricLogo from '/agoric.svg';
 
 const Logo = () => (

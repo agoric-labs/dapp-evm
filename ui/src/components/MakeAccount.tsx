@@ -1,8 +1,8 @@
-import React from 'react';
 import { showError, showSuccess } from '../Utils';
 import { TOAST_DURATION } from '../config';
 import { useAppStore } from '../state';
 import { toast } from 'react-toastify';
+import { ContractCall, OfferArgs } from 'contract/types';
 
 export const MakeAccount = () => {
   const { wallet, contractInstance, brands, currentOffers } =
@@ -61,7 +61,10 @@ export const MakeAccount = () => {
         duration: TOAST_DURATION.SUCCESS,
       });
     } catch (error) {
-      showError({ content: error.message, duration: TOAST_DURATION.ERROR });
+      showError({
+        content: error instanceof Error ? error.message : String(error),
+        duration: TOAST_DURATION.ERROR,
+      });
     } finally {
       if (toastId) toast.dismiss(toastId);
       useAppStore.setState({ loading: false });
@@ -82,7 +85,7 @@ export const MakeAccount = () => {
     };
 
     const factoryContractAddress = '0xef8651dD30cF990A1e831224f2E0996023163A81';
-    const contractInvocationData = [
+    const contractInvocationData: Array<ContractCall> = [
       {
         functionSignature: 'createVendor(string)',
         args: ['ownerAddress'],
@@ -90,24 +93,21 @@ export const MakeAccount = () => {
       },
     ];
 
+    const sendGmpArgs: OfferArgs = {
+      destinationAddress: factoryContractAddress,
+      type: 1,
+      gasAmount: 20000,
+      destinationEVMChain: 'Ethereum',
+      contractInvocationData,
+    };
+
     const args = {
       id: Date.now(),
       invitationSpec: {
         source: 'continuing',
         previousOffer: latestInvitation[0],
         invitationMakerName: 'makeEVMTransactionInvitation',
-        invitationArgs: harden([
-          'sendGmp',
-          [
-            {
-              destinationAddress: factoryContractAddress,
-              type: 1,
-              gasAmount: 20000,
-              destinationEVMChain: 'Ethereum',
-              contractInvocationData,
-            },
-          ],
-        ]),
+        invitationArgs: harden(['sendGmp', [sendGmpArgs]]),
       },
       offerArgs: {},
       proposal: { give },
@@ -144,7 +144,10 @@ export const MakeAccount = () => {
         duration: TOAST_DURATION.SUCCESS,
       });
     } catch (error) {
-      showError({ content: error.message, duration: TOAST_DURATION.ERROR });
+      showError({
+        content: error instanceof Error ? error.message : String(error),
+        duration: TOAST_DURATION.ERROR,
+      });
     } finally {
       if (toastId) toast.dismiss(toastId);
       useAppStore.setState({ loading: false });
@@ -152,7 +155,17 @@ export const MakeAccount = () => {
   };
 
   const invitations = currentOffers?.offerToUsedInvitation.filter(
-    (invitation) => invitation[1].value[0].instance === contractInstance,
+    (invitation) => {
+      const value = invitation[1].value;
+
+      if (Array.isArray(value)) {
+        // TODO: figure out why it works but gives a type error
+        // @ts-expect-error
+        return value[0]?.instance === contractInstance;
+      }
+
+      return false;
+    },
   );
   const latestInvitation = invitations?.sort((a, b) =>
     b[0].localeCompare(a[0]),

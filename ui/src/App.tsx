@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import { useEffect } from 'react';
 import './App.css';
 import {
   makeAgoricChainStorageWatcher,
@@ -17,7 +17,7 @@ import WalletStatus from './components/WalletStatus';
 import { useAppStore } from './state';
 import { Tabs } from './components/Tabs';
 import { MakeAccount } from './components/MakeAccount';
-import { CurrentOffer } from './interfaces/interfaces';
+import { CurrentWalletRecord } from '@agoric/smart-wallet/src/smartWallet.js';
 
 const ENDPOINTS = {
   RPC: 'http://localhost/agoric-rpc',
@@ -49,7 +49,7 @@ const setup = async (walletAddress: string | undefined) => {
     },
   );
 
-  watcher.watchLatest<CurrentOffer>(
+  watcher.watchLatest<CurrentWalletRecord>(
     [Kind.Data, `published.wallet.${walletAddress}.current`],
     (co) => {
       const currentOffer = co ? co : null;
@@ -72,7 +72,6 @@ const connectWallet = async () => {
 function App() {
   const { wallet, loading, tab } = useAppStore((state) => ({
     wallet: state.wallet,
-    balance: state.balance,
     destinationEVMChain: state.destinationEVMChain,
     evmAddress: state.evmAddress,
     amountToSend: state.amountToSend,
@@ -96,7 +95,6 @@ function App() {
       </div>
 
       <ToastContainer
-        aria-label
         position="bottom-right"
         hideProgressBar={false}
         newestOnTop={false}
@@ -126,7 +124,7 @@ function App() {
           <div className="main-container">
             <Tabs />
             <div className="content">
-              <WalletStatus address={wallet?.address} />
+              <WalletStatus />
               {(tab === 1 || tab === 2) && <AgoricContractForm />}
               {tab === 3 && <MakeAccount />}
             </div>
