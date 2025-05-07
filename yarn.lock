@@ -732,10 +732,10 @@
     "@noble/hashes" "^1.5.0"
     bs58 "^6.0.0"
 
-"@agoric/rpc@dev":
-  version "0.10.1-dev-9b9389f.0"
-  resolved "https://registry.yarnpkg.com/@agoric/rpc/-/rpc-0.10.1-dev-9b9389f.0.tgz#f6f22bce4a9435670d559a218787a3d05e7a247c"
-  integrity sha512-n0gREen9cW9SCCo7F3tYBM6Tp8/1toEr24BfQPBHh+HWqqwrDPaCY+rEz1zk12tuNyFOXIejqUTX83ghScFFvw==
+"@agoric/rpc@^0.10.0":
+  version "0.10.0"
+  resolved "https://registry.yarnpkg.com/@agoric/rpc/-/rpc-0.10.0.tgz#bfbcf9712a1e130ecc9e55ba70734952c95eb6b7"
+  integrity sha512-A89Iaiu1bbSYGPq66wdPKL0IVqAM1kOiHsi8Wf+vN9+aSsrsRH3dOy8nWo/3dM/SAvM/GRBDZmLs6rPsizP6yw==
   dependencies:
     "@endo/marshal" "^0.8.9"
     axios "^1.6.2"
@@ -1314,10 +1314,10 @@
     "@endo/patterns" "^1.5.0"
     "@endo/promise-kit" "^1.1.10"
 
-"@agoric/web-components@dev":
-  version "0.16.1-dev-9b9389f.0"
-  resolved "https://registry.yarnpkg.com/@agoric/web-components/-/web-components-0.16.1-dev-9b9389f.0.tgz#dbb08425aeccb023d4dd2d1b2126354e9fc0970d"
-  integrity sha512-mizrVxvzceGkkUtxHnSlcgaoN0m0eYX2zEPgqWFsuaLB+MGSTbHvVkD65KdpJF0GQIrwfprUZjTiV0W2iEJK2g==
+"@agoric/web-components@^0.16.0":
+  version "0.16.0"
+  resolved "https://registry.yarnpkg.com/@agoric/web-components/-/web-components-0.16.0.tgz#e812302aa6efad065172dd2a4bf035385e12d692"
+  integrity sha512-em3vUItZu9ktjIrg5btzQfsUs+poFf7dR2ZS232RsHgh+2H+STyxPt0s5u1ZJs2DKBg7ljDZ/gZdoy9wQvsz7A==
   dependencies:
     "@agoric/assert" "^0.6.0"
     "@agoric/cache" "^0.3.2"
