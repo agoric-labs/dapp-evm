@@ -8,7 +8,7 @@ import type { ContinuingInvitationSpec } from '@agoric/smart-wallet/src/invitati
 import type { ExecutionContext, TestFn } from 'ava';
 import { makeWalletFactoryContext } from './utils/walletFactory.js';
 import type { SmartWalletDriver } from './utils/drivers.js';
-import { buildGMPPayload } from '../../contract/utils/gmp.js';
+import { buildGMPPayload } from 'contract/utils/gmp.js';
 import { makeReceiveUpCallPayload } from './utils/makeReceiveUpCallPayload.js';
 import { encodeAbiParameters } from 'viem';
 

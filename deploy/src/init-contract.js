@@ -1,4 +1,3 @@
-// @ts-check
 import { makeHelpers } from '@agoric/deploy-script-support';
 import { getManifest, startAxelarGmp } from './start-contract.js';
 import { chainInfo, assetInfo } from './info.js';
