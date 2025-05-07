@@ -1,8 +1,8 @@
-// @ts-check
 import { encodeFunctionData, encodeAbiParameters, hexToBytes } from 'viem';
 
 /**
- * @import {ContractCall, AbiEncodedContractCall} from '../types'
+ * @import {ContractCall, AbiEncodedContractCall} from '../types';
+ * @import {Bech32Address} from '@agoric/orchestration';
  */
 
 export const GMPMessageType = {
@@ -11,6 +11,7 @@ export const GMPMessageType = {
   TOKEN_ONLY: 3,
 };
 
+/** @type {{ AXELAR_GMP: Bech32Address, AXELAR_GAS: Bech32Address, OSMOSIS_RECEIVER: Bech32Address }} */
 export const gmpAddresses = {
   AXELAR_GMP:
     'axelar1dv4u5k73pzqrxlzujxg3qp8kvc3pje7jtdvu72npnt5zhq05ejcsn5qme5',
@@ -47,7 +48,7 @@ export const constructContractCall = ({ target, functionSignature, args }) => {
  * Builds a GMP payload from an array of contract calls.
  *
  * @param {Array<ContractCall>} contractCalls - Array of contract call objects.
- * @returns {{ payload: Array<AbiEncodedContractCall> }} The GMP payload object.
+ * @returns {Array<number>} The GMP payload object.
  */
 export const buildGMPPayload = (contractCalls) => {
   let abiEncodedContractCalls = [];

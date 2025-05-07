@@ -1,4 +1,3 @@
-// @ts-check
 import { M } from '@endo/patterns';
 import { E } from '@endo/far';
 import { prepareChainHubAdmin } from '@agoric/orchestration/src/exos/chain-hub-admin.js';
@@ -68,11 +67,13 @@ export const contract = async (
     zoeTools,
   });
 
+  const { localTransfer, withdrawToSeat } = zoeTools;
   const { createAndMonitorLCA } = orchestrateAll(evmFlows, {
     makeEvmAccountKit,
     log,
     chainHub,
-    zoeTools,
+    localTransfer,
+    withdrawToSeat,
   });
 
   const publicFacet = zone.exo(

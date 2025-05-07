@@ -1,5 +1,3 @@
-// @ts-check
-
 /**
  * @import {VTransferIBCEvent} from '@agoric/vats';
  * @import {Vow, VowTools} from '@agoric/vow';
@@ -7,8 +5,9 @@
  * @import {TypedPattern} from '@agoric/internal';
  * @import {FungibleTokenPacketData} from '@agoric/cosmic-proto/ibc/applications/transfer/v2/packet.js';
  * @import {ZoeTools} from '@agoric/orchestration/src/utils/zoe-tools.js';
- * @import {AxelarGmpIncomingMemo, EvmTapState, ContractCall} from './types';
+ * @import {AxelarGmpIncomingMemo, EvmTapState, ContractCall} from '../types';
  * @import {ZCF, ZCFSeat} from '@agoric/zoe';
+ * @import {AxelarGmpOutgoingMemo} from '../types'
  */
 
 /** @typedef {ContractCall} ContractCall */
@@ -20,7 +19,7 @@ import { atob, decodeBase64 } from '@endo/base64';
 import { decodeAbiParameters } from 'viem';
 import { Fail } from '@endo/errors';
 import { CosmosChainAddressShape } from '@agoric/orchestration';
-import { gmpAddresses, buildGMPPayload } from './utils/gmp.js';
+import { gmpAddresses, buildGMPPayload } from '../utils/gmp.js';
 
 const trace = makeTracer('EvmAccountKit');
 const { entries } = Object;
@@ -260,6 +259,7 @@ export const prepareEvmAccountKit = (
 
           const { chainId } = this.state.remoteChainInfo;
 
+          /** @type {AxelarGmpOutgoingMemo} */
           const memo = {
             destination_chain: destinationEVMChain,
             destination_address: destinationAddress,

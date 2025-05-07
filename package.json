@@ -7,6 +7,7 @@
     "lint": "prettier . --check",
     "lint:fix": "prettier . --write",
     "test": "yarn workspace deploy test && yarn workspace solidity test",
+    "lint:types": "yarn workspace deploy lint:types && yarn workspace contract lint:types",
     "build:solidity": "cd solidity && yarn build",
     "build:deploy": "cd deploy && yarn build",
     "build:local-env": "cd local-env && yarn build",
@@ -31,6 +32,10 @@
     "semi": true,
     "singleQuote": true,
     "printWidth": 80
+  },
+  "resolutions": {
+    "@agoric/vats": "^0.16.0-u20.0",
+    "@agoric/zoe": "^0.27.0-u20.0"
   },
   "keywords": [],
   "author": "",

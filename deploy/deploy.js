@@ -23,8 +23,10 @@ const execCmd = async (cmd) => {
   const args = ['-c', cmd];
   const opts = { stdio: 'inherit' };
   return runInsideContainer
-    ? execa('docker', ['exec', '-i', 'agoric', 'bash', ...args], opts)
-    : execa('bash', args, opts);
+    ? // @ts-ignore
+      execa('docker', ['exec', '-i', 'agoric', 'bash', ...args], opts)
+    : // @ts-ignore
+      execa('bash', args, opts);
 };
 
 const jqExtract = async (jqCmd) => {
