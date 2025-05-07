@@ -1,17 +1,11 @@
-// @ts-check
-const { expect } = require('chai');
-const { ethers, network } = require('hardhat');
-const {
-  encodeAbiParameters,
-  keccak256,
-  toBytes,
-  stringToHex,
-} = require('viem');
-const { constructContractCall } = require('./utils.cjs');
+import { expect } from 'chai';
+import { ethers, network } from 'hardhat';
+import { encodeAbiParameters, keccak256, toBytes, stringToHex } from 'viem';
+import { constructContractCall } from './utils';
 
 const abiCoder = new ethers.AbiCoder();
 
-describe('CallContractWithToken', function () {
+describe('CallContractWithToken', () => {
   let contract,
     owner,
     addr1,
@@ -148,7 +142,7 @@ describe('CallContractWithToken', function () {
   };
 
   before(async function () {
-    [owner, addr1, addr2] = await ethers.getSigners();
+    [owner, addr1] = await ethers.getSigners();
 
     // Mock AxelarGasService and AxelarGateway
     const GasServiceMock = await ethers.getContractFactory('AxelarGasService');
@@ -196,7 +190,7 @@ describe('CallContractWithToken', function () {
     stakingContract = await StakingContract.deploy(usdcAddress);
 
     // Creating a new wallet from the factory
-    [owner, addr1, addr2] = await ethers.getSigners();
+    [owner, addr1] = await ethers.getSigners();
     const walletName = 'MyWallet';
     const walletOwner = addr1.address;
 
@@ -207,7 +201,7 @@ describe('CallContractWithToken', function () {
       [walletName, walletOwner],
     );
     const options = {};
-    const payloadHash = keccak256(payload);
+    const payloadHash = keccak256(toBytes(payload));
     await approveMessage(
       commandId,
       sourceContract,
@@ -249,7 +243,7 @@ describe('CallContractWithToken', function () {
       ['0x00000000', agoricResponseEncoded],
     );
 
-    const expectedPayloadHash = keccak256(expectedPayload);
+    const expectedPayloadHash = keccak256(toBytes(expectedPayload));
 
     await expect(factoryTx)
       .to.emit(contract, 'WalletCreated')
