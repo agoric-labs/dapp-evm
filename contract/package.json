@@ -10,6 +10,9 @@
     "@agoric/zone": "^0.3.0-u20.0",
     "typescript": "~5.8.2"
   },
+  "scripts": {
+    "lint:types": "tsc"
+  },
   "dependencies": {
     "@agoric/internal": "^0.4.0-u20.0",
     "@agoric/orchestration": "^0.2.0-u20.0",

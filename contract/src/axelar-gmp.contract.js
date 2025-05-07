@@ -67,11 +67,13 @@ export const contract = async (
     zoeTools,
   });
 
+  const { localTransfer, withdrawToSeat } = zoeTools;
   const { createAndMonitorLCA } = orchestrateAll(evmFlows, {
     makeEvmAccountKit,
     log,
     chainHub,
-    zoeTools,
+    localTransfer,
+    withdrawToSeat,
   });
 
   const publicFacet = zone.exo(

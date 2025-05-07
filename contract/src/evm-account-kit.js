@@ -7,6 +7,7 @@
  * @import {ZoeTools} from '@agoric/orchestration/src/utils/zoe-tools.js';
  * @import {AxelarGmpIncomingMemo, EvmTapState, ContractCall} from '../types.js';
  * @import {ZCF, ZCFSeat} from '@agoric/zoe';
+ * @import {AxelarGmpOutgoingMemo} from '../types'
  */
 
 /** @typedef {ContractCall} ContractCall */
@@ -258,6 +259,7 @@ export const prepareEvmAccountKit = (
 
           const { chainId } = this.state.remoteChainInfo;
 
+          /** @type {AxelarGmpOutgoingMemo} */
           const memo = {
             destination_chain: destinationEVMChain,
             destination_address: destinationAddress,

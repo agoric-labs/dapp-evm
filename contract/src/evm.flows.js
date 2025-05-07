@@ -7,11 +7,11 @@ import { gmpAddresses, GMPMessageType } from '../utils/gmp.js';
  * @import {GuestInterface, GuestOf} from '@agoric/async-flow';
  * @import {Orchestrator, OrchestrationFlow} from '@agoric/orchestration';
  * @import {MakeEvmAccountKit} from './evm-account-kit.js';
- * @import {MakePortfolioHolder} from '@agoric/orchestration/src/exos/portfolio-holder-kit.js';
  * @import {ChainHub} from '@agoric/orchestration/src/exos/chain-hub.js';
  * @import {Vow} from '@agoric/vow';
- * @import {ZoeTools} from '@agoric/orchestration/src/utils/zoe-tools.js';
- * @import {ZCFSeat} from '@agoric/zoe';
+ * @import {ZCFSeat, AmountKeywordRecord} from '@agoric/zoe';
+ * @import {LocalAccountMethods} from '@agoric/orchestration';
+ * @import {AxelarGmpOutgoingMemo} from '../types'
  */
 
 const trace = makeTracer('EvmFlow');
@@ -21,16 +21,30 @@ const trace = makeTracer('EvmFlow');
  * @param {Orchestrator} orch
  * @param {{
  *   makeEvmAccountKit: MakeEvmAccountKit;
- *   makePortfolioHolder: MakePortfolioHolder;
  *   chainHub: GuestInterface<ChainHub>;
- *   log: GuestOf<(msg: string) => Vow<void>>;
- *   zoeTools: ZoeTools;
+ *   log: GuestOf<
+ *     (msg: string) => Vow<void>
+ *   >;
+ *   localTransfer: GuestOf<
+ *     (
+ *       srcSeat: ZCFSeat,
+ *       localAccount: LocalAccountMethods,
+ *       amounts: AmountKeywordRecord
+ *     ) => Vow<void>
+ *   >;
+ *   withdrawToSeat: GuestOf<
+ *     (
+ *       localAccount: LocalAccountMethods,
+ *       destSeat: ZCFSeat,
+ *       amounts: AmountKeywordRecord
+ *     ) => Vow<void>
+ *   >;
  * }} ctx
  * @param {ZCFSeat} seat
  */
 export const createAndMonitorLCA = async (
   orch,
-  { log, makeEvmAccountKit, chainHub, zoeTools },
+  { makeEvmAccountKit, chainHub, log, localTransfer, withdrawToSeat },
   seat,
 ) => {
   void log('Inside createAndMonitorLCA');
@@ -84,10 +98,11 @@ export const createAndMonitorLCA = async (
     `${amt.brand} not registered in vbank`,
   );
 
-  await zoeTools.localTransfer(seat, localAccount, give);
+  await localTransfer(seat, localAccount, give);
 
   const factoryContractAddress = '0xef8651dD30cF990A1e831224f2E0996023163A81';
 
+  /** @type {AxelarGmpOutgoingMemo} */
   const memo = {
     destination_chain: 'Ethereum',
     destination_address: factoryContractAddress,
@@ -116,7 +131,7 @@ export const createAndMonitorLCA = async (
 
     void log('Done');
   } catch (e) {
-    await zoeTools.withdrawToSeat(localAccount, seat, give);
+    await withdrawToSeat(localAccount, seat, give);
     const errorMsg = `IBC Transfer failed ${q(e)}`;
     seat.exit(errorMsg);
     throw makeError(errorMsg);

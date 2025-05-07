@@ -2,6 +2,7 @@ import type {
   OrchestrationAccount,
   ChainAddress,
   Denom,
+  Bech32Address,
 } from '@agoric/orchestration';
 import { IBCChannelID } from '@agoric/vats';
 
@@ -20,16 +21,16 @@ export type AxelarGmpIncomingMemo = {
 
 export type AxelarFeeObject = {
   amount: string;
-  recipient: string;
+  recipient: Bech32Address;
 };
 
-export interface AxelarGmpOutgoingMemo {
+export type AxelarGmpOutgoingMemo = {
   destination_chain: string;
   destination_address: string;
   payload: number[] | null;
   type: number;
   fee?: AxelarFeeObject;
-}
+};
 
 export type EvmTapState = {
   localAccount: OrchestrationAccount<{ chainId: 'agoric' }>;
@@ -42,12 +43,12 @@ export type EvmTapState = {
 };
 
 export type ContractCall = {
-  target: string;
+  target: `0x${string}`;
   functionSignature: string;
   args: Array<unknown>;
 };
 
 export type AbiEncodedContractCall = {
-  target: string;
-  data: string;
+  target: `0x${string}`;
+  data: `0x${string}`;
 };
