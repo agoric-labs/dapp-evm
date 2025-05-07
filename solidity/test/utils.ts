@@ -1,7 +1,6 @@
-// @ts-check
-const { encodeFunctionData } = require('viem');
+import { encodeFunctionData } from 'viem';
 
-const constructContractCall = ({ target, functionSignature, args }) => {
+export const constructContractCall = ({ target, functionSignature, args }) => {
   const [name, paramsRaw] = functionSignature.split('(');
   const params = paramsRaw.replace(')', '').split(',').filter(Boolean);
 
@@ -19,8 +18,4 @@ const constructContractCall = ({ target, functionSignature, args }) => {
       args,
     }),
   };
-};
-
-module.exports = {
-  constructContractCall,
 };
