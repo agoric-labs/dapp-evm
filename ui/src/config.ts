@@ -107,6 +107,13 @@ export const networkConfigs = {
     api: 'http://localhost:1317',
     chainId: 'agoriclocal',
   },
+  'axelar-local': {
+    label: 'Axelar Local Network',
+    url: 'https://local.agoric.net/network-config',
+    api: 'http://localhost/agoric-lcd',
+    rpc: 'http://localhost/agoric-rpc',
+    chainId: 'agoriclocal',
+  },
 };
 
 export type Network = keyof typeof networkConfigs;
