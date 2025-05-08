@@ -2,15 +2,36 @@ import { handleOffer } from '../Utils';
 import { useAppStore } from '../state';
 import { ContractCall, OfferArgs } from 'contract/types';
 import './MakeAccount.css';
+import { useState, useEffect } from 'react';
+import { LatestInvitation } from '../types';
 
 export const MakeAccount = () => {
-  const { contractInstance, currentOffers } = useAppStore.getState();
+  const { contractInstance, currentWalletRecord } = useAppStore.getState();
+  const [latestInvitation, setLatestInvitation] =
+    useState<LatestInvitation>(undefined);
+
+  useEffect(() => {
+    const invitations = currentWalletRecord?.offerToUsedInvitation.filter(
+      (invitation) => {
+        const value: unknown = invitation[1].value;
+        if (Array.isArray(value)) {
+          return value[0]?.instance === contractInstance;
+        }
+
+        return false;
+      },
+    );
+    const latestInvitation = invitations?.sort((a, b) =>
+      b[0].localeCompare(a[0]),
+    )[0];
+
+    setLatestInvitation(latestInvitation);
+  }, [currentWalletRecord]);
+
   const BLD = {
     brandKey: 'BLD',
     decimals: 6,
   };
-
-  
 
   const makeAccount = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -42,6 +63,7 @@ export const MakeAccount = () => {
 
   const sendGmpViaLCA = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (!latestInvitation) throw new Error('latestInvitation is not defined');
 
     const { brands } = useAppStore.getState();
 
@@ -76,7 +98,7 @@ export const MakeAccount = () => {
       toastMessage: 'Submitting GMP transaction...',
       invitationSpec: {
         source: 'continuing',
-        previousOffer: 'TODO',
+        previousOffer: latestInvitation[0],
         invitationMakerName: 'makeEVMTransactionInvitation',
         invitationArgs: harden(['sendGmp', [sendGmpArgs]]),
       },
@@ -85,24 +107,6 @@ export const MakeAccount = () => {
       onSuccessMessage: 'Transaction Submitted Successfully',
     });
   };
-
-  console.log(currentOffers)
-  const invitations = currentOffers?.offerToUsedInvitation.filter(
-    (invitation) => {
-      const value = invitation[1].value;
-console.log("invi", invitation)
-      if (Array.isArray(value)) {
-        // TODO: figure out why it works but gives a type error
-        // @ts-expect-error
-        return value[0]?.instance === contractInstance;
-      }
-
-      return false;
-    },
-  );
-  const latestInvitation = invitations?.sort((a, b) =>
-    b[0].localeCompare(a[0]),
-  )[0];
 
   return (
     <form className="dark-form-container">

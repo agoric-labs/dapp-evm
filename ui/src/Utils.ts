@@ -17,6 +17,7 @@ import {
   makeAgoricWalletConnection,
 } from '@agoric/web-components';
 import { useAppStore } from './state';
+import { CurrentWalletRecord } from '@agoric/smart-wallet/src/smartWallet.js';
 
 export const isValidEthereumAddress = (address: string) => {
   if (!/^0x[a-fA-F0-9]{40}$/.test(address)) {
@@ -172,6 +173,22 @@ export const connectWallet = async () => {
   await suggestChain(url);
   const wallet = await makeAgoricWalletConnection(watcher, rpc);
   useAppStore.setState({ wallet });
+};
+
+export const watchWallet = () => {
+  const { wallet, watcher } = useAppStore.getState();
+  watcher?.watchLatest<CurrentWalletRecord>(
+    [Kind.Data, `published.wallet.${wallet?.address}.current`],
+    (co) => {
+      const currentWalletRecord = co ? co : null;
+      if (!currentWalletRecord) {
+        return;
+      }
+      useAppStore.setState({
+        currentWalletRecord,
+      });
+    },
+  );
 };
 
 export const createWatcherHandlers = (

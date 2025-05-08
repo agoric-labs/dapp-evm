@@ -3,6 +3,7 @@ import { CurrentWalletRecord } from '@agoric/smart-wallet/src/smartWallet.js';
 import { SupportedDestinationChains, GMPMessageType } from 'contract/types';
 import { makeAgoricChainStorageWatcher } from '@agoric/rpc';
 import { networkConfigs } from 'config';
+import { Amount } from '@agoric/ertp';
 
 type Wallet = Awaited<ReturnType<typeof makeAgoricWalletConnection>>;
 
@@ -22,7 +23,7 @@ export type AppState = {
   type: GMPMessageType;
   transactionUrl: string | null;
   tab: number;
-  currentOffers: CurrentWalletRecord | null;
+  currentWalletRecord: CurrentWalletRecord | null;
   network: keyof typeof networkConfigs;
   watcher: ReturnType<typeof makeAgoricChainStorageWatcher> | null;
   error?: string;
@@ -67,3 +68,7 @@ export type OfferUpdate = {
   status: string;
   data?: unknown;
 };
+
+export type LatestInvitation =
+  | [offerId: string, usedInvitation: Amount]
+  | undefined;

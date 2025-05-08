@@ -1,7 +1,12 @@
 import { useState } from 'react';
 import './ConnectionModal.css';
 import { useAppStore } from '../state.js';
-import { connectWallet, setupWatcher, showSuccess } from '../Utils.js';
+import {
+  connectWallet,
+  setupWatcher,
+  showSuccess,
+  watchWallet,
+} from '../Utils.js';
 import { Network, networkConfigs } from '../config.js';
 
 export const ConnectionModal = () => {
@@ -31,6 +36,7 @@ export const ConnectionModal = () => {
       if (!watcher) throw Error('watcher is not defined');
 
       await connectWallet();
+      watchWallet();
       setShowModal(false);
       showSuccess({ content: 'Wallet Connected', duration: 1000 });
     } catch (err) {

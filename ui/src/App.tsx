@@ -16,7 +16,7 @@ const App = () => {
     type: state.type,
     transactionUrl: state.transactionUrl,
     tab: state.tab,
-    currentOffers: state.currentOffers,
+    currentWalletRecord: state.currentWalletRecord,
     watcher: state.watcher,
     wallet: state.wallet,
     brands: state.brands,
