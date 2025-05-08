@@ -23,6 +23,10 @@ export const MakeAccount = () => {
       if (!brands) throw new Error('Brands not initialized');
       if (!wallet) throw new Error('Wallet not connected');
 
+      useAppStore.setState({
+        loading: true,
+      });
+
       const requiredBrand = brands[BLD.brandKey];
       const amountValue = BigInt(8000);
 
@@ -33,6 +37,7 @@ export const MakeAccount = () => {
         },
       };
 
+      toastId = toast.info('Submitting transaction...', { isLoading: true });
       await new Promise<void>((resolve, reject) => {
         wallet.makeOffer(
           {
@@ -49,7 +54,10 @@ export const MakeAccount = () => {
                 reject(new Error(`Offer error: ${update.data}`));
                 break;
               case 'accepted':
-                toast.success('Offer accepted!');
+                showSuccess({
+                  content: 'Offer accepted!',
+                  duration: TOAST_DURATION.SUCCESS,
+                });
                 resolve();
                 break;
               case 'refunded':
@@ -58,11 +66,6 @@ export const MakeAccount = () => {
             }
           },
         );
-      });
-
-      showSuccess({
-        content: 'Transaction Submitted Successfully',
-        duration: TOAST_DURATION.SUCCESS,
       });
     } catch (error) {
       showError({
