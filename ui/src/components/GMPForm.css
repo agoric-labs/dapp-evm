@@ -44,30 +44,6 @@
   box-shadow: 0 0 8px rgba(0, 0, 0, 0.2);
 }
 
-.submit-button {
-  background-color: #0070f3;
-  color: #ffffff;
-  padding: 12px 30px;
-  font-size: 18px;
-  border: none;
-  border-radius: 10px;
-  cursor: pointer;
-  transition: background-color 0.25s ease;
-}
-
-.submit-button:hover {
-  background-color: #0058c0;
-}
-
-.submit-button:active {
-  background-color: #0043a1;
-}
-
-.submit-button:disabled {
-  background-color: #555;
-  cursor: not-allowed;
-}
-
 .form-group-evm-address {
   display: flex;
   gap: 8px;
@@ -84,19 +60,24 @@
   align-items: center;
   justify-content: center;
   gap: 6px;
-  border: none;
-  border-radius: 8px;
-  cursor: pointer;
-  font-size: 0.75rem;
-  margin: 0;
-  background: #0070f3;
-  color: #f7f7f7;
 }
 
-.metamask-button:hover {
-  background: #0058c0;
+.form-group {
+  margin-bottom: 1.5rem;
 }
 
-.metamask-button:disabled {
-  background-color: #555;
+.input-field {
+  width: 90%;
+  padding: 0.75rem;
+  border: 1px solid #e2e8f0;
+  border-radius: 4px;
+  font-size: 1rem;
+}
+
+.input-label {
+  display: block;
+  margin-bottom: 0.5rem;
+  color: #a6acba;
+  tab-size: 4;
+  font-size: 0.875rem;
 }

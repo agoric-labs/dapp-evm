@@ -16,16 +16,6 @@
 }
 
 .invoke-button {
-  background: #0070f3;
-  color: #f7f7f7;
   width: 80%;
   margin-left: 40px;
-}
-
-.invoke-button:hover {
-  background: #0058c0;
-}
-
-.invoke-button:disabled {
-  background-color: #555;
 }

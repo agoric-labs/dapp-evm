@@ -15,18 +15,8 @@
 .tab-button {
   width: 100%;
   padding: 12px 0;
-  font-size: 1rem;
   background: #2a2f45;
   border: none;
-  border-radius: 8px;
-  color: #c0c8e0;
-  font-weight: 500;
-  cursor: pointer;
-  transition: all 0.2s ease;
-}
-
-.tab-button:hover {
-  background-color: #0058c0;
 }
 
 .tab-button.active {
