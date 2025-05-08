@@ -1,0 +1,102 @@
+.dark-form-container {
+  max-width: 500px;
+  margin: 2rem auto;
+  padding: 2rem;
+  background-color: #1e1e1e;
+  border-radius: 12px;
+  color: #e0e0e0;
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.3);
+}
+
+.dark-title {
+  text-align: center;
+  font-size: 28px;
+  margin-bottom: 1.5rem;
+  color: #ffffff;
+}
+
+.dark-dropdown {
+  width: 100%;
+  padding: 10px;
+  border-radius: 8px;
+  background-color: #2b2b2b;
+  color: #f1f1f1;
+  border: 1px solid #444;
+  margin-bottom: 1.5rem;
+  cursor: pointer;
+  appearance: none;
+  background-image: url("data:image/svg+xml;charset=UTF-8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 20' fill='white'%3E%3Cpath fill-rule='evenodd' d='M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z' clip-rule='evenodd'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 0.75rem center;
+  background-size: 1rem;
+}
+
+.dark-dropdown option {
+  background-color: #2b2b2b;
+  color: #f1f1f1;
+}
+
+.dark-card {
+  background-color: #2a2a2a;
+  padding: 1.5rem;
+  border-radius: 12px;
+  border: 1px solid #444;
+  box-shadow: 0 0 8px rgba(0, 0, 0, 0.2);
+}
+
+.submit-button {
+  background-color: #0070f3;
+  color: #ffffff;
+  padding: 12px 30px;
+  font-size: 18px;
+  border: none;
+  border-radius: 10px;
+  cursor: pointer;
+  transition: background-color 0.25s ease;
+}
+
+.submit-button:hover {
+  background-color: #0058c0;
+}
+
+.submit-button:active {
+  background-color: #0043a1;
+}
+
+.submit-button:disabled {
+  background-color: #555;
+  cursor: not-allowed;
+}
+
+.form-group-evm-address {
+  display: flex;
+  gap: 8px;
+}
+
+.metamask-logo {
+  width: 18px;
+  height: 18px;
+}
+
+.metamask-button {
+  width: 8rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 0.75rem;
+  margin: 0;
+  background: #0070f3;
+  color: #f7f7f7;
+}
+
+.metamask-button:hover {
+  background: #0058c0;
+}
+
+.metamask-button:disabled {
+  background-color: #555;
+}

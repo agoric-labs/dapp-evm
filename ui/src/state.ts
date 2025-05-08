@@ -12,4 +12,8 @@ export const useAppStore = create<AppState>((set) => ({
   transactionUrl: null,
   tab: 1,
   currentOffers: null,
+  watcher: null,
+  wallet: null,
+  brands: null,
+  network: 'localhost',
 }));

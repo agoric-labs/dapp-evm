@@ -3,6 +3,7 @@ import { TOAST_DURATION } from '../config';
 import { useAppStore } from '../state';
 import { toast } from 'react-toastify';
 import { ContractCall, OfferArgs } from 'contract/types';
+import './MakeAccount.css';
 
 export const MakeAccount = () => {
   const { wallet, contractInstance, brands, currentOffers } =
@@ -172,21 +173,19 @@ export const MakeAccount = () => {
   )[0];
 
   return (
-    <div className="dashboard-container">
-      <div className="dashboard">
-        <div className="transfer-form">
-          <button className="invoke-button" onClick={makeOffer}>
-            Make Account
-          </button>
-          <button
-            className="invoke-button"
-            onClick={sendGmpViaLCA}
-            disabled={!latestInvitation}
-          >
-            Use Account {latestInvitation ? `(${latestInvitation[0]})` : ''}
-          </button>
-        </div>
-      </div>
-    </div>
+    <form className="dark-form-container">
+      <h2 className="dark-title">Make Account</h2>
+
+      <button className="invoke-button" onClick={makeOffer}>
+        Make Account
+      </button>
+      <button
+        className="invoke-button"
+        onClick={sendGmpViaLCA}
+        disabled={!latestInvitation}
+      >
+        Use Account {latestInvitation ? `(${latestInvitation[0]})` : ''}
+      </button>
+    </form>
   );
 };

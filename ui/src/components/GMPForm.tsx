@@ -17,6 +17,9 @@ import {
   ContractCall,
   GMPMessageType,
 } from 'contract/types';
+import './GMPForm.css';
+
+export const EVM_CHAINS = ['Avalanche', 'Base', 'Ethereum'];
 
 const prepareOfferArguments = async (
   type: number,
@@ -76,7 +79,7 @@ const createQueryParameters = (
       };
 };
 
-export const AgoricContractForm = () => {
+export const GMPForm = () => {
   const [gasInfo, setGasInfo] = useState('');
   const { connect, connectors } = useConnect();
   const { address, isConnected } = useAccount();
@@ -243,115 +246,109 @@ export const AgoricContractForm = () => {
   const metaMaskButtonText = isConnected ? 'Fill With' : 'Connect';
 
   return (
-    <div className="dashboard-container">
-      <div className="dashboard">
-        <div className="transfer-form">
-          <div className="form-group">
-            <label className="input-label">Select EVM Chain:</label>
+    <form className="dark-form-container">
+      <h2 className="dark-title">Send Tokens</h2>
+
+      <select
+        className="dark-dropdown"
+        value={destinationEVMChain}
+        onChange={(e) =>
+          useAppStore.setState({
+            destinationEVMChain: e.target.value as SupportedDestinationChains,
+          })
+        }
+      >
+        <option value="">Select Chain</option>
+        {EVM_CHAINS.map((chain) => (
+          <option key={chain} value={chain}>
+            {chain}
+          </option>
+        ))}
+      </select>
+
+      <div className="form-group">
+        {type === 3 ? null : (
+          <>
+            <label className="input-label">EVM Contract:</label>
             <select
               className="select-field"
               value={destinationEVMChain}
               onChange={(e) =>
                 useAppStore.setState({
-                  destinationEVMChain: e.target
-                    .value as SupportedDestinationChains,
+                  evmAddress: e.target.value as `0x${string}`,
                 })
               }
             >
               <option value="" disabled>
-                Select a chain
+                Select contract
               </option>
-              <option value="Avalanche">Avalanche</option>
-              <option value="Ethereum">Ethereum</option>
-              <option value="Base">Base</option>
+              <option value="0x479d5B0115dCf2259C4e613E6D5C4fc14A5Dce95">
+                Aave
+              </option>
+              <option value="0x479d5B0115dCf2259C4e613E6D5C4fc14A5Dce95">
+                Compound
+              </option>
+              <option value="0x479d5B0115dCf2259C4e613E6D5C4fc14A5Dce95">
+                Morpho
+              </option>
             </select>
-          </div>
+          </>
+        )}
+      </div>
 
-          <div className="form-group">
-            {type === 3 ? null : (
-              <>
-                <label className="input-label">EVM Contract:</label>
-                <select
-                  className="select-field"
-                  value={destinationEVMChain}
-                  onChange={(e) =>
-                    useAppStore.setState({
-                      evmAddress: e.target.value as `0x${string}`,
-                    })
-                  }
-                >
-                  <option value="" disabled>
-                    Select contract
-                  </option>
-                  <option value="0x479d5B0115dCf2259C4e613E6D5C4fc14A5Dce95">
-                    Aave
-                  </option>
-                  <option value="0x479d5B0115dCf2259C4e613E6D5C4fc14A5Dce95">
-                    Compound
-                  </option>
-                  <option value="0x479d5B0115dCf2259C4e613E6D5C4fc14A5Dce95">
-                    Morpho
-                  </option>
-                </select>
-              </>
-            )}
-          </div>
-
-          <div className="form-group">
-            <label className="input-label">To (EVM Address):</label>
-            <div className="form-group-evm-address">
-              <input
-                className="input-field"
-                value={evmAddress}
-                onChange={(e) =>
-                  useAppStore.setState({
-                    evmAddress: e.target.value as `0x${string}`,
-                  })
-                }
-                placeholder="0x..."
-              />
-              <button onClick={handleConnect} className="metamask-button">
-                <span>{metaMaskButtonText}</span>
-                <img
-                  src={metamaskLogo}
-                  className="metamask-logo"
-                  alt="Metamask logo"
-                />
-              </button>
-            </div>
-          </div>
-
-          <div className="form-group">
-            <label className="input-label">Amount:</label>
-            <input
-              className="input-field"
-              type="number"
-              value={amountToSend}
-              onChange={handleAmountToSend}
-              placeholder="0.00"
-              min="0"
-              step="0.01"
-            />
-            {gasInfo !== '' && <p className="gas-message">{gasInfo}</p>}
-          </div>
-
-          <button
-            className="send-button"
-            onClick={makeOffer}
-            disabled={
-              loading || !evmAddress || !amountToSend || !destinationEVMChain
+      <div className="form-group">
+        <label className="input-label">To (EVM Address):</label>
+        <div className="form-group-evm-address">
+          <input
+            className="input-field"
+            value={evmAddress}
+            onChange={(e) =>
+              useAppStore.setState({
+                evmAddress: e.target.value as `0x${string}`,
+              })
             }
-          >
-            {loading ? 'Processing...' : buttonText}
+            placeholder="0x..."
+          />
+          <button onClick={handleConnect} className="metamask-button">
+            <span>{metaMaskButtonText}</span>
+            <img
+              src={metamaskLogo}
+              className="metamask-logo"
+              alt="Metamask logo"
+            />
           </button>
         </div>
       </div>
+
+      <div className="form-group">
+        <label className="input-label">Amount:</label>
+        <input
+          className="input-field"
+          type="number"
+          value={amountToSend}
+          onChange={handleAmountToSend}
+          placeholder="0.00"
+          min="0"
+          step="0.01"
+        />
+        {gasInfo !== '' && <p className="gas-message">{gasInfo}</p>}
+      </div>
+
+      <button
+        className="submit-button"
+        onClick={makeOffer}
+        disabled={
+          loading || !evmAddress || !amountToSend || !destinationEVMChain
+        }
+      >
+        {loading ? 'Processing...' : buttonText}
+      </button>
 
       {transactionUrl && (
         <button className="view-transaction-button" onClick={viewTransaction}>
           View Transaction
         </button>
       )}
-    </div>
+    </form>
   );
 };

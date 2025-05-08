@@ -1,0 +1,29 @@
+.dashboard-container {
+  width: 420px;
+}
+
+.dashboard {
+  background: #29324c;
+  padding: 2rem;
+  border-radius: 8px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+.content {
+  width: 100%;
+  padding: 40px;
+  background-color: #1a1a1a;
+  border-radius: 16px;
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.4);
+}
+
+.main-container {
+  display: flex;
+  align-items: flex-start;
+  gap: 40px;
+  padding: 40px;
+  background-color: #121212;
+  width: 100%;
+  min-height: 100vh;
+  box-sizing: border-box;
+}

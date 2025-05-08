@@ -1,4 +1,4 @@
-import { COSMOS_CHAINS } from './config';
+import { COSMOS_CHAINS, networkConfigs } from './config';
 import { AxelarQueryAPI, Environment } from '@axelar-network/axelarjs-sdk';
 import { toast } from 'react-toastify';
 import {
@@ -6,6 +6,15 @@ import {
   GasEstimateParams,
   ToastMessageOptions,
 } from './types';
+import {
+  makeAgoricChainStorageWatcher,
+  AgoricChainStoragePathKind as Kind,
+} from '@agoric/rpc';
+import {
+  suggestChain,
+  makeAgoricWalletConnection,
+} from '@agoric/web-components';
+import { useAppStore } from './state';
 
 export const isValidEthereumAddress = (address: string) => {
   if (!/^0x[a-fA-F0-9]{40}$/.test(address)) {
@@ -150,4 +159,62 @@ export const getAxelarTxURL = async ({
 
   console.log('Transaction URL:', transactionUrl);
   return transactionUrl;
+};
+
+export const connectWallet = async () => {
+  const { network, watcher } = useAppStore.getState();
+  if (!watcher) {
+    throw Error('watcher is not defined');
+  }
+  const { url, rpc } = networkConfigs[network];
+  await suggestChain(url);
+  const wallet = await makeAgoricWalletConnection(watcher, rpc);
+  useAppStore.setState({ wallet });
+};
+
+export const createWatcherHandlers = (
+  watcher: ReturnType<typeof makeAgoricChainStorageWatcher>,
+) => {
+  return {
+    watchInstances: () => {
+      watcher.watchLatest<Array<[string, unknown]>>(
+        [Kind.Data, 'published.agoricNames.instance'],
+        (instances) => {
+          console.log('got instances', instances);
+          useAppStore.setState({
+            contractInstance: instances.find(([name]) => name === 'StkC')?.[1],
+          });
+        },
+      );
+    },
+
+    watchBrands: () => {
+      watcher.watchLatest<Array<[string, unknown]>>(
+        [Kind.Data, 'published.agoricNames.brand'],
+        (brands) => {
+          console.log('Got brands', brands);
+          useAppStore.setState({
+            brands: Object.fromEntries(brands),
+          });
+        },
+      );
+    },
+  };
+};
+
+export const setupWatcher = ({
+  api,
+  chainId,
+}: {
+  api: string;
+  chainId: string;
+}) => {
+  const watcher = makeAgoricChainStorageWatcher(api, chainId);
+  useAppStore.setState({ watcher });
+
+  const handlers = createWatcherHandlers(watcher);
+  handlers.watchInstances();
+  handlers.watchBrands();
+
+  return watcher;
 };

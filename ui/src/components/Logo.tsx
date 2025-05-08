@@ -1,10 +1,18 @@
-import agoricLogo from '/agoric.svg';
+type LogoProps = {
+  width?: string;
+  height?: string;
+};
 
-const Logo = () => (
+const Logo = ({ width = '250px', height = '250px' }: LogoProps) => (
   <div className="logo-container">
-    <h1 className="title">EVM Orchestration Demo</h1>
     <a href="https://agoric.com/develop" target="_blank">
-      <img src={agoricLogo} className="agoric-logo" alt="Agoric logo" />
+      <img
+        src={`${import.meta.env.BASE_URL}agoric.svg`}
+        className="agoric-logo"
+        alt="Agoric logo"
+        height={height}
+        width={width}
+      />
     </a>
   </div>
 );
