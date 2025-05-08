@@ -276,7 +276,7 @@ export const GMPForm = () => {
       </select>
 
       <div className="form-group">
-        <label className="input-label">To (EVM Address):</label>
+        <label className="input-label">EVM Address:</label>
         <div className="form-group-evm-address">
           <input
             className="input-field"
