@@ -182,7 +182,9 @@ export const createWatcherHandlers = (
         (instances) => {
           console.log('got instances', instances);
           useAppStore.setState({
-            contractInstance: instances.find(([name]) => name === 'StkC')?.[1],
+            contractInstance: instances.find(
+              ([name]) => name === 'axelarGmp',
+            )?.[1],
           });
         },
       );

@@ -96,7 +96,8 @@ export const GMPForm = () => {
     transactionUrl,
   } = useAppStore.getState();
 
-  const makeOffer = async () => {
+  const makeOffer = async (e: React.FormEvent) => {
+    e.preventDefault();
     let toastId: string | number | null = null;
 
     try {
@@ -235,7 +236,9 @@ export const GMPForm = () => {
     }
   });
 
-  const handleConnect = () => {
+  const handleConnect = (e: React.FormEvent) => {
+    e.preventDefault();
+
     if (!isConnected) {
       connect({ connector: connectors[0] });
     } else {

@@ -12,7 +12,10 @@ export const MakeAccount = () => {
     brandKey: 'BLD',
     decimals: 6,
   };
-  const makeOffer = async () => {
+
+  const makeOffer = async (e: React.FormEvent) => {
+    e.preventDefault();
+
     let toastId: string | number | null = null;
 
     try {
@@ -72,7 +75,9 @@ export const MakeAccount = () => {
     }
   };
 
-  const sendGmpViaLCA = async () => {
+  const sendGmpViaLCA = async (e: React.FormEvent) => {
+    e.preventDefault();
+
     if (!latestInvitation) return;
 
     const requiredBrand = brands?.[BLD.brandKey];
@@ -147,11 +152,9 @@ export const MakeAccount = () => {
     } catch (error) {
       showError({
         content: error instanceof Error ? error.message : String(error),
-        duration: TOAST_DURATION.ERROR,
       });
     } finally {
       if (toastId) toast.dismiss(toastId);
-      useAppStore.setState({ loading: false });
     }
   };
 
