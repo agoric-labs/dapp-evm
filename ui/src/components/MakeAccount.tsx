@@ -1,87 +1,49 @@
-import { showError, showSuccess } from '../Utils';
-import { TOAST_DURATION } from '../config';
+import { handleOffer } from '../Utils';
 import { useAppStore } from '../state';
-import { toast } from 'react-toastify';
 import { ContractCall, OfferArgs } from 'contract/types';
 import './MakeAccount.css';
 
 export const MakeAccount = () => {
-  const { wallet, contractInstance, brands, currentOffers } =
-    useAppStore.getState();
+  const { contractInstance, currentOffers } = useAppStore.getState();
   const BLD = {
     brandKey: 'BLD',
     decimals: 6,
   };
 
-  const makeOffer = async (e: React.FormEvent) => {
+  
+
+  const makeAccount = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    let toastId: string | number | null = null;
+    const { brands } = useAppStore.getState();
+    if (!brands) throw new Error('Brands not initialized');
+    const requiredBrand = brands[BLD.brandKey];
+    const amountValue = BigInt(8000);
 
-    try {
-      if (!contractInstance) throw new Error('No contract instance');
-      if (!brands) throw new Error('Brands not initialized');
-      if (!wallet) throw new Error('Wallet not connected');
+    const give = {
+      [BLD.brandKey]: {
+        brand: requiredBrand,
+        value: amountValue,
+      },
+    };
 
-      useAppStore.setState({
-        loading: true,
-      });
-
-      const requiredBrand = brands[BLD.brandKey];
-      const amountValue = BigInt(8000);
-
-      const give = {
-        [BLD.brandKey]: {
-          brand: requiredBrand,
-          value: amountValue,
-        },
-      };
-
-      toastId = toast.info('Submitting transaction...', { isLoading: true });
-      await new Promise<void>((resolve, reject) => {
-        wallet.makeOffer(
-          {
-            source: 'contract',
-            instance: contractInstance,
-            publicInvitationMaker: 'createAndMonitorLCA',
-          },
-          { give },
-          {},
-          (update: { status: string; data?: unknown }) => {
-            switch (update.status) {
-              case 'error':
-                console.error('Error:', update);
-                reject(new Error(`Offer error: ${update.data}`));
-                break;
-              case 'accepted':
-                showSuccess({
-                  content: 'Offer accepted!',
-                  duration: TOAST_DURATION.SUCCESS,
-                });
-                resolve();
-                break;
-              case 'refunded':
-                reject(new Error('Offer was rejected'));
-                break;
-            }
-          },
-        );
-      });
-    } catch (error) {
-      showError({
-        content: error instanceof Error ? error.message : String(error),
-        duration: TOAST_DURATION.ERROR,
-      });
-    } finally {
-      if (toastId) toast.dismiss(toastId);
-      useAppStore.setState({ loading: false });
-    }
+    await handleOffer({
+      toastMessage: 'Submitting transaction...',
+      invitationSpec: {
+        source: 'contract',
+        instance: contractInstance,
+        publicInvitationMaker: 'createAndMonitorLCA',
+      },
+      proposal: { give },
+      offerArgs: {},
+      onSuccessMessage: 'Offer accepted!',
+    });
   };
 
   const sendGmpViaLCA = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    if (!latestInvitation) return;
+    const { brands } = useAppStore.getState();
 
     const requiredBrand = brands?.[BLD.brandKey];
     const amountValue = BigInt(1000000);
@@ -110,61 +72,25 @@ export const MakeAccount = () => {
       contractInvocationData,
     };
 
-    const args = {
-      id: Date.now(),
+    await handleOffer({
+      toastMessage: 'Submitting GMP transaction...',
       invitationSpec: {
         source: 'continuing',
-        previousOffer: latestInvitation[0],
+        previousOffer: 'TODO',
         invitationMakerName: 'makeEVMTransactionInvitation',
         invitationArgs: harden(['sendGmp', [sendGmpArgs]]),
       },
-      offerArgs: {},
       proposal: { give },
-    };
-    let toastId: string | number | null = null;
-
-    try {
-      if (!wallet) throw new Error('Wallet not connected');
-
-      await new Promise<void>((resolve, reject) => {
-        wallet.makeOffer(
-          args.invitationSpec,
-          args.proposal,
-          args.offerArgs,
-          (update: { status: string; data?: unknown }) => {
-            switch (update.status) {
-              case 'error':
-                reject(new Error(`Offer error: ${update.data}`));
-                break;
-              case 'accepted':
-                toast.success('Offer accepted!');
-                resolve();
-                break;
-              case 'refunded':
-                reject(new Error('Offer was rejected'));
-                break;
-            }
-          },
-        );
-      });
-
-      showSuccess({
-        content: 'Transaction Submitted Successfully',
-        duration: TOAST_DURATION.SUCCESS,
-      });
-    } catch (error) {
-      showError({
-        content: error instanceof Error ? error.message : String(error),
-      });
-    } finally {
-      if (toastId) toast.dismiss(toastId);
-    }
+      offerArgs: {},
+      onSuccessMessage: 'Transaction Submitted Successfully',
+    });
   };
 
+  console.log(currentOffers)
   const invitations = currentOffers?.offerToUsedInvitation.filter(
     (invitation) => {
       const value = invitation[1].value;
-
+console.log("invi", invitation)
       if (Array.isArray(value)) {
         // TODO: figure out why it works but gives a type error
         // @ts-expect-error
@@ -182,7 +108,7 @@ export const MakeAccount = () => {
     <form className="dark-form-container">
       <h2 className="dark-title">Make Account</h2>
 
-      <button className="invoke-button" onClick={makeOffer}>
+      <button className="invoke-button" onClick={makeAccount}>
         Make Account
       </button>
       <button

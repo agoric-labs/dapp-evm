@@ -54,3 +54,16 @@ export type GasEstimateParams = {
   gasLimit: number;
   gasMuliplier: number;
 };
+
+export type OfferHandlerParams = {
+  toastMessage: string;
+  invitationSpec: any;
+  proposal: any;
+  offerArgs?: any;
+  onSuccessMessage?: string;
+};
+
+export type OfferUpdate = {
+  status: string;
+  data?: unknown;
+};

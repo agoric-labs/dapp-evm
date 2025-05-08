@@ -1,9 +1,11 @@
-import { COSMOS_CHAINS, networkConfigs } from './config';
+import { COSMOS_CHAINS, networkConfigs, TOAST_DURATION } from './config';
 import { AxelarQueryAPI, Environment } from '@axelar-network/axelarjs-sdk';
 import { toast } from 'react-toastify';
 import {
   AxelarQueryParams,
   GasEstimateParams,
+  OfferHandlerParams,
+  OfferUpdate,
   ToastMessageOptions,
 } from './types';
 import {
@@ -219,4 +221,53 @@ export const setupWatcher = ({
   handlers.watchBrands();
 
   return watcher;
+};
+
+export const handleOffer = async ({
+  toastMessage,
+  invitationSpec,
+  proposal,
+  offerArgs = {},
+  onSuccessMessage = 'Offer accepted!',
+}: OfferHandlerParams) => {
+  let toastId: string | number | null = null;
+
+  try {
+    const { wallet, contractInstance } = useAppStore.getState();
+    if (!wallet) throw new Error('Wallet not connected');
+    if (!contractInstance) throw new Error('No contract instance');
+
+    useAppStore.setState({ loading: true });
+    toastId = toast.info(toastMessage, { isLoading: true });
+
+    await new Promise<void>((resolve, reject) => {
+      wallet.makeOffer(
+        invitationSpec,
+        proposal,
+        offerArgs,
+        (update: OfferUpdate) => {
+          switch (update.status) {
+            case 'error':
+              reject(new Error(`Offer error: ${update.data}`));
+              break;
+            case 'accepted':
+              toast.success(onSuccessMessage);
+              resolve();
+              break;
+            case 'refunded':
+              reject(new Error('Offer was rejected'));
+              break;
+          }
+        },
+      );
+    });
+  } catch (error) {
+    showError({
+      content: error instanceof Error ? error.message : String(error),
+      duration: TOAST_DURATION.ERROR,
+    });
+  } finally {
+    if (toastId) toast.dismiss(toastId);
+    useAppStore.setState({ loading: false });
+  }
 };
