@@ -1,54 +1,32 @@
 import { useAppStore } from '../state';
+import './Tabs.css';
 
 export const Tabs = () => {
-  const { tab } = useAppStore((state) => ({
-    tab: state.tab,
-  }));
+  const { tab } = useAppStore((state) => ({ tab: state.tab }));
+
+  const handleTabClick = (tabNumber: number) => {
+    useAppStore.setState({ tab: tabNumber });
+  };
+
+  const tabs = [
+    { label: 'Make Account', number: 1 },
+    {
+      label: 'Token Transfer',
+      number: 2,
+    },
+  ];
 
   return (
     <div className="tabs">
-      <button
-        className={`tab-button ${tab === 1 ? 'active' : ''}`}
-        onClick={() =>
-          useAppStore.setState({
-            type: 3,
-            evmAddress: '0x',
-            destinationEVMChain: 'Avalanche',
-            amountToSend: 0,
-            loading: false,
-            error: undefined,
-            tab: 1,
-          })
-        }
-      >
-        Token Transfer
-      </button>
-      <button
-        className={`tab-button ${tab === 2 ? 'active' : ''}`}
-        onClick={() =>
-          useAppStore.setState({
-            type: 2,
-            evmAddress: '0x',
-            destinationEVMChain: 'Avalanche',
-            amountToSend: 0,
-            loading: false,
-            error: undefined,
-            tab: 2,
-          })
-        }
-      >
-        Contract Invocation
-      </button>
-      <button
-        className={`tab-button ${tab === 4 ? 'active' : ''}`}
-        onClick={() =>
-          useAppStore.setState({
-            tab: 3,
-          })
-        }
-      >
-        Make Account
-      </button>
+      {tabs.map(({ label, number }) => (
+        <button
+          key={number}
+          className={`tab-button ${tab === number ? 'active' : ''}`}
+          onClick={() => handleTabClick(number)}
+        >
+          {label}
+        </button>
+      ))}
     </div>
   );
 };

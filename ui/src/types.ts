@@ -1,10 +1,9 @@
 import { makeAgoricWalletConnection } from '@agoric/web-components';
 import { CurrentWalletRecord } from '@agoric/smart-wallet/src/smartWallet.js';
-import {
-  SupportedDestinationChains,
-  EVM_CHAINS,
-  GMPMessageType,
-} from 'contract/types';
+import { SupportedDestinationChains, GMPMessageType } from 'contract/types';
+import { makeAgoricChainStorageWatcher } from '@agoric/rpc';
+import { networkConfigs } from 'config';
+import { Amount } from '@agoric/ertp';
 
 type Wallet = Awaited<ReturnType<typeof makeAgoricWalletConnection>>;
 
@@ -14,19 +13,21 @@ export type ToastMessageOptions = {
 };
 
 export type AppState = {
-  wallet?: Wallet;
+  wallet: Wallet | null;
   contractInstance?: unknown;
-  brands?: Record<string, unknown>;
-  destinationEVMChain: keyof typeof EVM_CHAINS;
+  brands: Record<string, unknown> | null;
+  destinationEVMChain: SupportedDestinationChains;
   evmAddress: `0x${string}`;
   amountToSend: number;
   loading: boolean;
-  error?: string;
   type: GMPMessageType;
-  gasAmount?: number;
   transactionUrl: string | null;
   tab: number;
-  currentOffers: CurrentWalletRecord | null;
+  currentWalletRecord: CurrentWalletRecord | null;
+  network: keyof typeof networkConfigs;
+  watcher: ReturnType<typeof makeAgoricChainStorageWatcher> | null;
+  error?: string;
+  gasAmount?: number;
 };
 
 export type PayloadParams = {
@@ -54,3 +55,20 @@ export type GasEstimateParams = {
   gasLimit: number;
   gasMuliplier: number;
 };
+
+export type OfferHandlerParams = {
+  toastMessage: string;
+  invitationSpec: any;
+  proposal: any;
+  offerArgs?: any;
+  onSuccessMessage?: string;
+};
+
+export type OfferUpdate = {
+  status: string;
+  data?: unknown;
+};
+
+export type LatestInvitation =
+  | [offerId: string, usedInvitation: Amount]
+  | undefined;

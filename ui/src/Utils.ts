@@ -1,11 +1,23 @@
-import { COSMOS_CHAINS } from './config';
+import { COSMOS_CHAINS, networkConfigs, TOAST_DURATION } from './config';
 import { AxelarQueryAPI, Environment } from '@axelar-network/axelarjs-sdk';
 import { toast } from 'react-toastify';
 import {
   AxelarQueryParams,
   GasEstimateParams,
+  OfferHandlerParams,
+  OfferUpdate,
   ToastMessageOptions,
 } from './types';
+import {
+  makeAgoricChainStorageWatcher,
+  AgoricChainStoragePathKind as Kind,
+} from '@agoric/rpc';
+import {
+  suggestChain,
+  makeAgoricWalletConnection,
+} from '@agoric/web-components';
+import { useAppStore } from './state';
+import { CurrentWalletRecord } from '@agoric/smart-wallet/src/smartWallet.js';
 
 export const isValidEthereumAddress = (address: string) => {
   if (!/^0x[a-fA-F0-9]{40}$/.test(address)) {
@@ -150,4 +162,129 @@ export const getAxelarTxURL = async ({
 
   console.log('Transaction URL:', transactionUrl);
   return transactionUrl;
+};
+
+export const connectWallet = async () => {
+  const { network, watcher } = useAppStore.getState();
+  if (!watcher) {
+    throw Error('watcher is not defined');
+  }
+  const { url, rpc } = networkConfigs[network];
+  await suggestChain(url);
+  const wallet = await makeAgoricWalletConnection(watcher, rpc);
+  useAppStore.setState({ wallet });
+};
+
+export const watchWallet = () => {
+  const { wallet, watcher } = useAppStore.getState();
+  watcher?.watchLatest<CurrentWalletRecord>(
+    [Kind.Data, `published.wallet.${wallet?.address}.current`],
+    (co) => {
+      const currentWalletRecord = co ? co : null;
+      if (!currentWalletRecord) {
+        return;
+      }
+      useAppStore.setState({
+        currentWalletRecord,
+      });
+    },
+  );
+};
+
+export const createWatcherHandlers = (
+  watcher: ReturnType<typeof makeAgoricChainStorageWatcher>,
+) => {
+  return {
+    watchInstances: () => {
+      watcher.watchLatest<Array<[string, unknown]>>(
+        [Kind.Data, 'published.agoricNames.instance'],
+        (instances) => {
+          console.log('got instances', instances);
+          useAppStore.setState({
+            contractInstance: instances.find(
+              ([name]) => name === 'axelarGmp',
+            )?.[1],
+          });
+        },
+      );
+    },
+
+    watchBrands: () => {
+      watcher.watchLatest<Array<[string, unknown]>>(
+        [Kind.Data, 'published.agoricNames.brand'],
+        (brands) => {
+          console.log('Got brands', brands);
+          useAppStore.setState({
+            brands: Object.fromEntries(brands),
+          });
+        },
+      );
+    },
+  };
+};
+
+export const setupWatcher = ({
+  api,
+  chainId,
+}: {
+  api: string;
+  chainId: string;
+}) => {
+  const watcher = makeAgoricChainStorageWatcher(api, chainId);
+  useAppStore.setState({ watcher });
+
+  const handlers = createWatcherHandlers(watcher);
+  handlers.watchInstances();
+  handlers.watchBrands();
+
+  return watcher;
+};
+
+export const handleOffer = async ({
+  toastMessage,
+  invitationSpec,
+  proposal,
+  offerArgs = {},
+  onSuccessMessage = 'Offer accepted!',
+}: OfferHandlerParams) => {
+  let toastId: string | number | null = null;
+
+  try {
+    const { wallet, contractInstance } = useAppStore.getState();
+    if (!wallet) throw new Error('Wallet not connected');
+    if (!contractInstance) throw new Error('No contract instance');
+
+    useAppStore.setState({ loading: true });
+    toastId = toast.info(toastMessage, { isLoading: true });
+
+    await new Promise<void>((resolve, reject) => {
+      wallet.makeOffer(
+        invitationSpec,
+        proposal,
+        offerArgs,
+        (update: OfferUpdate) => {
+          switch (update.status) {
+            case 'error':
+              reject(new Error(`Offer error: ${update.data}`));
+              break;
+            case 'accepted':
+              toast.success(onSuccessMessage);
+              resolve();
+              break;
+            case 'refunded':
+              reject(new Error('Offer was rejected'));
+              break;
+          }
+        },
+      );
+    });
+  } catch (error) {
+    showError({
+      content: error instanceof Error ? error.message : String(error),
+      duration: TOAST_DURATION.ERROR,
+    });
+  } finally {
+    if (toastId) toast.dismiss(toastId);
+    useAppStore.setState({ loading: false });
+  }
 };
