@@ -196,25 +196,11 @@ export const GMPForm = () => {
     }
   };
 
-  const buttonText = type === 3 ? 'Send Tokens' : 'Invoke Contract';
-
   const viewTransaction = () => {
     if (transactionUrl) {
       window.open(transactionUrl as string, '_blank');
     } else {
       throw new Error('Transaction url is not defined');
-    }
-  };
-
-  const handleAmountToSend = (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (type === 3) {
-      useAppStore.setState({
-        amountToSend: Number(e.target.value),
-      });
-    } else {
-      useAppStore.setState({
-        amountToSend: Number(e.target.value),
-      });
     }
   };
 
@@ -246,6 +232,26 @@ export const GMPForm = () => {
     }
   };
 
+  const handleAmount = (e: React.ChangeEvent<HTMLInputElement>) => {
+    useAppStore.setState({
+      amountToSend: Number(e.target.value),
+    });
+  };
+
+  const handleAddress = (e: React.ChangeEvent<HTMLInputElement>) => {
+    useAppStore.setState({
+      evmAddress: e.target.value as `0x${string}`,
+    });
+  };
+
+  // Reset the global state when the component mounts
+  useEffect(() => {
+    useAppStore.setState({
+      amountToSend: 0,
+      evmAddress: '0x',
+    });
+  }, []);
+
   const metaMaskButtonText = isConnected ? 'Fill With' : 'Connect';
 
   return (
@@ -270,46 +276,12 @@ export const GMPForm = () => {
       </select>
 
       <div className="form-group">
-        {type === 3 ? null : (
-          <>
-            <label className="input-label">EVM Contract:</label>
-            <select
-              className="select-field"
-              value={destinationEVMChain}
-              onChange={(e) =>
-                useAppStore.setState({
-                  evmAddress: e.target.value as `0x${string}`,
-                })
-              }
-            >
-              <option value="" disabled>
-                Select contract
-              </option>
-              <option value="0x479d5B0115dCf2259C4e613E6D5C4fc14A5Dce95">
-                Aave
-              </option>
-              <option value="0x479d5B0115dCf2259C4e613E6D5C4fc14A5Dce95">
-                Compound
-              </option>
-              <option value="0x479d5B0115dCf2259C4e613E6D5C4fc14A5Dce95">
-                Morpho
-              </option>
-            </select>
-          </>
-        )}
-      </div>
-
-      <div className="form-group">
         <label className="input-label">To (EVM Address):</label>
         <div className="form-group-evm-address">
           <input
             className="input-field"
             value={evmAddress}
-            onChange={(e) =>
-              useAppStore.setState({
-                evmAddress: e.target.value as `0x${string}`,
-              })
-            }
+            onChange={handleAddress}
             placeholder="0x..."
           />
           <button onClick={handleConnect} className="metamask-button">
@@ -329,7 +301,7 @@ export const GMPForm = () => {
           className="input-field"
           type="number"
           value={amountToSend}
-          onChange={handleAmountToSend}
+          onChange={handleAmount}
           placeholder="0.00"
           min="0"
           step="0.01"
@@ -344,7 +316,7 @@ export const GMPForm = () => {
           loading || !evmAddress || !amountToSend || !destinationEVMChain
         }
       >
-        {loading ? 'Processing...' : buttonText}
+        {loading ? 'Processing...' : 'Send Tokens'}
       </button>
 
       {transactionUrl && (
