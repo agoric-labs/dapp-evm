@@ -28,7 +28,7 @@ export type AxelarGmpOutgoingMemo = {
   destination_chain: string;
   destination_address: string;
   payload: number[] | null;
-  type: number;
+  type: GMPMessageType;
   fee?: AxelarFeeObject;
 };
 
