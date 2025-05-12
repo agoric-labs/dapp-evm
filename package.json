@@ -16,8 +16,8 @@
     "local-env:start": "cd local-env && yarn start",
     "local-env:relay": "cd local-env && yarn relay",
     "deploy:token": "cd deploy && yarn register:token",
-    "deploy:contract": "cd deploy && yarn deploy",
-    "deploy:contracts": "yarn deploy:token && yarn deploy:contract",
+    "deploy:axelarGmp": "cd deploy && yarn deploy",
+    "deploy:contracts": "yarn deploy:token && yarn deploy:axelarGmp",
     "postinstall": "patch-package"
   },
   "private": true,
