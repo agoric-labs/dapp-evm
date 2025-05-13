@@ -63,3 +63,41 @@ The off-chain Axelar EVM relayer monitors the Axelar chain for these internal ev
 After the `callContract()` function is executed, the `Axelar Gateway` smart contract emits a `CallContract` event. This triggers the final leg of the journey: the target Ethereum smart contract is invoked with the decoded payload. The contract then executes the specified logic, completing the intended cross-chain operation.
 
 ---
+
+## What Contracts Can Be Invoked
+
+Not all Ethereum contracts can be called through Axelar GMP. Only those that implement the [**AxelarExecutable.sol**](https://github.com/axelarnetwork/axelar-gmp-sdk-solidity/blob/main/contracts/executable/AxelarExecutable.sol/) or [**AxelarExecutableWithToken.sol**](https://github.com/axelarnetwork/axelar-gmp-sdk-solidity/blob/main/contracts/executable/AxelarExecutableWithToken.sol) are eligible for invocation.
+
+If you're deploying a contract that you want to receive messages via Axelar GMP, you **must inherit from these contracts**. These interfaces define the necessary entry points for Axelar’s relayer to trigger logic on your contract.
+
+To handle a contract call without tokens, your EVM contract must define the following method:
+
+````solidity
+```solidity
+function _execute(
+    string calldata sourceChain,
+    string calldata sourceAddress,
+    bytes calldata payload
+) internal override {
+    // custom logic
+}
+
+````
+
+To handle a contract call with tokens, your contract must also define:
+
+```solidity
+function _executeWithToken(
+    string calldata sourceChain,
+    string calldata sourceAddress,
+    bytes calldata payload,
+    string calldata tokenSymbol,
+    uint256 amount
+) internal override {
+    // custom logic
+}
+```
+
+The `Axelar Gateway` invokes the `_execute()` method when performing a **ContractCall**, and it invokes `_executeWithToken()` when performing a **ContractCallWithToken**. These functions are where you define the behavior your contract should carry out upon receiving the cross-chain message.
+
+Read more about it [over here](https://docs.axelar.dev/dev/general-message-passing/overview/#general-message-passing).
