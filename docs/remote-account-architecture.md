@@ -16,13 +16,13 @@ The system comprises three main components:
 
 ## 1. Agoric Chain
 
-### GMP Contract
+### Axelar GMP(General Message Passing) Contract
 
-The **GMP (General Message Passing) Contract** handles message passing between a user's local Agoric account and a remote account on Ethereum. It orchestrates the remote account lifecycle and interactions, and comprises two subcomponents:
+The **Axelar GMP Contract** handles message passing between a user's local Agoric account and a remote account on Ethereum. It orchestrates the remote account lifecycle and interactions, and comprises two subcomponents:
 
 #### `createLCAAccount`
 
-This is the only public method of the GMP contract. When triggered, it performs the following:
+This is the only public method of the Axelar GMP contract. When triggered, it performs the following:
 
 - Creates a new `EVMAccountKit` object that manages the remote Ethereum account.
 - Sends a message to the **Factory Contract** on Ethereum to create a new remote account.
@@ -30,7 +30,7 @@ This is the only public method of the GMP contract. When triggered, it performs 
 
 #### `EVMAccountKit`
 
-This is the core logic object of the GMP contract, acting as the interface to the remote Ethereum account.
+This is the core logic object of the Axelar GMP contract, acting as the interface to the remote Ethereum account.
 
 Key methods:
 
@@ -62,6 +62,6 @@ A factory pattern contract responsible for creating new instances of Wallet cont
 This contract represents the remote Ethereum account. It is designed with:
 
 - Logic to receive messages from Agoric, parse them, and perform arbitrary contract calls.
-- A custom `Ownable` implementation ensuring only the Agoric GMP contract can invoke it.
+- A custom `Ownable` implementation ensuring only the Agoric Axelar GMP contract can invoke it.
 
 ---
