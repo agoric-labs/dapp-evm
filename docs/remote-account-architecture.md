@@ -1,4 +1,4 @@
-# Remote Accounts on EVM Architecture 
+# Remote Accounts on EVM Architecture
 
 The architecture for remote accounts on EVM involves multiple components working across three interconnected blockchain networks:
 
@@ -35,6 +35,7 @@ This is the core logic object of the GMP contract, acting as the interface to th
 Key methods:
 
 - **`receiveUpCall`**: Handles messages received from Ethereum, including:
+
   - The address of the remote account (upon creation).
   - Results of executed contract calls made via `sendGMP`.
 

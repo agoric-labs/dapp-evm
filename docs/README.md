@@ -101,3 +101,101 @@ function _executeWithToken(
 The `Axelar Gateway` invokes the `_execute()` method when performing a **ContractCall**, and it invokes `_executeWithToken()` when performing a **ContractCallWithToken**. These functions are where you define the behavior your contract should carry out upon receiving the cross-chain message.
 
 Read more about it [over here](https://docs.axelar.dev/dev/general-message-passing/overview/#general-message-passing).
+
+## Introducing the Proxy Contract
+
+Axelar GMP currently requires that any target smart contract on an EVM chain must inherit either the `AxelarExecutable` or `AxelarExecutableWithToken` contract. In practice, this means we can only directly invoke contracts that **inherit from these base contracts** and define the appropriate `_execute` and/or `_executeWithToken` methods.
+
+To overcome this limitation, we’ve designed a **proxy contract**. Instead of modifying every target contract to support Axelar GMP, we deploy a **single proxy contract** on each EVM chain we wish to support. This proxy acts as the **designated receiver** of Axelar cross-chain messages, inheriting from `AxelarExecutable` (or its token-enabled variant). By doing so, it qualifies to receive and process GMP messages.
+
+The proxy contract’s role is simple:
+
+- It implements `_execute()` and `_executeWithToken()` as required by Axelar GMP.
+- Upon receiving a message, it **decodes the payload** to determine:
+  - Which contract to call
+  - Which method to invoke
+  - What parameters to pass
+- It then uses Solidity’s `call` mechanism to forward the instruction to the intended target contract.
+
+This indirection makes it possible to **invoke arbitrary contracts**, including those that don’t directly support Axelar GMP, as long as the logic to parse and route the call is correctly encoded in the payload.
+
+## Encoding and Decoding Payloads for Arbitrary Contract Calls
+
+To enable the proxy contract to call arbitrary contracts on the EVM side, we need a structured way to encode and transmit multiple contract calls within the Axelar memo's `payload` field.
+
+### 1. Write Your Intent (`ContractCall`)
+
+This is the type used in Agoric when you define **what you want to do** on the EVM chain:
+
+```ts
+export type ContractCall = {
+  target: `0x${string}`; // EVM contract address to invoke
+  functionSignature: string; // EVM function signature (e.g. "transfer(address,uint256)")
+  args: Array<unknown>; // Arguments to that function
+};
+```
+
+A single `ContractCall` tells the system:
+
+> "Call this function on this contract with these arguments."
+
+---
+
+### 2. AbiEncodedContractCall
+
+Before sending to the EVM, each `ContractCall` is converted into an ABI-encoded version something Solidity understands. The result is a target and a data field:
+
+```ts
+export type AbiEncodedContractCall = {
+  target: `0x${string}`; // Same contract address
+  data: `0x${string}`; // Encoded method selector + arguments
+};
+```
+
+The `data` field in `AbiEncodedContractCall` is precise encoding of which function to call and with what arguments. For example:
+
+```ts
+abi.encodeWithSignature('mint(address,uint256)', recipient, amount);
+```
+
+This encodes:
+
+- The function selector (for `mint(address,uint256)`)
+- The arguments (`recipient` and `amount`)
+
+The result is a byte string like:
+
+```
+0xa0712d68000000000000000000000000abcdef123456...00000000000000000000000000000000000000000000000000000000000003e8
+
+```
+
+---
+
+### 3. Encoded as Solidity Struct CallParams[]
+
+Once each `ContractCall` has been ABI-encoded on the Agoric side (i.e. converted into `AbiEncodedContractCall` objects with a target and data) and reaches the Proxy contract on the EVM, it expects the payload to conform to:
+
+```solidity
+struct CallParams {
+    address target;
+    bytes data;
+}
+
+```
+
+This is the expected format on the EVM side. The Solidity contract knows how to decode this struct using the standard `abi.decode` mechanism:
+
+```solidity
+CallParams[] memory calls = abi.decode(payload, (CallParams[]));
+```
+
+After decoding, it can then loop through `calls[]` and invoke each `target` with the associated data using low-level calls.
+
+---
+
+To get a deeper understanding, take a look at the [`buildGMPPayload`](../contract/utils/gmp.js) utility. This function acts as the **bridge between the Agoric-side intent and the Solidity-side execution** by encoding multiple contract calls into a single cross-chain payload.
+
+Also, review the `_execute` function in [`Factory.sol`](../solidity/contracts/Factory.sol), defined within the `Wallet` contract, to see how the Solidity side decodes and processes the incoming data payload.
+
+## Security
