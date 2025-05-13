@@ -6,7 +6,7 @@ sequenceDiagram
     participant AxelarGatewayEth as Axelar Gateway (Ethereum)
     participant TargetContract as Target Ethereum Contract
 
-    note left of IBCRelayer: IBC Memo:<br>{ destinationChain, destinationAddress, payload, fee }
+    note left of IBCRelayer: IBC Memo:<br>{ destinationChain, destinationAddress, type, payload, fee }
 
     %% Flow starts
     AgoricUser->>IBCRelayer: Execute IBC Transaction
