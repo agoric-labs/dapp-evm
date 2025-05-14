@@ -1,4 +1,4 @@
-# Cross-Chain Messaging with Axelar GMP from Agoric to EVM
+# Cross-Chain Messaging from Agoric to EVM
 
 Cosmos-based blockchains can send tokens and do contract calls to EVM-based blockchains using Axelar’s General Message Passing (GMP). This is possible through the [IBC memo field](https://medium.com/the-interchain-foundation/moving-beyond-simple-token-transfers-d42b2b1dc29b), which carries instructions for the Axelar network to understand and forward the message.
 
@@ -36,6 +36,8 @@ export type AxelarGmpOutgoingMemo = {
 - ContractCall or ContractCallWithToken(`type: 1 | 2`)
   For `ContractCall` or `ContractCallWithToken`, a `fee` must be included. This `fee` pays for Axelar to process, forward and execute the message on the destination chain. It must be estimated and added in advance. Read more about how transaction fees work in Axelar [over here](https://docs.axelar.dev/dev/gas-service/pricing/#transaction-pricing).
 
+---
+
 ## Message Flow
 
 Once the memo is included in an IBC transaction, the message follows this flow:
@@ -44,19 +46,13 @@ Once the memo is included in an IBC transaction, the message follows this flow:
 
 The transaction begins on Agoric and includes a `memo` formatted with Axelar GMP instructions as described above. When submitted, the chain’s IBC module wraps the transaction data into an IBC packet. This packet is then emitted by the IBC module and picked up by the IBC Relayer. The relayer forwards the packet to the Axelar network, which itself is a Cosmos chain capable of understanding and processing the embedded GMP message.
 
----
-
 ### 2. **Axelar Processing**
 
 Upon receiving the IBC packet, the Axelar blockchain validates its contents. This validation process checks details like the target chain, the destination contract address, the payload data, and any included fee information. If the packet passes validation, Axelar emits an internal event signaling that a message is ready for delivery to an EVM chain.
 
----
-
 ### 3. **EVM Relayer**
 
 The off-chain Axelar EVM relayer monitors the Axelar chain for these internal events. When one is detected, the relayer prepares a cross-chain call and invokes the `callContract()` or `callContractWithToken` function on the [**Axelar Gateway**](https://github.com/axelarnetwork/axelar-cgp-solidity/blob/main/contracts/AxelarGateway.sol/) smart contract deployed on the destination EVM chain. It passes along the target address, the original payload (which contains the encoded smart contract call), and metadata about the originating chain and transaction. This step bridges the message from the Cosmos ecosystem into the EVM environment.
-
----
 
 ### 4. **Smart Contract Execution on Ethereum**
 
@@ -66,9 +62,9 @@ After the `callContract()` function is executed, the `Axelar Gateway` smart cont
 
 ## What Contracts Can Be Invoked
 
-Not all Ethereum contracts can be called through Axelar GMP. Only those that implement the [**AxelarExecutable.sol**](https://github.com/axelarnetwork/axelar-gmp-sdk-solidity/blob/main/contracts/executable/AxelarExecutable.sol/) or [**AxelarExecutableWithToken.sol**](https://github.com/axelarnetwork/axelar-gmp-sdk-solidity/blob/main/contracts/executable/AxelarExecutableWithToken.sol) are eligible for invocation.
+Not all Ethereum contracts can be called through Axelar GMP. Only those that inherit [**AxelarExecutable.sol**](https://github.com/axelarnetwork/axelar-gmp-sdk-solidity/blob/main/contracts/executable/AxelarExecutable.sol/) or [**AxelarExecutableWithToken.sol**](https://github.com/axelarnetwork/axelar-gmp-sdk-solidity/blob/main/contracts/executable/AxelarExecutableWithToken.sol) are eligible for invocation.
 
-If you're deploying a contract that you want to receive messages via Axelar GMP, you **must inherit from these contracts**. These interfaces define the necessary entry points for Axelar’s relayer to trigger logic on your contract.
+If you're deploying a contract that you want to receive messages via Axelar GMP, you **must inherit from these contracts**. These contracts define the necessary entry points for Axelar’s relayer to trigger logic on your contract.
 
 To handle a contract call without tokens, your EVM contract must define the following method:
 
@@ -102,6 +98,8 @@ The `Axelar Gateway` invokes the `_execute()` method when performing a **Contrac
 
 Read more about it [over here](https://docs.axelar.dev/dev/general-message-passing/overview/#general-message-passing).
 
+---
+
 ## Introducing the Proxy Contract
 
 Axelar GMP currently requires that any target smart contract on an EVM chain must inherit either the `AxelarExecutable` or `AxelarExecutableWithToken` contract. In practice, this means we can only directly invoke contracts that **inherit from these base contracts** and define the appropriate `_execute` and/or `_executeWithToken` methods.
@@ -118,6 +116,8 @@ The proxy contract’s role is simple:
 - It then uses Solidity’s `call` mechanism to forward the instruction to the intended target contract.
 
 This indirection makes it possible to **invoke arbitrary contracts**, including those that don’t directly support Axelar GMP, as long as the logic to parse and route the call is correctly encoded in the payload.
+
+---
 
 ## Encoding and Decoding Payloads for Arbitrary Contract Calls
 
@@ -139,38 +139,18 @@ A single `ContractCall` tells the system:
 
 > "Call this function on this contract with these arguments."
 
----
-
 ### 2. AbiEncodedContractCall
 
-Before sending to the EVM, each `ContractCall` is converted into an ABI-encoded version something Solidity understands. The result is a target and a data field:
+Before sending to the EVM, each `ContractCall` is converted into an ABI-encoded version something Solidity understands:
 
 ```ts
 export type AbiEncodedContractCall = {
-  target: `0x${string}`; // Same contract address
+  target: `0x${string}`; // EVM contract address to invoke
   data: `0x${string}`; // Encoded method selector + arguments
 };
 ```
 
-The `data` field in `AbiEncodedContractCall` is precise encoding of which function to call and with what arguments. For example:
-
-```ts
-abi.encodeWithSignature('mint(address,uint256)', recipient, amount);
-```
-
-This encodes:
-
-- The function selector (for `mint(address,uint256)`)
-- The arguments (`recipient` and `amount`)
-
-The result is a byte string like:
-
-```
-0xa0712d68000000000000000000000000abcdef123456...00000000000000000000000000000000000000000000000000000000000003e8
-
-```
-
----
+The `data` field in `AbiEncodedContractCall` is precise encoding of which function to call and with what arguments.
 
 ### 3. Encoded as Solidity Struct CallParams[]
 
@@ -190,12 +170,45 @@ This is the expected format on the EVM side. The Solidity contract knows how to 
 CallParams[] memory calls = abi.decode(payload, (CallParams[]));
 ```
 
-After decoding, it can then loop through `calls[]` and invoke each `target` with the associated data using low-level calls.
+After decoding, it can then loop through `calls[]` and invoke each `target` with the associated data.
+
+> To get a deeper understanding, take a look at the [`buildGMPPayload`](../contract/utils/gmp.js) utility. This function acts as the **bridge between the Agoric-side intent and the Solidity-side execution** by encoding multiple contract calls into a single cross-chain payload. Also, review the `_execute` function in [`Factory.sol`](../solidity/contracts/Factory.sol), defined within the `Wallet` contract, to see how the Solidity side decodes and processes the incoming data payload.
 
 ---
 
-To get a deeper understanding, take a look at the [`buildGMPPayload`](../contract/utils/gmp.js) utility. This function acts as the **bridge between the Agoric-side intent and the Solidity-side execution** by encoding multiple contract calls into a single cross-chain payload.
+## Security Considerations (Under Review)
 
-Also, review the `_execute` function in [`Factory.sol`](../solidity/contracts/Factory.sol), defined within the `Wallet` contract, to see how the Solidity side decodes and processes the incoming data payload.
+The proxy contract introduces flexibility but also opens up important security responsibilities. The following considerations are currently under review and the contracts are pending a formal security audit. Until all security measures are finalized, use of the proxy contract should be restricted to testnets or controlled testing environments.
 
-## Security
+### Areas Under Consideration
+
+- **Input Validation**
+  The proxy accepts arbitrary payload data. This makes input validation critical. We will be evaluating strategies to:
+
+  - Ensure payloads strictly match the expected `CallParams[]` format.
+  - Optionally restrict target addresses to known safe contracts in permissioned deployments.
+  - Validate that the `calldata` corresponds to approved function signatures.
+
+- **Access Control**
+  To avoid unauthorized cross-chain calls, the proxy should only respond to trusted sources. We are considering checks like:
+
+  ```solidity
+  require(
+    keccak256(bytes(sourceChain)) == keccak256("agoric") &&
+    keccak256(bytes(sourceAddress)) == keccak256("<trusted_address>"),
+    "Unauthorized source"
+  );
+  ```
+
+  This enforces that only messages from a trusted chain and contract are processed.
+
+- **Risks associated with .call()**
+  Because the proxy uses [`.call()`](https://www.cyfrin.io/glossary/call-solidity-code-example) to invoke external contracts, reentrancy attacks are a concern. It's also important to examine how `.call()` behaves in the event of contract call failures, as this can impact control flow and error handling.
+
+- **Gas Limits & DoS**
+  Calling into unknown external contracts may cause unpredictable gas usage.
+
+- **Replay Protection**
+  Cross-chain messages can be replayed unless guarded. We're evaluating message hashing, nonce tracking, or other anti-replay mechanisms to ensure idempotency.
+
+---

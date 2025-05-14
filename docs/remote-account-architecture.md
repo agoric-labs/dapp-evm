@@ -20,8 +20,6 @@ Axelar acts as the bridge between Agoric and Ethereum.
 
 The system comprises three main components:
 
----
-
 ## 1. Agoric Chain
 
 ### Axelar GMP(General Message Passing) Contract
