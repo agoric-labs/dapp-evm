@@ -34,7 +34,9 @@ export type AxelarGmpOutgoingMemo = {
   For `TokenTransfer`, you don’t need to include a `fee` in the `memo`. Axelar will deduct its fee from the tokens you’re sending.
 
 - ContractCall or ContractCallWithToken(`type: 1 | 2`)
-  For `ContractCall` or `ContractCallWithToken`, a `fee` must be included. This `fee` pays for Axelar to process, forward and execute the message on the destination chain. It must be estimated and added in advance. Read more about how transaction fees work in Axelar [over here](https://docs.axelar.dev/dev/gas-service/pricing/#transaction-pricing).
+  For `ContractCall` or `ContractCallWithToken`, a `fee` must be included. This `fee` pays for Axelar to process, forward and execute the message on the destination chain. It must be estimated and added in advance.
+
+Read more about how transaction fees work in Axelar [over here](https://docs.axelar.dev/dev/gas-service/pricing/#transaction-pricing).
 
 ---
 
@@ -52,11 +54,11 @@ Upon receiving the IBC packet, the Axelar blockchain validates its contents. Thi
 
 ### 3. **EVM Relayer**
 
-The off-chain Axelar EVM relayer monitors the Axelar chain for these internal events. When one is detected, the relayer prepares a cross-chain call and invokes the `callContract()` or `callContractWithToken` function on the [**Axelar Gateway**](https://github.com/axelarnetwork/axelar-cgp-solidity/blob/main/contracts/AxelarGateway.sol/) smart contract deployed on the destination EVM chain. It passes along the target address, the original payload (which contains the encoded smart contract call), and metadata about the originating chain and transaction. This step bridges the message from the Cosmos ecosystem into the EVM environment.
+The off-chain Axelar EVM relayer monitors the Axelar chain for these internal events. When one is detected, the relayer prepares a cross-chain call and invokes the `callContract()` or `callContractWithToken()` function on the [**AxelarGateway**](https://github.com/axelarnetwork/axelar-cgp-solidity/blob/main/contracts/AxelarGateway.sol/) smart contract deployed on the destination EVM chain. It passes along the target address, the original payload (which contains the encoded smart contract call), and metadata about the originating chain and transaction. This step bridges the message from the Cosmos ecosystem into the EVM environment.
 
 ### 4. **Smart Contract Execution on Ethereum**
 
-After the `callContract()` function is executed, the `Axelar Gateway` smart contract emits a `CallContract` event. This triggers the final leg of the journey: the target Ethereum smart contract is invoked with the decoded payload. The contract then executes the specified logic, completing the intended cross-chain operation.
+After the `callContract()` function is executed, the `AxelarGateway` smart contract emits a `CallContract` event. This triggers the final leg of the journey: the target Ethereum smart contract is invoked with the decoded payload. The contract then executes the specified logic, completing the intended cross-chain operation.
 
 ---
 
@@ -94,7 +96,7 @@ function _executeWithToken(
 }
 ```
 
-The `Axelar Gateway` invokes the `_execute()` method when performing a **ContractCall**, and it invokes `_executeWithToken()` when performing a **ContractCallWithToken**. These functions are where you define the behavior your contract should carry out upon receiving the cross-chain message.
+The `AxelarGateway` invokes the `_execute()` method when performing a **ContractCall**, and it invokes `_executeWithToken()` when performing a **ContractCallWithToken**. These functions are where you define the behavior your contract should carry out upon receiving the cross-chain message.
 
 Read more about it [over here](https://docs.axelar.dev/dev/general-message-passing/overview/#general-message-passing).
 
@@ -113,7 +115,7 @@ The proxy contract’s role is simple:
   - Which contract to call
   - Which method to invoke
   - What parameters to pass
-- It then uses Solidity’s `call` mechanism to forward the instruction to the intended target contract.
+- It then uses Solidity’s [`call`](https://www.alchemy.com/overviews/solidity-call) mechanism to forward the instruction to the intended target contract.
 
 This indirection makes it possible to **invoke arbitrary contracts**, including those that don’t directly support Axelar GMP, as long as the logic to parse and route the call is correctly encoded in the payload.
 
@@ -182,33 +184,26 @@ The proxy contract introduces flexibility but also opens up important security r
 
 ### Areas Under Consideration
 
-- **Input Validation**
-  The proxy accepts arbitrary payload data. This makes input validation critical. We will be evaluating strategies to:
+#### **Input Validation**
 
-  - Ensure payloads strictly match the expected `CallParams[]` format.
-  - Optionally restrict target addresses to known safe contracts in permissioned deployments.
-  - Validate that the `calldata` corresponds to approved function signatures.
+The proxy accepts arbitrary payload data. This makes input validation critical. We will be evaluating strategies to:
 
-- **Access Control**
-  To avoid unauthorized cross-chain calls, the proxy should only respond to trusted sources. We are considering checks like:
+- Ensure payloads strictly match the expected `CallParams[]` format.
+- Optionally restrict target addresses to known safe contracts in permissioned deployments.
+- Validate that the `calldata` corresponds to approved function signatures.
 
-  ```solidity
-  require(
-    keccak256(bytes(sourceChain)) == keccak256("agoric") &&
-    keccak256(bytes(sourceAddress)) == keccak256("<trusted_address>"),
-    "Unauthorized source"
-  );
-  ```
+This enforces that only messages from a trusted chain and contract are processed.
 
-  This enforces that only messages from a trusted chain and contract are processed.
+#### **Risks associated with .call()**
 
-- **Risks associated with .call()**
-  Because the proxy uses [`.call()`](https://www.cyfrin.io/glossary/call-solidity-code-example) to invoke external contracts, reentrancy attacks are a concern. It's also important to examine how `.call()` behaves in the event of contract call failures, as this can impact control flow and error handling.
+Because the proxy uses [`.call()`](https://www.cyfrin.io/glossary/call-solidity-code-example) to invoke external contracts, reentrancy attacks are a concern. It's also important to examine how `.call()` behaves in the event of contract call failures, as this can impact control flow and error handling.
 
-- **Gas Limits & DoS**
-  Calling into unknown external contracts may cause unpredictable gas usage.
+#### **Gas Limits & DoS**
 
-- **Replay Protection**
-  Cross-chain messages can be replayed unless guarded. We're evaluating message hashing, nonce tracking, or other anti-replay mechanisms to ensure idempotency.
+Calling into unknown external contracts may cause unpredictable gas usage.
+
+#### **Replay Protection**
+
+Cross-chain messages can be replayed unless guarded. We're evaluating message hashing, nonce tracking, or other anti-replay mechanisms to ensure idempotency.
 
 ---

@@ -1,5 +1,5 @@
 sequenceDiagram
-    participant AgoricUser as Agoric Account
+    participant AgoricUser as Agoric Local Chain Account(LCA)
     participant IBCRelayer as IBC Relayer (Agoric to Axelar)
     participant Axelar as Axelar Network
     participant EvmRelayer as EVM Relayer
@@ -17,6 +17,6 @@ sequenceDiagram
 
     TargetContract->>AxelarGatewayEth: gateway.callContract(destinationChain, destinationAddress, payload)
     AxelarGatewayEth->>EvmRelayer: Emits a CallContract event
-    EvmRelayer->>Axelar: Passes the message to axelar
+    EvmRelayer->>Axelar: Passes the message to Axelar
     Axelar->>IBCRelayer: Approves message <br>and sends an IBC transaction
     IBCRelayer->>AgoricUser: Sends transaction
