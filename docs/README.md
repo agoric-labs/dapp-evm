@@ -71,7 +71,6 @@ If you're deploying a contract that you want to receive messages via Axelar GMP,
 To handle a contract call without tokens, your EVM contract must define the following method:
 
 ````solidity
-```solidity
 function _execute(
     string calldata sourceChain,
     string calldata sourceAddress,
@@ -79,7 +78,6 @@ function _execute(
 ) internal override {
     // custom logic
 }
-
 ````
 
 To handle a contract call with tokens, your contract must also define:
