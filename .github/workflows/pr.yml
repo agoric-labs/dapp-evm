@@ -23,6 +23,12 @@ jobs:
         with:
           node-version: '18'
 
+      - name: Start Agoric Local Chain
+        run: yarn start:chain
+
+      - name: Wait for Agoric Local Chain to be ready
+        run: yarn wait-for-agd-block
+
       - name: Install dependencies
         run: yarn install
 
