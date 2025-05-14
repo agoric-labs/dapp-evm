@@ -3,36 +3,11 @@ import { mustMatch } from '@endo/patterns';
 import { execFileSync } from 'node:child_process';
 import { makeAgd } from '../tools/agd-lib.js';
 
-export const networkConfigs = {
-  devnet: {
-    label: 'Agoric Devnet',
-    url: 'https://devnet.agoric.net/network-config',
-    rpc: 'https://devnet.rpc.agoric.net',
-    api: 'https://devnet.api.agoric.net',
-    chainId: 'agoricdev-25',
-  },
-  emerynet: {
-    label: 'Agoric Emerynet',
-    url: 'https://emerynet.agoric.net/network-config',
-    rpc: 'https://emerynet.rpc.agoric.net',
-    api: 'https://emerynet.api.agoric.net',
-    chainId: 'agoric-emerynet-9',
-  },
-  localhost: {
-    label: 'Local Network',
-    url: 'https://local.agoric.net/network-config',
-    rpc: 'http://localhost:26657',
-    api: 'http://localhost:1317',
-    chainId: 'agoriclocal',
-  },
-  'axelar-local': {
-    label: 'Axelar Local Network',
-    url: 'https://local.agoric.net/network-config',
-    api: 'http://localhost/agoric-lcd',
-    rpc: 'http://localhost/agoric-rpc',
-    chainId: 'agoriclocal',
-  },
-};
+/** @param {string} net */
+const getNetConfig = (net) =>
+  fetch(`https://${net}.agoric.net/network-config`)
+    .then((res) => res.text())
+    .then((s) => JSON.parse(s));
 
 /**
  * @import {IBCChannelID, IBCConnectionID} from '@agoric/vats';
@@ -70,8 +45,8 @@ export const getChainConfig = async ({ net, peer }) => {
   const connections = {};
   const portId = 'transfer';
 
-  const { chainId, rpc } = networkConfigs[net];
-  const agd = makeAgd({ execFileSync }).withOpts({ rpcAddrs: [rpc] });
+  const { chainName: chainId, rpcAddrs } = await getNetConfig(net);
+  const agd = makeAgd({ execFileSync }).withOpts({ rpcAddrs });
 
   for (const [peerName, myConn, myChan, denom] of parsePeers(peer)) {
     console.debug(peerName, { denom });
