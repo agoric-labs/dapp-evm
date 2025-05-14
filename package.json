@@ -12,13 +12,15 @@
     "build:deploy": "cd deploy && yarn build",
     "build:ui": "cd ui && yarn build",
     "build:local-env": "cd local-env && yarn build",
-    "build": "concurrently \"yarn build:solidity\" \"yarn build:deploy\" \"yarn build:local-env\" \"yarn build:ui\"",
+    "build": "concurrently \"yarn build:solidity\" \"yarn build:local-env\" \"yarn build:ui\"",
     "local-env:start": "cd local-env && yarn start",
     "local-env:relay": "cd local-env && yarn relay",
     "deploy:token": "cd deploy && yarn register:token",
     "deploy:axelarGmp": "cd deploy && yarn deploy",
     "deploy:contracts": "yarn deploy:token && yarn deploy:axelarGmp",
-    "postinstall": "patch-package"
+    "postinstall": "patch-package",
+    "start:chain": "docker run -d --name agoric -p 26657:26657 -p 1317:1317 -p 9090:9090 ghcr.io/agoric/agoric-3-proposals:latest",
+    "wait-for-agd-block": "timeout 300 scripts/wait-for-block.sh 1534"
   },
   "private": true,
   "useWorkspaces": true,

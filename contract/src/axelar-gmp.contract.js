@@ -42,9 +42,6 @@ export const contract = async (
   trace('Channel Info Agoric:');
   trace(privateArgs.chainInfo.agoric.connections);
 
-  trace('Channel Info Axelar:');
-  trace(privateArgs.chainInfo.axelar.connections);
-
   trace('Registering Chain and Assets....');
   registerChainsAndAssets(
     chainHub,

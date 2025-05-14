@@ -19,9 +19,7 @@
     "test": "yarn esbuild:contract && ava",
     "lint:types": "tsc",
     "deploy": "yarn build && runInsideContainer=true planFile=startAxelarGmp-plan.json node deploy.js",
-    "register:token": "runInsideContainer=true planFile=eval-register-interchain-bank-assets-plan.json node deploy.js",
-    "start:chain": "docker run -d --name agoric -p 26657:26657 -p 1317:1317 -p 9090:9090 ghcr.io/agoric/agoric-3-proposals:latest",
-    "wait-for-agd-block": "timeout 300 scripts/wait-for-block.sh 1534"
+    "register:token": "runInsideContainer=true planFile=eval-register-interchain-bank-assets-plan.json node deploy.js"
   },
   "ava": {
     "extensions": {

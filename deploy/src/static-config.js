@@ -30,32 +30,6 @@ export const assetInfo = JSON.stringify([
     },
   ],
   [
-    'uosmo',
-    {
-      baseDenom: 'uosmo',
-      baseName: 'osmosis',
-      chainName: 'osmosis',
-    },
-  ],
-  [
-    'ibc/94EB1E9A676004E74ECF47F8E4BF183F4017CE0630A4D1AC7C7D9EB9CD6A3D53',
-    {
-      baseDenom: 'uausdc',
-      baseName: 'osmosis',
-      chainName: 'agoric',
-      brandKey: 'AUSDC',
-    },
-  ],
-  [
-    'ibc/3C870A71004EAD01A29709B779FECBB9F150559B1276825584E149596BD450DE',
-    {
-      baseDenom: 'wavax-wei',
-      baseName: 'osmosis',
-      chainName: 'agoric',
-      brandKey: 'WAVAX',
-    },
-  ],
-  [
     'ibc/2CC0B1B7A981ACC74854717F221008484603BB8360E81B262411B0D830EDE9B0',
     {
       baseDenom: 'uaxl',
