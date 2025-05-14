@@ -7,7 +7,8 @@ import {
   showSuccess,
   watchWallet,
 } from '../Utils.js';
-import { Network, networkConfigs } from '../config.js';
+import { Network } from '../config.js';
+import { networkConfigs } from 'deploy/src/config';
 
 export const ConnectionModal = () => {
   const { network, wallet } = useAppStore.getState();

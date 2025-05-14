@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { AxelarQueryParams } from '../types';
+import { AxelarQueryParams, SupportedDestinationChains } from '../types';
 import { AGORIC_PROXY_CONTRACT, BRAND_CONFIG, TOAST_DURATION } from '../config';
 import {
   getAxelarTxURL,
@@ -11,15 +11,9 @@ import { toast } from 'react-toastify';
 import { useAccount, useConnect } from 'wagmi';
 import metamaskLogo from '/metamask.svg';
 import { useAppStore } from '../state';
-import {
-  SupportedDestinationChains,
-  OfferArgs,
-  ContractCall,
-  GMPMessageType,
-} from 'contract/types';
+import { OfferArgs, ContractCall, GMPMessageType } from 'contract/types';
 import './GMPForm.css';
-
-export const EVM_CHAINS = ['Avalanche', 'Base', 'Ethereum'];
+import { EVM_CHAINS } from 'deploy/src/config';
 
 const prepareOfferArguments = async (
   type: number,
@@ -268,7 +262,7 @@ export const GMPForm = () => {
         }
       >
         <option value="">Select Chain</option>
-        {EVM_CHAINS.map((chain) => (
+        {Object.keys(EVM_CHAINS).map((chain) => (
           <option key={chain} value={chain}>
             {chain}
           </option>

@@ -1,11 +1,13 @@
 import { makeAgoricWalletConnection } from '@agoric/web-components';
 import { CurrentWalletRecord } from '@agoric/smart-wallet/src/smartWallet.js';
-import { SupportedDestinationChains, GMPMessageType } from 'contract/types';
+import { GMPMessageType } from 'contract/types';
 import { makeAgoricChainStorageWatcher } from '@agoric/rpc';
-import { networkConfigs } from 'config';
+import { networkConfigs, EVM_CHAINS } from 'deploy/src/config';
 import { Amount } from '@agoric/ertp';
 
 type Wallet = Awaited<ReturnType<typeof makeAgoricWalletConnection>>;
+
+export type SupportedDestinationChains = keyof typeof EVM_CHAINS;
 
 export type ToastMessageOptions = {
   content: string;

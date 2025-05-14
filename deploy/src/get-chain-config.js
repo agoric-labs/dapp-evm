@@ -2,12 +2,7 @@ import { IBCConnectionInfoShape } from '@agoric/orchestration/src/typeGuards.js'
 import { mustMatch } from '@endo/patterns';
 import { execFileSync } from 'node:child_process';
 import { makeAgd } from '../tools/agd-lib.js';
-
-/** @param {string} net */
-const getNetConfig = (net) =>
-  fetch(`https://${net}.agoric.net/network-config`)
-    .then((res) => res.text())
-    .then((s) => JSON.parse(s));
+import { networkConfigs } from './config.js';
 
 /**
  * @import {IBCChannelID, IBCConnectionID} from '@agoric/vats';
@@ -45,8 +40,8 @@ export const getChainConfig = async ({ net, peer }) => {
   const connections = {};
   const portId = 'transfer';
 
-  const { chainName: chainId, rpcAddrs } = await getNetConfig(net);
-  const agd = makeAgd({ execFileSync }).withOpts({ rpcAddrs });
+  const { chainId, rpc } = networkConfigs[net];
+  const agd = makeAgd({ execFileSync }).withOpts({ rpcAddrs: [rpc] });
 
   for (const [peerName, myConn, myChan, denom] of parsePeers(peer)) {
     console.debug(peerName, { denom });
