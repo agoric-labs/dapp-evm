@@ -92,6 +92,8 @@ jobs:
         env:
           script: /usr/src/upgrade-test-scripts/deploy/src/init-contract.js
           plan: /usr/src/upgrade-test-scripts/startAxelarGmp-plan.json
+          net: local
+          peer: axelar:connection-0:channel-0:uaxl
 
       - name: Verify Axelar GMP contract installation from vStorage
         run: ./integration/scripts/check-vstorage.mjs
