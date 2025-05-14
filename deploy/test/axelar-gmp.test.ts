@@ -100,32 +100,10 @@ test.before(async (t) => {
 
   await evalProposal(
     buildProposal('../src/init-contract.js', [
-      '--chainInfo',
-      JSON.stringify({
-        agoric: fetchedChainInfo.agoric,
-        axelar: fetchedChainInfo.axelar,
-      }),
-      '--assetInfo',
-      JSON.stringify([
-        [
-          'ubld',
-          {
-            baseDenom: 'ubld',
-            brandKey: 'BLD',
-            baseName: 'agoric',
-            chainName: 'agoric',
-          },
-        ],
-        [
-          'ibc/2CC0B1B7A981ACC74854717F221008484603BB8360E81B262411B0D830EDE9B0',
-          {
-            baseDenom: 'uaxl',
-            baseName: 'axelar',
-            chainName: 'agoric',
-            brandKey: 'AXL',
-          },
-        ],
-      ]),
+      '--net',
+      'local',
+      '--peer',
+      'axelar:connection-0:channel-0:uaxl',
     ]),
   );
 });

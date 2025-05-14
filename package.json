@@ -18,9 +18,7 @@
     "deploy:token": "cd deploy && yarn register:token",
     "deploy:axelarGmp": "cd deploy && yarn deploy",
     "deploy:contracts": "yarn deploy:token && yarn deploy:axelarGmp",
-    "postinstall": "patch-package",
-    "start:chain": "docker run -d --name agoric -p 26657:26657 -p 1317:1317 -p 9090:9090 ghcr.io/agoric/agoric-3-proposals:latest",
-    "wait-for-agd-block": "timeout 300 scripts/wait-for-block.sh 1534"
+    "postinstall": "patch-package"
   },
   "private": true,
   "useWorkspaces": true,
