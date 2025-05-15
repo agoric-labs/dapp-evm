@@ -101,7 +101,7 @@ test.before(async (t) => {
   await evalProposal(
     buildProposal('../src/init-contract.js', [
       '--net',
-      'localhost',
+      'bootstrap',
       '--peer',
       'axelar:connection-0:channel-0:uaxl',
     ]),

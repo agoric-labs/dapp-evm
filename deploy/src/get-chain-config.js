@@ -3,6 +3,7 @@ import { mustMatch } from '@endo/patterns';
 import { execFileSync } from 'node:child_process';
 import { makeAgd } from '../tools/agd-lib.js';
 import { networkConfigs } from './config.js';
+import { chainInfo } from './static-config.js';
 
 /**
  * @import {IBCChannelID, IBCConnectionID} from '@agoric/vats';
@@ -33,6 +34,10 @@ const parsePeers = (strs) => {
  */
 
 export const getChainConfig = async ({ net, peer }) => {
+  if (net === 'bootstrap') {
+    return chainInfo;
+  }
+
   /** @type {Record<string, CosmosChainInfo>} */
   const chainDetails = {};
 

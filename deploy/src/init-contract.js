@@ -8,7 +8,9 @@ import { parseArgs } from 'node:util';
 /** @typedef {{ net?: string, peer?: string[] }} PeerChainOpts */
 /** @type {import('node:util').ParseArgsConfig['options']} */
 const options = {
-  net: { type: 'string' },
+  net: {
+    type: 'string',
+  },
   peer: { type: 'string', multiple: true },
 };
 
