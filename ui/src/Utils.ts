@@ -1,4 +1,5 @@
-import { COSMOS_CHAINS, networkConfigs, TOAST_DURATION } from './config';
+import { COSMOS_CHAINS, TOAST_DURATION } from './config';
+import { networkConfigs } from 'deploy/src/config';
 import { AxelarQueryAPI, Environment } from '@axelar-network/axelarjs-sdk';
 import { toast } from 'react-toastify';
 import {

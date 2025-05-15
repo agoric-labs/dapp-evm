@@ -1,14 +1,7 @@
 /**
  * @import {Brand} from '@agoric/ertp';
- * @import {Denom} from '@agoric/orchestration';
+ * @import {Denom, CosmosChainInfo} from '@agoric/orchestration';
  */
-
-const osmosisData = {
-  channelId: 'channel-10170',
-  clientId: '07-tendermint-4441',
-  connectionId: 'connection-3881',
-  chainId: 'osmosis-1',
-};
 
 const agoricData = {
   channelId: 'channel-0',
@@ -17,7 +10,8 @@ const agoricData = {
   chainId: 'agoriclocal',
 };
 
-export const chainInfo = JSON.stringify({
+/** @type {Record<string, CosmosChainInfo>} */
+export const chainInfo = {
   agoric: {
     bech32Prefix: 'agoric',
     chainId: agoricData.chainId,
@@ -26,24 +20,6 @@ export const chainInfo = JSON.stringify({
     reference: agoricData.chainId,
     stakingTokens: [{ denom: 'ubld' }],
     connections: {
-      [osmosisData.chainId]: {
-        id: agoricData.connectionId,
-        client_id: agoricData.clientId,
-        counterparty: {
-          client_id: osmosisData.clientId,
-          connection_id: osmosisData.connectionId,
-        },
-        state: 3,
-        transferChannel: {
-          channelId: agoricData.channelId,
-          portId: 'transfer',
-          counterPartyChannelId: osmosisData.channelId,
-          counterPartyPortId: 'transfer',
-          ordering: 0,
-          state: 3,
-          version: 'ics20-1',
-        },
-      },
       axelar: {
         id: 'connection-0',
         client_id: '07-tendermint-0',
@@ -56,35 +32,6 @@ export const chainInfo = JSON.stringify({
           channelId: 'channel-0',
           portId: 'transfer',
           counterPartyChannelId: 'channel-0',
-          counterPartyPortId: 'transfer',
-          ordering: 0,
-          state: 3,
-          version: 'ics20-1',
-        },
-      },
-    },
-  },
-
-  osmosis: {
-    bech32Prefix: 'osmo',
-    chainId: osmosisData.chainId,
-    icqEnabled: true,
-    namespace: 'cosmos',
-    reference: osmosisData.chainId,
-    stakingTokens: [{ denom: 'uosmo' }],
-    connections: {
-      [agoricData.chainId]: {
-        id: osmosisData.connectionId,
-        client_id: osmosisData.clientId,
-        counterparty: {
-          client_id: agoricData.clientId,
-          connection_id: agoricData.connectionId,
-        },
-        state: 3,
-        transferChannel: {
-          channelId: osmosisData.channelId,
-          portId: 'transfer',
-          counterPartyChannelId: agoricData.channelId,
           counterPartyPortId: 'transfer',
           ordering: 0,
           state: 3,
@@ -122,7 +69,7 @@ export const chainInfo = JSON.stringify({
       },
     },
   },
-});
+};
 
 /**
  * @typedef {object} DenomDetail
@@ -148,32 +95,6 @@ export const assetInfo = JSON.stringify([
       baseDenom: 'ubld',
       baseName: 'agoric',
       chainName: 'agoric',
-    },
-  ],
-  [
-    'uosmo',
-    {
-      baseDenom: 'uosmo',
-      baseName: 'osmosis',
-      chainName: 'osmosis',
-    },
-  ],
-  [
-    'ibc/94EB1E9A676004E74ECF47F8E4BF183F4017CE0630A4D1AC7C7D9EB9CD6A3D53',
-    {
-      baseDenom: 'uausdc',
-      baseName: 'osmosis',
-      chainName: 'agoric',
-      brandKey: 'AUSDC',
-    },
-  ],
-  [
-    'ibc/3C870A71004EAD01A29709B779FECBB9F150559B1276825584E149596BD450DE',
-    {
-      baseDenom: 'wavax-wei',
-      baseName: 'osmosis',
-      chainName: 'agoric',
-      brandKey: 'WAVAX',
     },
   ],
   [
