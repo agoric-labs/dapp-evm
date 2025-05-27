@@ -27,7 +27,8 @@
     "ui",
     "deploy",
     "solidity",
-    "integration"
+    "integration",
+    "eureka"
   ],
   "prettier": {
     "semi": true,
