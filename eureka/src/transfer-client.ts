@@ -39,14 +39,14 @@ export class CosmosToEthereumTransfer {
     console.log(`Initialized wallet with address: ${this.senderAddress}`);
 
     this.client = await SigningStargateClient.connectWithSigner(
-      this.config.agoricRpcUrl,
+      this.config.rpcUrl,
       this.wallet,
       {
         gasPrice: GasPrice.fromString('0.025ubld'),
       },
     );
 
-    console.log(`Connected to Agoric RPC: ${this.config.agoricRpcUrl}`);
+    console.log(`Connected to Agoric RPC: ${this.config.rpcUrl}`);
   }
 
   /**

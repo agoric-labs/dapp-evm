@@ -1,6 +1,6 @@
 export type TransferConfig = {
-  agoricRpcUrl: string;
-  agoricChainId: string;
+  rpcUrl: string;
+  chainId: string;
   sourceClientId: string;
   transferPort: string;
   denom: string;

@@ -5,8 +5,8 @@ dotenv.config();
 
 const main = async () => {
   const config = {
-    agoricRpcUrl: 'https://devnet.rpc.agoric.net',
-    agoricChainId: 'agoricdev-25',
+    rpcUrl: 'https://devnet.rpc.agoric.net',
+    chainId: 'agoricdev-25',
     sourceClientId: '07-tendermint-18',
     denom: 'ubld',
     transferPort: 'transfer',
