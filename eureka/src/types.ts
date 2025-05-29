@@ -4,7 +4,7 @@ export type TransferConfig = {
   sourceClientId: string;
   transferPort: string;
   denom: string;
-  agoricPrefix: string;
+  prefix: string;
 };
 
 export type TransferResult = {

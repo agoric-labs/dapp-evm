@@ -6,9 +6,8 @@ import type {
   TransferResult,
   SendToEthereumParams,
 } from './types';
-import { AGORIC_COIN_TYPE } from './config';
-import { stringToPath } from '@cosmjs/crypto';
-
+import { AGORIC_COIN_TYPE, hdPath } from './config';
+import type { stringToPath } from '@cosmjs/crypto';
 export class CosmosToEthereumTransfer {
   private config: TransferConfig;
   private wallet: DirectSecp256k1HdWallet | null = null;
@@ -25,13 +24,24 @@ export class CosmosToEthereumTransfer {
    * Initialize the Cosmos wallet and signing client
    */
   async initialize(mnemonic: string): Promise<void> {
-    const hdPath = (coinType = 118, account = 0) =>
-      stringToPath(`m/44'/${coinType}'/${account}'/0/0`);
+    const walletOptions: {
+      prefix: string;
+      hdPaths?: readonly ReturnType<typeof stringToPath>[];
+    } = {
+      prefix: this.config.prefix,
+    };
 
-    this.wallet = await DirectSecp256k1HdWallet.fromMnemonic(mnemonic, {
-      prefix: this.config.agoricPrefix,
-      hdPaths: [hdPath(AGORIC_COIN_TYPE, 0), hdPath(AGORIC_COIN_TYPE, 1)],
-    });
+    if (this.config.prefix === 'agoric') {
+      walletOptions.hdPaths = [
+        hdPath(AGORIC_COIN_TYPE, 0),
+        hdPath(AGORIC_COIN_TYPE, 1),
+      ];
+    }
+
+    this.wallet = await DirectSecp256k1HdWallet.fromMnemonic(
+      mnemonic,
+      walletOptions,
+    );
 
     const accounts = await this.wallet.getAccounts();
     this.senderAddress = accounts[0].address;
@@ -42,11 +52,13 @@ export class CosmosToEthereumTransfer {
       this.config.rpcUrl,
       this.wallet,
       {
-        gasPrice: GasPrice.fromString('0.025ubld'),
+        gasPrice: GasPrice.fromString(`0.025${this.config.denom}`),
       },
     );
 
-    console.log(`Connected to Agoric RPC: ${this.config.rpcUrl}`);
+    console.log(
+      `Connected to ${this.config.chainId} RPC: ${this.config.rpcUrl}`,
+    );
   }
 
   /**

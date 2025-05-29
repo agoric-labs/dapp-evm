@@ -1,3 +1,4 @@
+import { chains, denoms, prefix, urls } from './config';
 import { CosmosToEthereumTransfer } from './transfer-client';
 import dotenv from 'dotenv';
 
@@ -5,12 +6,12 @@ dotenv.config();
 
 const main = async () => {
   const config = {
-    rpcUrl: 'https://devnet.rpc.agoric.net',
-    chainId: 'agoricdev-25',
+    rpcUrl: urls.RPC_OSMOSIS,
+    chainId: chains.CHAINID_OSMOSIS,
     sourceClientId: '07-tendermint-18',
-    denom: 'ubld',
+    denom: denoms.OSMOSIS,
     transferPort: 'transfer',
-    agoricPrefix: 'agoric',
+    prefix: prefix.OSMOSIS,
   };
 
   const transfer = new CosmosToEthereumTransfer(config);
