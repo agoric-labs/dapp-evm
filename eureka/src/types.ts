@@ -15,3 +15,11 @@ export type TransferResult = {
   error?: string;
   code?: number;
 };
+
+export type SendToEthereumParams = {
+  recipientEthAddress: string;
+  recipientCosmosHub: string;
+  sourceChannel: string;
+  amount: number;
+  timeoutTimestamp: number;
+};

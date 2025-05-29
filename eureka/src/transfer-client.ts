@@ -1,7 +1,11 @@
 import { DirectSecp256k1HdWallet } from '@cosmjs/proto-signing';
 import type { EncodeObject } from '@cosmjs/proto-signing';
 import { SigningStargateClient, GasPrice } from '@cosmjs/stargate';
-import type { TransferConfig, TransferResult } from './types';
+import type {
+  TransferConfig,
+  TransferResult,
+  SendToEthereumParams,
+} from './types';
 import { AGORIC_COIN_TYPE } from './config';
 import { stringToPath } from '@cosmjs/crypto';
 
@@ -48,11 +52,13 @@ export class CosmosToEthereumTransfer {
   /**
    * Send tokens from Agoric to Ethereum
    */
-  async sendToEthereum(
-    recipientEthAddress: string,
-    amount: string | number,
-    timeoutMinutes: number = 30,
-  ): Promise<TransferResult> {
+  async sendToEthereum({
+    recipientEthAddress,
+    recipientCosmosHub,
+    sourceChannel,
+    amount,
+    timeoutTimestamp,
+  }: SendToEthereumParams): Promise<TransferResult> {
     if (!this.client || !this.senderAddress) {
       throw new Error('Client not initialized. Call initialize() first.');
     }
@@ -60,9 +66,6 @@ export class CosmosToEthereumTransfer {
     console.log(
       `Preparing to send ${amount} ${this.config.denom} to Ethereum address: ${recipientEthAddress}`,
     );
-
-    const timeoutTime = new Date(Date.now() + timeoutMinutes * 60 * 1000);
-    const timeoutTimestamp = Math.floor(timeoutTime.getTime() / 1000);
 
     // Create the ICS20 transfer packet data
     const transferData = {
@@ -84,12 +87,22 @@ export class CosmosToEthereumTransfer {
 
     // Create the MsgSendPacket message
     const msgSendPacket: EncodeObject = {
-      typeUrl: '/ibc.core.channel.v2.MsgSendPacket',
+      typeUrl: '/ibc.applications.transfer.v1.MsgTransfer',
+      // typeUrl: '/ibc.core.channel.v2.MsgSendPacket',
       value: {
         sourceClient: this.config.sourceClientId,
-        timeoutTimestamp: timeoutTimestamp,
+
         payloads: [payload],
         signer: this.senderAddress,
+        sourceChannel,
+        token: {
+          denom: this.config.denom,
+          amount: String(amount),
+        },
+        timeoutTimestamp,
+        sourcePort: 'transfer',
+        sender: this.senderAddress,
+        receiver: recipientCosmosHub,
       },
     };
 
