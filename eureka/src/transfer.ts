@@ -1,4 +1,4 @@
-import { chains, denoms, prefix, urls } from './config';
+import { chains, channels, denoms, prefix, urls } from './config';
 import { CosmosToEthereumTransfer } from './transfer-client';
 import dotenv from 'dotenv';
 
@@ -32,7 +32,7 @@ const main = async () => {
       recipientEthAddress: '0x20E68F6c276AC6E297aC46c84Ab260928276691D',
       recipientCosmosHub: 'cosmos1n4j0cy98dac5q6d9y5nhlmk5d6e4wzve8thmmq',
       amount: 1000000,
-      sourceChannel: 'channel-25',
+      sourceChannel: channels.OSMOSIS_TO_COSMOS_HUB,
       timeoutTimestamp: (Math.floor(Date.now() / 1000) + 600) * 1e9,
     });
 
