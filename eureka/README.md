@@ -27,8 +27,6 @@ Cosmos Hub acts as the gateway to Ethereum, ensuring compatibility with the IBC 
 > **Note:**  
 > Currently, only Ethereum is supported. Integration with additional chains is planned for the future.
 
-- [IBC Eureka Technical Walkthrough](https://blog.cosmos.network/ibc-eureka-technical-walkthrough-0ba77c715baa)
-
 ## Componenets
 
 - IBC v2: remove shortcomings of IBC classic.
@@ -49,3 +47,8 @@ When Cosmos and Ethereum talk to each other using IBC v2, they need to trust eac
 
 - Ethereum doesn't natively support Cosmos.
 - So they use something called SP1 zkVM (from Succinct) to run a Cosmos Hub light client on Ethereum.
+
+# Read More
+
+- [IBC Eureka Technical Walkthrough](https://blog.cosmos.network/ibc-eureka-technical-walkthrough-0ba77c715baa)
+- [Custom Eureka ERC20 Integration](https://skip-protocol.notion.site/EXT-Custom-Eureka-ERC20-Integration-1fc8c17818cb80569723dd1ff8fb9ffd)
