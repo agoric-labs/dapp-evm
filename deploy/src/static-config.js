@@ -69,6 +69,19 @@ export const chainInfo = {
       },
     },
   },
+  ethereum: {
+    cctpDestinationDomain: 0,
+    // @ts-ignore
+    namespace: 'eip155',
+    reference: '1',
+  },
+
+  avalanche: {
+    cctpDestinationDomain: 1,
+    // @ts-ignore
+    namespace: 'eip155',
+    reference: '43114',
+  },
 };
 
 /**
@@ -95,6 +108,15 @@ export const assetInfo = JSON.stringify([
       baseDenom: 'ubld',
       baseName: 'agoric',
       chainName: 'agoric',
+    },
+  ],
+  [
+    'ibc/8E27BA2D5493AF5636760E354E46004562C46AB7EC0CC4C1CA14E9E20E2545B5',
+    {
+      baseDenom: 'uusd',
+      baseName: 'noble',
+      chainName: 'agoric',
+      brandKey: 'noble_USDC',
     },
   ],
   [
