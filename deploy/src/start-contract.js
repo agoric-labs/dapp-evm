@@ -95,16 +95,15 @@ export const startAxelarGmp = async (
   const axlIssuer = await safeFulfill(() =>
     E(agoricNames).lookup('issuer', 'AXL'),
   );
-
-  // const wavaxIssuer = await safeFulfill(() =>
-  //   E(agoricNames).lookup('issuer', 'WAVAX'),
-  // );
+  const usdcIssuer = await safeFulfill(() =>
+    E(agoricNames).lookup('issuer', 'USDC'),
+  );
 
   const issuerKeywordRecord = harden({
     BLD: await BLD,
     IST: await IST,
     ...(axlIssuer && { AXL: axlIssuer }),
-    // ...(wavaxIssuer && { WAVAX: wavaxIssuer }),
+    ...(usdcIssuer && { USDC: usdcIssuer }),
   });
   trace('issuerKeywordRecord', issuerKeywordRecord);
 

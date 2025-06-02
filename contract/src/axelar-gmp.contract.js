@@ -6,10 +6,17 @@ import { registerChainsAndAssets } from '@agoric/orchestration/src/utils/chain-h
 import * as evmFlows from './evm.flows.js';
 import { prepareEvmAccountKit } from './evm-account-kit.js';
 import { makeTracer } from '@agoric/internal';
+import {
+  makeLocalAccount,
+  makeNobleAccount as makeNobleAccountFlow,
+  sendUSDC,
+} from './token-transfer.flows.js';
 
 /**
  * @import {Remote, Vow} from '@agoric/vow';
  * @import {Zone} from '@agoric/zone';
+ * @import {Amount} from '@agoric/ertp';
+ * @import {TypedPattern} from '@agoric/internal';
  * @import {OrchestrationPowers, OrchestrationTools} from '@agoric/orchestration/src/utils/start-helper.js';
  * @import {CosmosChainInfo, Denom, DenomDetail} from '@agoric/orchestration';
  * @import {Marshaller, StorageNode} from '@agoric/internal/src/lib-chainStorage.js';
@@ -17,6 +24,21 @@ import { makeTracer } from '@agoric/internal';
  */
 
 const trace = makeTracer('AxelarGmp');
+
+/** @type {TypedPattern<Amount<'nat'>>} */
+const AnyNatAmountShape = {
+  brand: M.remotable('Brand'),
+  value: M.nat(),
+};
+harden(AnyNatAmountShape);
+
+const SingleNatAmountRecord = M.and(
+  M.recordOf(M.string(), AnyNatAmountShape, {
+    numPropertiesLimit: 1,
+  }),
+  M.not(harden({})),
+);
+harden(SingleNatAmountRecord);
 
 /**
  * Orchestration contract to be wrapped by withOrchestration for Zoe
@@ -35,7 +57,7 @@ export const contract = async (
   zcf,
   privateArgs,
   zone,
-  { chainHub, orchestrateAll, vowTools, zoeTools },
+  { chainHub, orchestrateAll, vowTools, orchestrate, zoeTools },
 ) => {
   trace('Inside Contract');
 
@@ -43,11 +65,29 @@ export const contract = async (
   trace(privateArgs.chainInfo.agoric.connections);
 
   trace('Registering Chain and Assets....');
+  const brands = zcf.getTerms().brands;
   registerChainsAndAssets(
     chainHub,
-    zcf.getTerms().brands,
+    brands,
     privateArgs.chainInfo,
     privateArgs.assetInfo,
+  );
+  const makeLocalAccountFlow = orchestrate(
+    'makeLocalAccount',
+    {},
+    makeLocalAccount,
+  );
+  /**
+   * Set up a shared local account for use in async-flow functions. Typically,
+   * exo initState functions need to resolve synchronously, but `makeOnce`
+   * allows us to provide a Promise. When using this inside a flow, we must
+   * await it to ensure the account is available for use.
+   *
+   * @type {any} sharedLocalAccountP expects a Promise but this is a vow UNTIL
+   *   https://github.com/Agoric/agoric-sdk/issues/9822
+   */
+  const sharedLocalAccountP = zone.makeOnce('localAccount', () =>
+    makeLocalAccountFlow(),
   );
 
   const creatorFacet = prepareChainHubAdmin(zone, chainHub);
@@ -73,10 +113,34 @@ export const contract = async (
     withdrawToSeat,
   });
 
+  const makeNobleAccount = orchestrate(
+    'makeNobleAccountFlow',
+    {},
+    makeNobleAccountFlow,
+  );
+
+  // UNTIL https://github.com/Agoric/agoric-sdk/issues/9822.
+  /** @type {any} nobleAccountP */
+  const nobleAccountP = zone.makeOnce('nobleAccount', () => makeNobleAccount());
+  // orchestrate uses the names on orchestrationFns to do a "prepare" of the associated behavior
+  const sendUSDCFlow = orchestrate(
+    'sendUSDC',
+    {
+      log,
+      chainHub,
+      sharedLocalAccountP,
+      nobleAccountP,
+      USDC: brands.USDC,
+      zoeTools,
+    },
+    sendUSDC,
+  );
+
   const publicFacet = zone.exo(
     'Send PF',
     M.interface('Send PF', {
       createAndMonitorLCA: M.callWhen().returns(M.any()),
+      sendUSDC: M.callWhen().returns(M.any()),
     }),
     {
       createAndMonitorLCA() {
@@ -84,6 +148,14 @@ export const contract = async (
           createAndMonitorLCA,
           'makeAccount',
           undefined,
+        );
+      },
+      sendUSDC() {
+        return zcf.makeInvitation(
+          sendUSDCFlow,
+          'send',
+          undefined,
+          M.splitRecord({ give: SingleNatAmountRecord }),
         );
       },
     },
