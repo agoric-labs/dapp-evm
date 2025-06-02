@@ -126,11 +126,10 @@ export const contract = async (
   const sendUSDCFlow = orchestrate(
     'sendUSDC',
     {
-      log,
       chainHub,
       sharedLocalAccountP,
       nobleAccountP,
-      USDC: brands.USDC,
+      NUSDC: brands.NUSDC,
       zoeTools,
     },
     sendUSDC,

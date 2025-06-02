@@ -52,7 +52,7 @@ const denomForBrand = async (orch, brand) => {
  * @param {GuestInterface<ChainHub>} ctx.chainHub
  * @param {Promise<GuestInterface<LocalOrchestrationAccountKit['holder']>>} ctx.sharedLocalAccountP
  * @param {Promise<GuestInterface<CosmosOrchestrationAccountKit['holder']>>} ctx.nobleAccountP
- * @param {Brand} ctx.USDC
+ * @param {Brand} ctx.NUSDC
  * @param {GuestInterface<ZoeTools>} ctx.zoeTools
  * @param {ZCFSeat} seat
  * @param {{ chainName: string; destAddr: string }} offerArgs
@@ -63,7 +63,7 @@ export const sendUSDC = async (
     chainHub,
     sharedLocalAccountP,
     nobleAccountP,
-    USDC,
+    NUSDC,
     zoeTools: { withdrawToSeat },
   },
   seat,
@@ -75,7 +75,7 @@ export const sendUSDC = async (
   const { give } = seat.getProposal();
   const [[_kw, amt]] = entries(give);
 
-  amt.brand != USDC || Fail`Brand is not USDC`;
+  amt.brand != NUSDC || Fail`Brand is not NUSDC`;
   trace(`sending {${amt.value}} from ${chainName} to ${destAddr}`);
   const denom = await denomForBrand(orch, amt.brand);
 

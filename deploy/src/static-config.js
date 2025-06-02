@@ -40,7 +40,16 @@ export const chainInfo = {
       },
     },
   },
-
+  noble: {
+    bech32Prefix: 'noble',
+    cctpDestinationDomain: 4,
+    chainId: 'grand-1',
+    icaEnabled: true,
+    icqEnabled: false,
+    namespace: 'cosmos',
+    pfmEnabled: true,
+    reference: 'grand-1',
+  },
   axelar: {
     bech32Prefix: 'axelar',
     chainId: 'axelar',
@@ -116,16 +125,16 @@ export const assetInfo = JSON.stringify([
       baseDenom: 'uusd',
       baseName: 'noble',
       chainName: 'agoric',
-      brandKey: 'noble_USDC',
+      brandKey: 'NUSDC',
     },
   ],
-  [
-    'ibc/2CC0B1B7A981ACC74854717F221008484603BB8360E81B262411B0D830EDE9B0',
-    {
-      baseDenom: 'uaxl',
-      baseName: 'axelar',
-      chainName: 'agoric',
-      brandKey: 'AXL',
-    },
-  ],
+  // [
+  //   'ibc/2CC0B1B7A981ACC74854717F221008484603BB8360E81B262411B0D830EDE9B0',
+  //   {
+  //     baseDenom: 'uaxl',
+  //     baseName: 'axelar',
+  //     chainName: 'agoric',
+  //     brandKey: 'AXL',
+  //   },
+  // ],
 ]);

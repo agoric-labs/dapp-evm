@@ -13,7 +13,7 @@ const DEPLOYJS_FILE = '../deploy/deploy.js';
 
 const deployScript = '/usr/src/upgrade-test-scripts/deploy.mjs';
 const assets =
-  '[{"denom":"ibc/8E27BA2D5493AF5636760E354E46004562C46AB7EC0CC4C1CA14E9E20E2545B5","issuerName":"noble_USDC","decimalPlaces":6}]';
+  '[{"denom":"ibc/8E27BA2D5493AF5636760E354E46004562C46AB7EC0CC4C1CA14E9E20E2545B5","issuerName":"NUSDC","decimalPlaces":6}]';
 const plan =
   '/usr/src/upgrade-test-scripts/eval-register-interchain-bank-assets-plan.json';
 const script =
