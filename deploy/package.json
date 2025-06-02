@@ -19,7 +19,6 @@
     "test": "yarn esbuild:contract && ava",
     "lint:types": "tsc",
     "deploy": "yarn build && runInsideContainer=true planFile=startAxelarGmp-plan.json node deploy.js",
-    "register:usdc": "ibc/8E27BA2D5493AF5636760E354E46004562C46AB7EC0CC4C1CA14E9E20E2545B5",
     "register:token": "runInsideContainer=true planFile=eval-register-interchain-bank-assets-plan.json node deploy.js"
   },
   "ava": {

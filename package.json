@@ -16,6 +16,7 @@
     "local-env:start": "cd local-env && yarn start",
     "local-env:relay": "cd local-env && yarn relay",
     "deploy:token": "cd deploy && yarn register:token",
+    "register:usdc": "cd integration && scripts/deploy-usdc.mjs",
     "deploy:axelarGmp": "cd deploy && yarn deploy",
     "deploy:contracts": "yarn deploy:token && yarn deploy:axelarGmp",
     "postinstall": "patch-package"
