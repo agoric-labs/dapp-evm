@@ -6,11 +6,7 @@ import { registerChainsAndAssets } from '@agoric/orchestration/src/utils/chain-h
 import * as evmFlows from './evm.flows.js';
 import { prepareEvmAccountKit } from './evm-account-kit.js';
 import { makeTracer } from '@agoric/internal';
-import {
-  makeLocalAccount,
-  makeNobleAccount as makeNobleAccountFlow,
-  sendUSDC,
-} from './token-transfer.flows.js';
+import { makeLocalAccount, sendUSDC } from './token-transfer.flows.js';
 
 /**
  * @import {Remote, Vow} from '@agoric/vow';
@@ -113,23 +109,12 @@ export const contract = async (
     withdrawToSeat,
   });
 
-  const makeNobleAccount = orchestrate(
-    'makeNobleAccountFlow',
-    {},
-    makeNobleAccountFlow,
-  );
-
-  // UNTIL https://github.com/Agoric/agoric-sdk/issues/9822.
-  /** @type {any} nobleAccountP */
-  const nobleAccountP = zone.makeOnce('nobleAccount', () => makeNobleAccount());
   // orchestrate uses the names on orchestrationFns to do a "prepare" of the associated behavior
   const sendUSDCFlow = orchestrate(
     'sendUSDC',
     {
       chainHub,
       sharedLocalAccountP,
-      nobleAccountP,
-      NUSDC: brands.NUSDC,
       zoeTools,
     },
     sendUSDC,
@@ -154,7 +139,7 @@ export const contract = async (
           sendUSDCFlow,
           'send',
           undefined,
-          M.splitRecord({ give: SingleNatAmountRecord }),
+          // M.splitRecord({ give: SingleNatAmountRecord }),
         );
       },
     },

@@ -9,7 +9,6 @@ import { M, mustMatch } from '@endo/patterns';
  * @import {CosmosOrchestrationAccountKit} from '@agoric/orchestration/src/exos/cosmos-orchestration-account.js'
  * @import {LocalOrchestrationAccountKit} from '@agoric/orchestration/src/exos/local-orchestration-account.js';
  * @import {ZCFSeat} from '@agoric/zoe';
- * @import {Brand} from '@agoric/ertp';
  */
 
 const trace = makeTracer('TokenTransferFlow');
@@ -24,16 +23,6 @@ export const makeLocalAccount = async (orch) => {
   return agoricChain.makeAccount();
 };
 harden(makeLocalAccount);
-
-/**
- * @satisfies {OrchestrationFlow}
- * @param {Orchestrator} orch
- */
-export const makeNobleAccount = async (orch) => {
-  const nobleChain = await orch.getChain('noble');
-  return nobleChain.makeAccount();
-};
-harden(makeNobleAccount);
 
 const denomForBrand = async (orch, brand) => {
   const agoric = await orch.getChain('agoric');
@@ -52,20 +41,13 @@ const denomForBrand = async (orch, brand) => {
  * @param {GuestInterface<ChainHub>} ctx.chainHub
  * @param {Promise<GuestInterface<LocalOrchestrationAccountKit['holder']>>} ctx.sharedLocalAccountP
  * @param {Promise<GuestInterface<CosmosOrchestrationAccountKit['holder']>>} ctx.nobleAccountP
- * @param {Brand} ctx.NUSDC
  * @param {GuestInterface<ZoeTools>} ctx.zoeTools
  * @param {ZCFSeat} seat
  * @param {{ chainName: string; destAddr: string }} offerArgs
  */
 export const sendUSDC = async (
   orch,
-  {
-    chainHub,
-    sharedLocalAccountP,
-    nobleAccountP,
-    NUSDC,
-    zoeTools: { withdrawToSeat },
-  },
+  { chainHub, sharedLocalAccountP, zoeTools: { withdrawToSeat } },
   seat,
   offerArgs,
 ) => {
@@ -75,18 +57,19 @@ export const sendUSDC = async (
   const { give } = seat.getProposal();
   const [[_kw, amt]] = entries(give);
 
-  amt.brand != NUSDC || Fail`Brand is not NUSDC`;
   trace(`sending {${amt.value}} from ${chainName} to ${destAddr}`);
   const denom = await denomForBrand(orch, amt.brand);
 
   /** @type {ChainInfo} */
   const info = await chainHub.getChainInfo(chainName);
+  trace(`info ${JSON.stringify(info)}`);
 
   /**
    * @type {any} XXX methods returning vows
    *   https://github.com/Agoric/agoric-sdk/issues/9822
    */
   const sharedLocalAccount = await sharedLocalAccountP;
+  trace(`sharedLocalAccount created`);
 
   /**
    * Helper function to recover if IBC Transfer fails
@@ -101,8 +84,13 @@ export const sendUSDC = async (
     throw makeError(errorMsg);
   };
 
-  const nobleAccount = await nobleAccountP;
+  const nobleChain = await orch.getChain('noble');
+  trace(`nobleChain ${JSON.stringify(nobleChain)}`);
+  const nobleAccount = await nobleChain.makeAccount();
+  trace(`nobleAccount created`);
   const nobleAddr = nobleAccount.getAddress();
+  trace(`noble address: ${nobleAddr}`);
+
   const denomAmt = { denom, value: amt.value };
   try {
     await sharedLocalAccount.transfer(nobleAddr, denomAmt);
