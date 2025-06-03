@@ -1,6 +1,6 @@
 /**
  * @import {Brand} from '@agoric/ertp';
- * @import {Denom, CosmosChainInfo} from '@agoric/orchestration';
+ * @import {Denom, CosmosChainInfo, ChainInfo} from '@agoric/orchestration';
  */
 
 const agoricData = {
@@ -10,7 +10,7 @@ const agoricData = {
   chainId: 'agoriclocal',
 };
 
-/** @type {Record<string, CosmosChainInfo>} */
+/** @type {Record<string, CosmosChainInfo | ChainInfo>} */
 export const chainInfo = {
   agoric: {
     bech32Prefix: 'agoric',
@@ -40,7 +40,16 @@ export const chainInfo = {
       },
     },
   },
-
+  noble: {
+    bech32Prefix: 'noble',
+    cctpDestinationDomain: 4,
+    chainId: 'grand-1',
+    icaEnabled: true,
+    icqEnabled: false,
+    namespace: 'cosmos',
+    pfmEnabled: true,
+    reference: 'grand-1',
+  },
   axelar: {
     bech32Prefix: 'axelar',
     chainId: 'axelar',
@@ -68,6 +77,17 @@ export const chainInfo = {
         },
       },
     },
+  },
+  ethereum: {
+    cctpDestinationDomain: 0,
+    namespace: 'eip155',
+    reference: '1',
+  },
+
+  avalanche: {
+    cctpDestinationDomain: 1,
+    namespace: 'eip155',
+    reference: '43114',
   },
 };
 
@@ -98,12 +118,21 @@ export const assetInfo = JSON.stringify([
     },
   ],
   [
-    'ibc/2CC0B1B7A981ACC74854717F221008484603BB8360E81B262411B0D830EDE9B0',
+    'ibc/8E27BA2D5493AF5636760E354E46004562C46AB7EC0CC4C1CA14E9E20E2545B5',
     {
-      baseDenom: 'uaxl',
-      baseName: 'axelar',
+      baseDenom: 'uusd',
+      baseName: 'noble',
       chainName: 'agoric',
-      brandKey: 'AXL',
+      brandKey: 'NUSDC',
     },
   ],
+  // [
+  //   'ibc/2CC0B1B7A981ACC74854717F221008484603BB8360E81B262411B0D830EDE9B0',
+  //   {
+  //     baseDenom: 'uaxl',
+  //     baseName: 'axelar',
+  //     chainName: 'agoric',
+  //     brandKey: 'AXL',
+  //   },
+  // ],
 ]);

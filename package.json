@@ -9,7 +9,6 @@
     "test": "yarn workspace deploy test && yarn workspace solidity test",
     "lint:types": "yarn workspace deploy lint:types && yarn workspace contract lint:types && yarn workspace solidity lint:types",
     "build:solidity": "cd solidity && yarn build",
-    "build:deploy": "cd deploy && yarn build",
     "build:ui": "cd ui && yarn build",
     "build:local-env": "cd local-env && yarn build",
     "build": "concurrently \"yarn build:solidity\" \"yarn build:local-env\" \"yarn build:ui\"",

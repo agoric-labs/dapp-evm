@@ -1,0 +1,62 @@
+[global]
+log_level = 'info'
+[mode.clients]
+enabled = true
+refresh = true
+misbehaviour = true
+
+[mode.connections]
+enabled = false
+
+[mode.channels]
+enabled = false
+
+[mode.packets]
+enabled = true
+clear_interval = 100
+clear_on_start = true
+tx_confirmation = false
+
+[rest]
+enabled = false
+host = '127.0.0.1'
+port = 3000
+
+[[chains]]
+id = 'agoriclocal'
+rpc_addr = 'http://localhost:26657'
+grpc_addr = 'http://localhost:9090'
+event_source = { mode = 'push', url = 'ws://localhost:26657/websocket', batch_delay = '500ms' }
+rpc_timeout = '15s'
+account_prefix = 'agoric'
+key_name = 'agoric'
+address_type = { derivation = 'cosmos' }
+store_prefix = 'ibc'
+default_gas = 2000000
+max_gas = 10000000
+gas_price = { price = 0.00, denom = 'ubld' }
+gas_multiplier = 1.1
+max_msg_num = 25
+max_tx_size = 180000
+clock_drift = '15s'
+max_block_time = '15s'
+trusting_period = '14days'
+trust_threshold = { numerator = '1', denominator = '3' }
+
+[[chains]]
+id = 'grand-1'
+type = 'CosmosSdk'
+rpc_addr = 'https://rpc.testnet.noble.xyz:443'
+grpc_addr =  'http://noble-testnet-grpc.polkachu.com:21590'
+event_source = { mode = 'pull', interval = '200ms' }
+rpc_timeout = '120s'
+account_prefix = 'noble'
+key_name = 'noble'
+store_prefix = 'ibc'
+default_gas = 2000000
+max_gas = 10000000
+gas_price = { price = 0.1, denom = 'uusdc' }
+gas_multiplier = 1.2
+clock_drift ='5s'
+trusting_period = '1209600s'
+trust_threshold = { numerator = '1', denominator = '3' }

@@ -7,7 +7,7 @@ import { chainInfo } from './static-config.js';
 
 /**
  * @import {IBCChannelID, IBCConnectionID} from '@agoric/vats';
- * @import {CosmosChainInfo, IBCConnectionInfo} from '@agoric/orchestration'
+ * @import {ChainInfo, CosmosChainInfo, IBCConnectionInfo} from '@agoric/orchestration'
  */
 
 /** @param {string[]} strs */
@@ -30,7 +30,7 @@ const parsePeers = (strs) => {
  * @param {Object} args - The arguments object.
  * @param {string} args.net - The network name (e.g., 'emerynet').
  * @param {string[]} args.peer - The peers to connect .
- * @returns {Promise<Record<string, CosmosChainInfo>>} A promise that resolves to the chain configuration details keyed by chain name.
+ * @returns {Promise<Record<string, CosmosChainInfo | ChainInfo>>} A promise that resolves to the chain configuration details keyed by chain name.
  */
 
 export const getChainConfig = async ({ net, peer }) => {
@@ -38,7 +38,7 @@ export const getChainConfig = async ({ net, peer }) => {
     return chainInfo;
   }
 
-  /** @type {Record<string, CosmosChainInfo>} */
+  /** @type {Record<string, CosmosChainInfo | ChainInfo>} */
   const chainDetails = {};
 
   /** @type {Record<string, IBCConnectionInfo>} */
@@ -101,6 +101,19 @@ export const getChainConfig = async ({ net, peer }) => {
     stakingTokens: [{ denom: 'ubld' }],
     connections,
     bech32Prefix: 'agoric',
+  };
+
+  // Add EVM chains
+  chainDetails['ethereum'] = {
+    cctpDestinationDomain: 0,
+    namespace: 'eip155',
+    reference: '1',
+  };
+
+  chainDetails['avalanche'] = {
+    cctpDestinationDomain: 1,
+    namespace: 'eip155',
+    reference: '2',
   };
 
   return chainDetails;
