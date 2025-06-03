@@ -1,6 +1,6 @@
 /**
  * @import {Brand} from '@agoric/ertp';
- * @import {Denom, CosmosChainInfo} from '@agoric/orchestration';
+ * @import {Denom, CosmosChainInfo, ChainInfo} from '@agoric/orchestration';
  */
 
 const agoricData = {
@@ -10,7 +10,7 @@ const agoricData = {
   chainId: 'agoriclocal',
 };
 
-/** @type {Record<string, CosmosChainInfo>} */
+/** @type {Record<string, CosmosChainInfo | ChainInfo>} */
 export const chainInfo = {
   agoric: {
     bech32Prefix: 'agoric',
@@ -80,14 +80,12 @@ export const chainInfo = {
   },
   ethereum: {
     cctpDestinationDomain: 0,
-    // @ts-ignore
     namespace: 'eip155',
     reference: '1',
   },
 
   avalanche: {
     cctpDestinationDomain: 1,
-    // @ts-ignore
     namespace: 'eip155',
     reference: '43114',
   },
