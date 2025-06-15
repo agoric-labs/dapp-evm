@@ -18,10 +18,15 @@ jobs:
       - name: Checkout this repo
         uses: actions/checkout@v4
 
-      - name: Use Node.js 18
+      - name: Use Node 18
         uses: actions/setup-node@v4
         with:
           node-version: '18'
+
+      - name: Enable Corepack and prepare correct Yarn version
+        run: |
+          corepack enable
+          corepack prepare yarn@4.9.1 --activate
 
       - name: Install dependencies
         run: yarn install
